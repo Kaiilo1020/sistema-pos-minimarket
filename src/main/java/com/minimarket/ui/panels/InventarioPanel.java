@@ -1,6 +1,7 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
@@ -58,11 +59,11 @@ public class InventarioPanel extends JPanel {
         JButton btnEliminar = new JButton("Eliminar Producto");
         JButton btnActualizar = new JButton("Actualizar");
         
-        // Estilo de botones
-        configurarBoton(btnAgregar, new Color(46, 125, 50));
-        configurarBoton(btnEditar, new Color(25, 118, 210));
-        configurarBoton(btnEliminar, new Color(211, 47, 47));
-        configurarBoton(btnActualizar, new Color(117, 117, 117));
+        // Estilo de botones usando UIUtils
+        UIUtils.configurarBotonExito(btnAgregar);
+        UIUtils.configurarBotonPrimario(btnEditar);
+        UIUtils.configurarBotonPeligro(btnEliminar);
+        UIUtils.configurarBotonSecundario(btnActualizar);
         
         // Eventos de botones
         btnAgregar.addActionListener(e -> abrirDialogoAgregarProducto());
@@ -90,9 +91,7 @@ public class InventarioPanel extends JPanel {
         tablaProductos = new JTable(modeloTabla);
         tablaProductos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaProductos.setRowHeight(25);
-        tablaProductos.getTableHeader().setBackground(Color.LIGHT_GRAY);
-        tablaProductos.getTableHeader().setForeground(Color.BLACK);
-        tablaProductos.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        UIUtils.configurarTabla(tablaProductos);
         
         // Configurar colores alternados en las filas
         tablaProductos.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
@@ -140,14 +139,6 @@ public class InventarioPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
     
-    private void configurarBoton(JButton boton, Color color) {
-        boton.setBackground(color);
-        boton.setForeground(Color.WHITE);
-        boton.setFocusPainted(false);
-        boton.setBorderPainted(false);
-        boton.setFont(new Font("Arial", Font.BOLD, 11));
-        boton.setPreferredSize(new Dimension(130, 35));
-    }
     
     private void cargarProductos() {
         modeloTabla.setRowCount(0); // Limpiar tabla
