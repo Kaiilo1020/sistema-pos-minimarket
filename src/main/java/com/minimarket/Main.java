@@ -1,70 +1,75 @@
 package com.minimarket;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.swing.DashboardFrame;
 
 /**
  * Clase Main principal del Sistema POS del Minimarket
- * Abre directamente la interfaz gráfica Swing
+ * Punto de entrada único - Abre directamente la interfaz gráfica
  */
 public class Main {
 
     public static void main(String[] args) {
-        // Verificar conexión a la base de datos silenciosamente
+        // Configurar Look and Feel
+        configurarLookAndFeel();
+        
+        // Verificar conexión a la base de datos
         if (!verificarConexionBD()) {
-            // Si no hay conexión, mostrar error en la GUI
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                javax.swing.JOptionPane.showMessageDialog(null, 
-                    "❌ Error: No se pudo conectar a la base de datos.\n\n" +
-                    "💡 Asegúrate de que PostgreSQL esté ejecutándose y ejecuta:\n" +
-                    "psql -U postgres -d minimarket_db -f database/actualizacion_pos_rbac.sql",
-                    "Error de Conexión - Sistema POS Minimarket", 
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
-            });
+            mostrarErrorConexion();
             return;
         }
 
-        // Abrir directamente la interfaz gráfica
-        abrirInterfazGrafica();
+        // Iniciar la aplicación
+        iniciarAplicacion();
     }
 
-    private static boolean verificarConexionBD() {
+    private static void configurarLookAndFeel() {
         try {
-            return DatabaseConnection.getInstance().testConnection();
-        } catch (Exception e) {
-            System.out.println("Error de conexión: " + e.getMessage());
-            return false;
-        }
-    }
-
-
-    private static void abrirInterfazGrafica() {
-        try {
-            // Configurar Look and Feel moderno
+            // Configurar Look and Feel moderno Nimbus
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
+            
+            // Configurar propiedades para mejor apariencia
+            System.setProperty("awt.useSystemAAFontSettings", "on");
+            System.setProperty("swing.aatext", "true");
         } catch (Exception e) {
             // Usar el look and feel por defecto si hay error
         }
+    }
 
-        // Configurar propiedades del sistema para mejor apariencia
-        System.setProperty("awt.useSystemAAFontSettings", "on");
-        System.setProperty("swing.aatext", "true");
+    private static boolean verificarConexionBD() {
+        try {
+            return DatabaseConnection.getInstance().testConnection();
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-        // Ejecutar en el hilo de eventos de Swing
+    private static void mostrarErrorConexion() {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            javax.swing.JOptionPane.showMessageDialog(null, 
+                "❌ Error: No se pudo conectar a la base de datos.\n\n" +
+                "💡 Asegúrate de que PostgreSQL esté ejecutándose y ejecuta:\n" +
+                "psql -U postgres -d minimarket_db -f database/actualizacion_pos_personalizada.sql",
+                "Error de Conexión - Sistema POS Minimarket", 
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+        });
+    }
+
+    private static void iniciarAplicacion() {
         javax.swing.SwingUtilities.invokeLater(() -> {
             try {
-                com.minimarket.ui.swing.DashboardFrame dashboard = new com.minimarket.ui.swing.DashboardFrame();
+                DashboardFrame dashboard = new DashboardFrame();
                 dashboard.setVisible(true);
             } catch (Exception e) {
                 javax.swing.JOptionPane.showMessageDialog(null, 
-                    "❌ Error al abrir la interfaz gráfica: " + e.getMessage(),
+                    "❌ Error al iniciar la aplicación: " + e.getMessage(),
                     "Error - Sistema POS Minimarket", 
                     javax.swing.JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
             }
         });
     }
