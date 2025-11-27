@@ -1,6 +1,7 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
@@ -26,18 +27,15 @@ public class UsuarioDialog extends JDialog {
         this.esEdicion = !esNuevo;
         this.usuarioId = usuarioId;
         
+        UIUtils.configurarDialogo(this, titulo, 450, 350);
         initializeComponents();
         
         if (esEdicion && usuarioId != null) {
             cargarDatosUsuario();
         }
-        
-        setLocationRelativeTo(parent);
     }
     
     private void initializeComponents() {
-        setLayout(new BorderLayout());
-        setSize(450, 350);
         
         // Panel principal
         JPanel panelPrincipal = new JPanel(new GridBagLayout());
@@ -88,17 +86,12 @@ public class UsuarioDialog extends JDialog {
         panelPrincipal.add(comboRol, gbc);
         
         // Panel de botones
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel panelBotones = UIUtils.crearPanelBotones(FlowLayout.RIGHT);
         JButton btnGuardar = new JButton(esEdicion ? "Actualizar" : "Crear Usuario");
         JButton btnCancelar = new JButton("Cancelar");
         
-        btnGuardar.setBackground(new Color(46, 125, 50));
-        btnGuardar.setForeground(Color.WHITE);
-        btnGuardar.setFocusPainted(false);
-        
-        btnCancelar.setBackground(new Color(158, 158, 158));
-        btnCancelar.setForeground(Color.WHITE);
-        btnCancelar.setFocusPainted(false);
+        UIUtils.configurarBotonExito(btnGuardar);
+        UIUtils.configurarBotonSecundario(btnCancelar);
         
         btnGuardar.addActionListener(e -> guardarUsuario());
         btnCancelar.addActionListener(e -> dispose());
@@ -131,51 +124,48 @@ public class UsuarioDialog extends JDialog {
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar datos del usuario: " + e.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al cargar datos del usuario: " + e.getMessage());
         }
     }
     
     private void guardarUsuario() {
         // Validaciones
         if (campoUsername.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El nombre de usuario es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El nombre de usuario es obligatorio.");
             return;
         }
         
         if (!esEdicion && new String(campoPassword.getPassword()).trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "La contraseña es obligatoria para usuarios nuevos.", "Validación", JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "La contraseña es obligatoria para usuarios nuevos.");
             return;
         }
         
         if (campoNombre.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El nombre es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El nombre es obligatorio.");
             return;
         }
         
         if (campoApellido.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El apellido es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El apellido es obligatorio.");
             return;
         }
         
         if (campoEmail.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El email es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El email es obligatorio.");
             return;
         }
         
         // Validar formato de email básico
         String email = campoEmail.getText().trim();
         if (!email.contains("@") || !email.contains(".")) {
-            JOptionPane.showMessageDialog(this, "El formato del email no es válido.", "Validación", JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El formato del email no es válido.");
             return;
         }
         
         // Verificar si el username ya existe (solo para usuarios nuevos o si cambió)
         if (!esEdicion || !campoUsername.getText().trim().equals(obtenerUsernameActual())) {
             if (existeUsername(campoUsername.getText().trim())) {
-                JOptionPane.showMessageDialog(this, "El nombre de usuario ya existe. Por favor, elige otro.", "Usuario Duplicado", JOptionPane.WARNING_MESSAGE);
+                UIUtils.mostrarError(this, "El nombre de usuario ya existe. Por favor, elige otro.");
                 return;
             }
         }
@@ -183,7 +173,7 @@ public class UsuarioDialog extends JDialog {
         // Verificar si el email ya existe (solo para usuarios nuevos o si cambió)
         if (!esEdicion || !email.equals(obtenerEmailActual())) {
             if (existeEmail(email)) {
-                JOptionPane.showMessageDialog(this, "El email ya está registrado. Por favor, usa otro.", "Email Duplicado", JOptionPane.WARNING_MESSAGE);
+                UIUtils.mostrarError(this, "El email ya está registrado. Por favor, usa otro.");
                 return;
             }
         }
@@ -237,23 +227,17 @@ public class UsuarioDialog extends JDialog {
             
             if (filasAfectadas > 0) {
                 confirmado = true;
-                JOptionPane.showMessageDialog(this, 
-                    "Usuario " + (esEdicion ? "actualizado" : "creado") + " exitosamente.", 
-                    "Éxito", 
-                    JOptionPane.INFORMATION_MESSAGE);
+                UIUtils.mostrarExito(this, 
+                    "Usuario " + (esEdicion ? "actualizado" : "creado") + " exitosamente.");
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(this, 
-                    "No se pudo " + (esEdicion ? "actualizar" : "crear") + " el usuario.", 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
+                UIUtils.mostrarError(this, 
+                    "No se pudo " + (esEdicion ? "actualizar" : "crear") + " el usuario.");
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al " + (esEdicion ? "actualizar" : "crear") + " usuario: " + e.getMessage(), 
-                "Error de Base de Datos", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, 
+                "Error al " + (esEdicion ? "actualizar" : "crear") + " usuario: " + e.getMessage());
         }
     }
     
