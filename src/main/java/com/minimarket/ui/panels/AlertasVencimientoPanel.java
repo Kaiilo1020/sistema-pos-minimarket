@@ -1,6 +1,7 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.util.UIUtils;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -26,6 +27,22 @@ public class AlertasVencimientoPanel extends JPanel {
     private static final Color COLOR_VENCIDO = new Color(244, 67, 54, 100);      // Rojo claro
     private static final Color COLOR_POR_VENCER = new Color(255, 193, 7, 100);   // Amarillo claro
     private static final Color COLOR_NORMAL = Color.WHITE;
+    
+    // Constantes para lógica de vencimiento
+    private static final int DIAS_CRITICOS = 7;
+    
+    /**
+     * Clase interna para representar el estado de un producto
+     */
+    private static class EstadoProducto {
+        final String estado;
+        final String diasTexto;
+        
+        EstadoProducto(String estado, String diasTexto) {
+            this.estado = estado;
+            this.diasTexto = diasTexto;
+        }
+    }
     
     public AlertasVencimientoPanel() {
         initializeComponents();
@@ -54,13 +71,11 @@ public class AlertasVencimientoPanel extends JPanel {
         panelBotones.setBackground(Color.WHITE);
         
         JButton btnRetirarVencidos = new JButton("Retirar Vencidos");
-        btnRetirarVencidos.setFont(new Font("Arial", Font.BOLD, 12));
-        btnRetirarVencidos.setPreferredSize(new Dimension(130, 32));
+        UIUtils.configurarBotonPeligro(btnRetirarVencidos);
         btnRetirarVencidos.addActionListener(e -> retirarProductosVencidos());
         
         JButton btnActualizar = new JButton("Actualizar");
-        btnActualizar.setFont(new Font("Arial", Font.BOLD, 12));
-        btnActualizar.setPreferredSize(new Dimension(100, 32));
+        UIUtils.configurarBotonSecundario(btnActualizar);
         btnActualizar.addActionListener(e -> cargarAlertas());
         
         panelBotones.add(btnRetirarVencidos);
@@ -81,9 +96,7 @@ public class AlertasVencimientoPanel extends JPanel {
         tablaAlertas = new JTable(modeloTabla);
         tablaAlertas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaAlertas.setRowHeight(30);
-        tablaAlertas.getTableHeader().setBackground(Color.LIGHT_GRAY);
-        tablaAlertas.getTableHeader().setForeground(Color.BLACK);
-        tablaAlertas.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        UIUtils.configurarTabla(tablaAlertas);
         
         // Configurar ancho de columnas
         tablaAlertas.getColumnModel().getColumn(0).setPreferredWidth(50);   // ID
@@ -165,19 +178,9 @@ public class AlertasVencimientoPanel extends JPanel {
                     String estado;
                     String diasTexto;
                     
-                    if (diasRestantes < 0) {
-                        estado = "VENCIDO (" + Math.abs(diasRestantes) + " días atrás)";
-                        diasTexto = Math.abs(diasRestantes) + " días atrás";
-                    } else if (diasRestantes == 0) {
-                        estado = "VENCE HOY";
-                        diasTexto = "0 días";
-                    } else if (diasRestantes <= 7) {
-                        estado = "VENCIDO (" + diasRestantes + " días atrás)";
-                        diasTexto = diasRestantes + " días";
-                    } else {
-                        estado = "Por vencer";
-                        diasTexto = diasRestantes + " días";
-                    }
+                    EstadoProducto estadoProducto = calcularEstadoProducto(diasRestantes);
+                    estado = estadoProducto.estado;
+                    diasTexto = estadoProducto.diasTexto;
                     
                     Object[] fila = {
                         id,
@@ -196,22 +199,14 @@ public class AlertasVencimientoPanel extends JPanel {
             lblTotalProductos.setText("Total de alertas: " + totalAlertas);
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar alertas: " + e.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al cargar alertas: " + e.getMessage());
         }
     }
     
     private void retirarProductosVencidos() {
-        int confirmacion = JOptionPane.showConfirmDialog(this,
+        if (UIUtils.confirmar(this, 
             "¿Está seguro de que desea marcar como inactivos todos los productos vencidos?\n" +
-            "Esta acción no se puede deshacer.",
-            "Confirmar Retiro de Productos Vencidos",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE);
-        
-        if (confirmacion == JOptionPane.YES_OPTION) {
+            "Esta acción no se puede deshacer.")) {
             String sql = """
                 UPDATE productos 
                 SET activo = false 
@@ -224,20 +219,39 @@ public class AlertasVencimientoPanel extends JPanel {
                 
                 int productosRetirados = pstmt.executeUpdate();
                 
-                JOptionPane.showMessageDialog(this,
-                    "Se han retirado " + productosRetirados + " productos vencidos del inventario.",
-                    "Productos Retirados",
-                    JOptionPane.INFORMATION_MESSAGE);
+                UIUtils.mostrarExito(this,
+                    "Se han retirado " + productosRetirados + " productos vencidos del inventario.");
                 
                 // Recargar la tabla
                 cargarAlertas();
                 
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this,
-                    "Error al retirar productos: " + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                UIUtils.mostrarError(this, "Error al retirar productos: " + e.getMessage());
             }
+        }
+    }
+    
+    /**
+     * Calcula el estado de vencimiento de un producto basado en los días restantes
+     * @param diasRestantes días hasta el vencimiento (negativo si ya venció)
+     * @return EstadoProducto con estado y texto de días
+     */
+    private EstadoProducto calcularEstadoProducto(long diasRestantes) {
+        if (diasRestantes < 0) {
+            long diasVencido = Math.abs(diasRestantes);
+            return new EstadoProducto(
+                "VENCIDO (" + diasVencido + " días atrás)",
+                diasVencido + " días atrás"
+            );
+        } else if (diasRestantes == 0) {
+            return new EstadoProducto("VENCE HOY", "0 días");
+        } else if (diasRestantes <= DIAS_CRITICOS) {
+            return new EstadoProducto(
+                "CRÍTICO (vence en " + diasRestantes + " días)",
+                diasRestantes + " días"
+            );
+        } else {
+            return new EstadoProducto("Por vencer", diasRestantes + " días");
         }
     }
     
@@ -257,7 +271,7 @@ public class AlertasVencimientoPanel extends JPanel {
                 
                 if (estado.contains("VENCIDO") || estado.contains("VENCE HOY")) {
                     component.setBackground(COLOR_VENCIDO);
-                } else if (estado.contains("Por vencer")) {
+                } else if (estado.contains("CRÍTICO") || estado.contains("Por vencer")) {
                     component.setBackground(COLOR_POR_VENCER);
                 } else {
                     component.setBackground(COLOR_NORMAL);
