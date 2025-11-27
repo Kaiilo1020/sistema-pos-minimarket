@@ -1,10 +1,9 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 
@@ -30,18 +29,15 @@ public class ProductoDialog extends JDialog {
         this.esEdicion = !esNuevo;
         this.productoId = productoId;
         
+        UIUtils.configurarDialogo(this, titulo, 500, 400);
         initializeComponents();
         
         if (esEdicion && productoId != null) {
             cargarDatosProducto();
         }
-        
-        setLocationRelativeTo(parent);
     }
     
     private void initializeComponents() {
-        setLayout(new BorderLayout());
-        setSize(500, 400);
         
         // Panel principal
         JPanel panelPrincipal = new JPanel(new GridBagLayout());
@@ -102,17 +98,12 @@ public class ProductoDialog extends JDialog {
         panelPrincipal.add(checkRequiereLote, gbc);
         
         // Panel de botones
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel panelBotones = UIUtils.crearPanelBotones(FlowLayout.RIGHT);
         JButton btnGuardar = new JButton(esEdicion ? "Actualizar" : "Guardar");
         JButton btnCancelar = new JButton("Cancelar");
         
-        btnGuardar.setBackground(new Color(46, 125, 50));
-        btnGuardar.setForeground(Color.WHITE);
-        btnGuardar.setFocusPainted(false);
-        
-        btnCancelar.setBackground(new Color(158, 158, 158));
-        btnCancelar.setForeground(Color.WHITE);
-        btnCancelar.setFocusPainted(false);
+        UIUtils.configurarBotonExito(btnGuardar);
+        UIUtils.configurarBotonSecundario(btnCancelar);
         
         btnGuardar.addActionListener(e -> guardarProducto());
         btnCancelar.addActionListener(e -> dispose());
@@ -138,10 +129,7 @@ public class ProductoDialog extends JDialog {
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar categorías: " + e.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al cargar categorías: " + e.getMessage());
         }
     }
     
@@ -182,17 +170,14 @@ public class ProductoDialog extends JDialog {
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar datos del producto: " + e.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al cargar datos del producto: " + e.getMessage());
         }
     }
     
     private void guardarProducto() {
         // Validaciones
         if (campoNombre.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El nombre es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El nombre es obligatorio.");
             return;
         }
         
@@ -201,7 +186,7 @@ public class ProductoDialog extends JDialog {
             precio = Double.parseDouble(campoPrecio.getText().trim());
             if (precio < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "El precio debe ser un número válido mayor o igual a 0.", "Validación", JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El precio debe ser un número válido mayor o igual a 0.");
             return;
         }
         
@@ -210,7 +195,7 @@ public class ProductoDialog extends JDialog {
             stock = Integer.parseInt(campoStock.getText().trim());
             if (stock < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "El stock debe ser un número entero mayor o igual a 0.", "Validación", JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El stock debe ser un número entero mayor o igual a 0.");
             return;
         }
         
@@ -223,7 +208,7 @@ public class ProductoDialog extends JDialog {
                 java.util.Date fecha = sdf.parse(campoFechaVencimiento.getText().trim());
                 fechaVencimiento = new Date(fecha.getTime());
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "La fecha de vencimiento debe tener el formato dd/MM/yyyy.", "Validación", JOptionPane.WARNING_MESSAGE);
+                UIUtils.mostrarError(this, "La fecha de vencimiento debe tener el formato dd/MM/yyyy.");
                 return;
             }
         }
@@ -282,23 +267,17 @@ public class ProductoDialog extends JDialog {
             
             if (filasAfectadas > 0) {
                 confirmado = true;
-                JOptionPane.showMessageDialog(this, 
-                    "Producto " + (esEdicion ? "actualizado" : "guardado") + " exitosamente.", 
-                    "Éxito", 
-                    JOptionPane.INFORMATION_MESSAGE);
+                UIUtils.mostrarExito(this, 
+                    "Producto " + (esEdicion ? "actualizado" : "guardado") + " exitosamente.");
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(this, 
-                    "No se pudo " + (esEdicion ? "actualizar" : "guardar") + " el producto.", 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
+                UIUtils.mostrarError(this, 
+                    "No se pudo " + (esEdicion ? "actualizar" : "guardar") + " el producto.");
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al " + (esEdicion ? "actualizar" : "guardar") + " producto: " + e.getMessage(), 
-                "Error de Base de Datos", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, 
+                "Error al " + (esEdicion ? "actualizar" : "guardar") + " producto: " + e.getMessage());
         }
     }
     
