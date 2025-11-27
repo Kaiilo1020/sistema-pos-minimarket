@@ -4,6 +4,7 @@ import com.minimarket.security.UsuarioSesion;
 import com.minimarket.security.Rol;
 import com.minimarket.model.Usuario;
 import com.minimarket.ui.util.UIUtils;
+import com.minimarket.service.DashboardService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -245,6 +246,18 @@ public class DashboardFrame extends JFrame {
         mainContent.setBackground(SECONDARY_COLOR);
         mainContent.setBorder(new EmptyBorder(30, 30, 30, 30));
         
+        // Botón de actualización
+        JPanel updatePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        updatePanel.setBackground(SECONDARY_COLOR);
+        
+        JButton btnActualizar = new JButton("🔄 Actualizar Datos");
+        UIUtils.configurarBotonSecundario(btnActualizar);
+        btnActualizar.addActionListener(e -> actualizarDashboard());
+        updatePanel.add(btnActualizar);
+        
+        mainContent.add(updatePanel);
+        mainContent.add(Box.createVerticalStrut(10));
+        
         // ZONA SUPERIOR: Tarjetas de Resumen (KPIs)
         mainContent.add(createKPISection());
         mainContent.add(Box.createVerticalStrut(25));
@@ -261,23 +274,43 @@ public class DashboardFrame extends JFrame {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         return scrollPane;
     }
+    
+    /**
+     * Actualiza los datos del dashboard
+     */
+    private void actualizarDashboard() {
+        // Mostrar el panel de inicio actualizado
+        cardLayout.show(mainContentArea, "inicio");
+        
+        // Recrear el contenido del dashboard
+        mainContentArea.remove(mainContentArea.getComponent(0)); // Remover el panel anterior
+        mainContentArea.add(createDashboardPanel(), "inicio", 0); // Agregar el nuevo panel
+        
+        UIUtils.mostrarExito(this, "Dashboard actualizado con datos en tiempo real");
+    }
 
     // ZONA SUPERIOR: Tarjetas de Resumen (KPIs)
     private JPanel createKPISection() {
         JPanel kpiSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
         kpiSection.setBackground(SECONDARY_COLOR);
         
-        // Tarjeta 1: Ventas del Día
-        JPanel ventasCard = createKPICard("Ventas del Día", "S/. 1,250.00", "💰", SUCCESS_COLOR);
+        // Obtener datos reales del dashboard
+        DashboardService.DashboardData data = DashboardService.obtenerDatosDashboard();
         
-        // Tarjeta 2: Transacciones
-        JPanel transaccionesCard = createKPICard("Transacciones", "45", "📊", new Color(54, 162, 235));
+        // Tarjeta 1: Ventas del Día (datos reales)
+        String ventasTexto = String.format("S/. %.2f", data.ventasDelDia);
+        JPanel ventasCard = createKPICard("Ventas del Día", ventasTexto, "💰", SUCCESS_COLOR);
         
-        // Tarjeta 3: Método de Pago
-        JPanel metodoPagoCard = createKPICard("Método de Pago", "60% Efectivo | 40% Yape", "💳", new Color(255, 159, 64));
+        // Tarjeta 2: Transacciones (datos reales)
+        JPanel transaccionesCard = createKPICard("Transacciones", String.valueOf(data.transacciones), "📊", new Color(54, 162, 235));
+        
+        // Tarjeta 3: Método de Pago (datos reales)
+        JPanel metodoPagoCard = createKPICard("Método de Pago", data.metodoPago, "💳", new Color(255, 159, 64));
         
         // Tarjeta 4: Integridad de Datos
-        JPanel integridadCard = createKPICard("Integridad Datos", "✅ Boletas Correctas", "🔒", new Color(75, 192, 192));
+        String integridadTexto = data.transacciones > 0 ? "✅ Boletas Correctas" : "⚠️ Sin ventas hoy";
+        Color integridadColor = data.transacciones > 0 ? new Color(75, 192, 192) : new Color(255, 193, 7);
+        JPanel integridadCard = createKPICard("Integridad Datos", integridadTexto, "🔒", integridadColor);
         
         kpiSection.add(ventasCard);
         kpiSection.add(transaccionesCard);
@@ -355,25 +388,29 @@ public class DashboardFrame extends JFrame {
         
         headerPanel.add(titleLabel);
         
-        // Contenido de alertas
+        // Contenido de alertas (datos reales)
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBackground(CARD_BACKGROUND);
         
-        // Simular productos con stock bajo
-        String[] productosStockBajo = {
-            "🔴 Leche Gloria (Stock: 4 un.)",
-            "🟡 Arroz Costeño (Stock: 9 un.)",
-            "🔴 Aceite Primor (Stock: 2 un.)",
-            "🟡 Azúcar Cartavio (Stock: 8 un.)"
-        };
+        // Obtener alertas reales de stock
+        DashboardService.DashboardData data = DashboardService.obtenerDatosDashboard();
         
-        for (String producto : productosStockBajo) {
-            JLabel productoLabel = new JLabel(producto);
-            productoLabel.setFont(UIUtils.DEFAULT_FONT);
-            productoLabel.setForeground(TEXT_PRIMARY);
-            productoLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
-            contentPanel.add(productoLabel);
+        if (data.alertasStock.isEmpty()) {
+            JLabel sinAlertasLabel = new JLabel("✅ No hay alertas de stock crítico");
+            sinAlertasLabel.setFont(UIUtils.DEFAULT_FONT);
+            sinAlertasLabel.setForeground(SUCCESS_COLOR);
+            sinAlertasLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
+            contentPanel.add(sinAlertasLabel);
+        } else {
+            for (DashboardService.AlertaStock alerta : data.alertasStock) {
+                String textoAlerta = alerta.getIcono() + " " + alerta.producto + " (Stock: " + alerta.stock + " un.)";
+                JLabel productoLabel = new JLabel(textoAlerta);
+                productoLabel.setFont(UIUtils.DEFAULT_FONT);
+                productoLabel.setForeground(TEXT_PRIMARY);
+                productoLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
+                contentPanel.add(productoLabel);
+            }
         }
         
         // Botón de acción
@@ -407,25 +444,29 @@ public class DashboardFrame extends JFrame {
         
         headerPanel.add(titleLabel);
         
-        // Contenido de lotes
+        // Contenido de lotes (datos reales)
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBackground(CARD_BACKGROUND);
         
-        // Simular productos próximos a vencer
-        String[] lotesVencer = {
-            "🟠 Yogurt Fresa (Vence: Mañana)",
-            "🟠 Jamón San Fernando (Vence: 28/11/2025)",
-            "🟡 Pan Integral (Vence: 30/11/2025)",
-            "🟡 Queso Fresco (Vence: 01/12/2025)"
-        };
+        // Obtener lotes reales próximos a vencer
+        DashboardService.DashboardData data = DashboardService.obtenerDatosDashboard();
         
-        for (String lote : lotesVencer) {
-            JLabel loteLabel = new JLabel(lote);
-            loteLabel.setFont(UIUtils.DEFAULT_FONT);
-            loteLabel.setForeground(TEXT_PRIMARY);
-            loteLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
-            contentPanel.add(loteLabel);
+        if (data.lotesVencer.isEmpty()) {
+            JLabel sinLotesLabel = new JLabel("✅ No hay productos próximos a vencer");
+            sinLotesLabel.setFont(UIUtils.DEFAULT_FONT);
+            sinLotesLabel.setForeground(SUCCESS_COLOR);
+            sinLotesLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
+            contentPanel.add(sinLotesLabel);
+        } else {
+            for (DashboardService.LoteVencer lote : data.lotesVencer) {
+                String textoLote = lote.getIcono() + " " + lote.producto + " (Vence: " + lote.getTextoVencimiento() + ")";
+                JLabel loteLabel = new JLabel(textoLote);
+                loteLabel.setFont(UIUtils.DEFAULT_FONT);
+                loteLabel.setForeground(TEXT_PRIMARY);
+                loteLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
+                contentPanel.add(loteLabel);
+            }
         }
         
         // Botón de acción
