@@ -136,4 +136,27 @@ public class UIUtils {
         return JOptionPane.showConfirmDialog(parent, mensaje, "Confirmar", 
             JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
     }
+    
+    /**
+     * Configura una tabla con colores alternados en las filas
+     */
+    public static void configurarTablaConFilasAlternadas(JTable tabla) {
+        configurarTabla(tabla);
+        tabla.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, 
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                
+                if (!isSelected) {
+                    if (row % 2 == 0) {
+                        c.setBackground(Color.WHITE);
+                    } else {
+                        c.setBackground(new Color(248, 249, 250));
+                    }
+                }
+                return c;
+            }
+        });
+    }
 }

@@ -1,6 +1,7 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -37,12 +38,7 @@ public class HistorialVentasPanel extends JPanel {
         panelBoton.setBackground(Color.WHITE);
         
         btnActualizar = new JButton("Actualizar");
-        btnActualizar.setBackground(new Color(117, 117, 117));
-        btnActualizar.setForeground(Color.WHITE);
-        btnActualizar.setFocusPainted(false);
-        btnActualizar.setBorderPainted(false);
-        btnActualizar.setFont(new Font("Arial", Font.BOLD, 11));
-        btnActualizar.setPreferredSize(new Dimension(100, 35));
+        UIUtils.configurarBotonSecundario(btnActualizar);
         btnActualizar.addActionListener(e -> cargarHistorialVentas());
         
         panelBoton.add(btnActualizar);
@@ -60,9 +56,7 @@ public class HistorialVentasPanel extends JPanel {
         tablaHistorial = new JTable(modeloTabla);
         tablaHistorial.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaHistorial.setRowHeight(25);
-        tablaHistorial.getTableHeader().setBackground(Color.LIGHT_GRAY);
-        tablaHistorial.getTableHeader().setForeground(Color.BLACK);
-        tablaHistorial.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        UIUtils.configurarTablaConFilasAlternadas(tablaHistorial);
         
         // Configurar ancho de columnas
         tablaHistorial.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
@@ -72,24 +66,6 @@ public class HistorialVentasPanel extends JPanel {
         tablaHistorial.getColumnModel().getColumn(4).setPreferredWidth(100); // Precio Unit.
         tablaHistorial.getColumnModel().getColumn(5).setPreferredWidth(100); // Total
         tablaHistorial.getColumnModel().getColumn(6).setPreferredWidth(150); // Fecha
-        
-        // Configurar colores alternados en las filas
-        tablaHistorial.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, 
-                    boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                
-                if (!isSelected) {
-                    if (row % 2 == 0) {
-                        c.setBackground(Color.WHITE);
-                    } else {
-                        c.setBackground(new Color(248, 249, 250));
-                    }
-                }
-                return c;
-            }
-        });
         
         JScrollPane scrollPane = new JScrollPane(tablaHistorial);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Historial de Ventas"));
@@ -101,8 +77,8 @@ public class HistorialVentasPanel extends JPanel {
         
         labelInfo = new JLabel("<html><b>Nota:</b> Este historial muestra todas las ventas realizadas en el negocio.<br>" +
                               "Las ventas se ordenan por fecha (más recientes primero).</html>");
-        labelInfo.setFont(new Font("Arial", Font.PLAIN, 11));
-        labelInfo.setForeground(new Color(100, 100, 100));
+        labelInfo.setFont(UIUtils.DEFAULT_FONT);
+        labelInfo.setForeground(Color.GRAY);
         
         panelInferior.add(labelInfo);
         
@@ -150,10 +126,7 @@ public class HistorialVentasPanel extends JPanel {
                              "Las ventas se ordenan por fecha (más recientes primero).</html>");
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar historial de ventas: " + e.getMessage(), 
-                "Error de Base de Datos", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al cargar historial de ventas: " + e.getMessage());
         }
     }
 }
