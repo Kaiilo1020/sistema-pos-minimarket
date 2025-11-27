@@ -1,6 +1,6 @@
 package com.minimarket.security;
 
-import com.minimarket.patterns.creational.DatabaseConnection;
+import com.minimarket.config.DatabaseConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;

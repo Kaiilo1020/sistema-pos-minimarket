@@ -1,6 +1,6 @@
 package com.minimarket;
 
-import com.minimarket.patterns.creational.DatabaseConnection;
+import com.minimarket.config.DatabaseConnection;
 
 /**
  * Clase Main principal del Sistema POS del Minimarket
@@ -57,7 +57,7 @@ public class Main {
         // Ejecutar en el hilo de eventos de Swing
         javax.swing.SwingUtilities.invokeLater(() -> {
             try {
-                com.minimarket.gui.swing.DashboardFrame dashboard = new com.minimarket.gui.swing.DashboardFrame();
+                com.minimarket.ui.swing.DashboardFrame dashboard = new com.minimarket.ui.swing.DashboardFrame();
                 dashboard.setVisible(true);
             } catch (Exception e) {
                 javax.swing.JOptionPane.showMessageDialog(null, 

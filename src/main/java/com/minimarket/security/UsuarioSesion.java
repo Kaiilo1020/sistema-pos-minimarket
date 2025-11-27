@@ -1,6 +1,6 @@
 package com.minimarket.security;
 
-import com.minimarket.models.Usuario;
+import com.minimarket.model.Usuario;
 
 /**
  * Singleton para gestionar la sesión del usuario actual
