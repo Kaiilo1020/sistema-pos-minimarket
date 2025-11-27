@@ -159,4 +159,46 @@ public class UIUtils {
             }
         });
     }
+    
+    /**
+     * Configura una tabla con colores basados en fechas de vencimiento
+     * @param tabla La tabla a configurar
+     * @param columnaFecha Índice de la columna que contiene la fecha de vencimiento
+     */
+    public static void configurarTablaConVencimiento(JTable tabla, int columnaFecha) {
+        configurarTabla(tabla);
+        tabla.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            private final java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+            
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, 
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                
+                if (!isSelected) {
+                    String fechaVenc = (String) table.getValueAt(row, columnaFecha);
+                    if (fechaVenc != null && !fechaVenc.equals("N/A")) {
+                        try {
+                            java.util.Date fechaVencimiento = sdf.parse(fechaVenc);
+                            java.util.Date hoy = new java.util.Date();
+                            long diasRestantes = (fechaVencimiento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24);
+                            
+                            if (diasRestantes < 0) {
+                                c.setBackground(new Color(255, 205, 210)); // Rojo claro - vencido
+                            } else if (diasRestantes <= 7) {
+                                c.setBackground(new Color(255, 243, 224)); // Naranja claro - próximo a vencer
+                            } else {
+                                c.setBackground(new Color(232, 245, 233)); // Verde claro - normal
+                            }
+                        } catch (Exception e) {
+                            c.setBackground(Color.WHITE);
+                        }
+                    } else {
+                        c.setBackground(Color.WHITE);
+                    }
+                }
+                return c;
+            }
+        });
+    }
 }

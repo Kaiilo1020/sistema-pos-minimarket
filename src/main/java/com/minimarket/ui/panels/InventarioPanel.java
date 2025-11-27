@@ -6,12 +6,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Panel de gestión de inventario con CRUD de productos
@@ -38,8 +34,7 @@ public class InventarioPanel extends JPanel {
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         // Panel de búsqueda
-        JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelBusqueda.setBackground(Color.WHITE);
+        JPanel panelBusqueda = UIUtils.crearPanelBotones(FlowLayout.LEFT);
         panelBusqueda.add(new JLabel("Buscar:"));
         
         campoBusqueda = new JTextField(20);
@@ -51,8 +46,7 @@ public class InventarioPanel extends JPanel {
         panelBusqueda.add(campoBusqueda);
         
         // Panel de botones
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelBotones.setBackground(Color.WHITE);
+        JPanel panelBotones = UIUtils.crearPanelBotones(FlowLayout.RIGHT);
         
         JButton btnAgregar = new JButton("Agregar Producto");
         JButton btnEditar = new JButton("Editar Producto");
@@ -91,42 +85,7 @@ public class InventarioPanel extends JPanel {
         tablaProductos = new JTable(modeloTabla);
         tablaProductos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaProductos.setRowHeight(25);
-        UIUtils.configurarTabla(tablaProductos);
-        
-        // Configurar colores alternados en las filas
-        tablaProductos.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, 
-                    boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                
-                if (!isSelected) {
-                    // Obtener la fecha de vencimiento para colorear las filas
-                    String fechaVenc = (String) table.getValueAt(row, 5);
-                    if (fechaVenc != null && !fechaVenc.equals("N/A")) {
-                        try {
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                            java.util.Date fechaVencimiento = sdf.parse(fechaVenc);
-                            java.util.Date hoy = new java.util.Date();
-                            long diasRestantes = (fechaVencimiento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24);
-                            
-                            if (diasRestantes < 0) {
-                                c.setBackground(new Color(255, 205, 210)); // Rojo claro - vencido
-                            } else if (diasRestantes <= 7) {
-                                c.setBackground(new Color(255, 243, 224)); // Naranja claro - próximo a vencer
-                            } else {
-                                c.setBackground(new Color(232, 245, 233)); // Verde claro - normal
-                            }
-                        } catch (Exception e) {
-                            c.setBackground(Color.WHITE);
-                        }
-                    } else {
-                        c.setBackground(Color.WHITE);
-                    }
-                }
-                return c;
-            }
-        });
+        UIUtils.configurarTablaConVencimiento(tablaProductos, 5); // Columna 5 = Fecha Vencimiento
         
         // Configurar filtro
         sorter = new TableRowSorter<>(modeloTabla);
@@ -170,10 +129,7 @@ public class InventarioPanel extends JPanel {
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar productos: " + e.getMessage(), 
-                "Error de Base de Datos", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al cargar productos: " + e.getMessage());
         }
     }
     
@@ -199,10 +155,7 @@ public class InventarioPanel extends JPanel {
     private void editarProductoSeleccionado() {
         int filaSeleccionada = tablaProductos.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Por favor, selecciona un producto para editar.", 
-                "Selección Requerida", 
-                JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "Por favor, selecciona un producto para editar.");
             return;
         }
         
@@ -221,21 +174,13 @@ public class InventarioPanel extends JPanel {
     private void eliminarProductoSeleccionado() {
         int filaSeleccionada = tablaProductos.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Por favor, selecciona un producto para eliminar.", 
-                "Selección Requerida", 
-                JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "Por favor, selecciona un producto para eliminar.");
             return;
         }
         
         String nombreProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 1);
-        int confirmacion = JOptionPane.showConfirmDialog(this, 
-            "¿Estás seguro de que deseas eliminar el producto '" + nombreProducto + "'?", 
-            "Confirmar Eliminación", 
-            JOptionPane.YES_NO_OPTION, 
-            JOptionPane.QUESTION_MESSAGE);
         
-        if (confirmacion == JOptionPane.YES_OPTION) {
+        if (UIUtils.confirmar(this, "¿Estás seguro de que deseas eliminar el producto '" + nombreProducto + "'?")) {
             Long productoId = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
             
             String sql = "UPDATE productos SET activo = false WHERE id = ?";
@@ -247,23 +192,14 @@ public class InventarioPanel extends JPanel {
                 int filasAfectadas = pstmt.executeUpdate();
                 
                 if (filasAfectadas > 0) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Producto eliminado exitosamente.", 
-                        "Eliminación Exitosa", 
-                        JOptionPane.INFORMATION_MESSAGE);
+                    UIUtils.mostrarExito(this, "Producto eliminado exitosamente.");
                     cargarProductos(); // Recargar la tabla
                 } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "No se pudo eliminar el producto.", 
-                        "Error", 
-                        JOptionPane.ERROR_MESSAGE);
+                    UIUtils.mostrarError(this, "No se pudo eliminar el producto.");
                 }
                 
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, 
-                    "Error al eliminar producto: " + e.getMessage(), 
-                    "Error de Base de Datos", 
-                    JOptionPane.ERROR_MESSAGE);
+                UIUtils.mostrarError(this, "Error al eliminar producto: " + e.getMessage());
             }
         }
     }
