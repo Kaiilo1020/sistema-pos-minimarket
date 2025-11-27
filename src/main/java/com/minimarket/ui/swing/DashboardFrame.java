@@ -39,14 +39,19 @@ public class DashboardFrame extends JFrame {
     private Timer reloj;
     private Timer actualizadorDashboard;
     
-    // Usuario actual (simulado para demo)
+    // Usuario actual de la sesión
     private Usuario usuarioActual;
 
     public DashboardFrame() {
-        // Simular usuario logueado (Admin para demo)
-        usuarioActual = new Usuario("admin", "pass", "Juan", "Pérez", "admin@minimarket.com", Rol.ADMINISTRADOR);
-        usuarioActual.setId(1L);
-        UsuarioSesion.getInstance().login(usuarioActual);
+        // Obtener usuario actual de la sesión
+        usuarioActual = UsuarioSesion.getInstance().getUsuarioActual();
+        
+        // Verificar que hay un usuario logueado
+        if (usuarioActual == null) {
+            dispose();
+            new LoginFrame();
+            return;
+        }
         
         initializeComponents();
         setupLayout();
@@ -84,16 +89,39 @@ public class DashboardFrame extends JFrame {
         cardLayout = new CardLayout();
         mainContentArea = new JPanel(cardLayout);
         
-        // Agregar todos los paneles
+        // Agregar paneles según permisos del rol
+        Rol rolUsuario = usuarioActual != null ? usuarioActual.getRol() : Rol.CAJERO;
+        
+        // INICIO - Todos pueden ver (pero contenido diferente según rol)
         mainContentArea.add(createDashboardPanel(), "inicio");
+        
+        // CAJA/POS - Todos pueden usar
         mainContentArea.add(createPOSPanel(), "pos");
-        mainContentArea.add(createInventarioPanel(), "inventario");
-        mainContentArea.add(createHistorialPanel(), "historial");
-        mainContentArea.add(createReportePanel(), "reporte");
-        if (usuarioActual != null && usuarioActual.getRol() == Rol.ADMINISTRADOR) {
+        
+        // INVENTARIO - Solo SUPERVISOR y ADMINISTRADOR
+        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
+            mainContentArea.add(createInventarioPanel(), "inventario");
+        }
+        
+        // HISTORIAL - Solo SUPERVISOR y ADMINISTRADOR
+        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
+            mainContentArea.add(createHistorialPanel(), "historial");
+        }
+        
+        // REPORTE - Solo SUPERVISOR y ADMINISTRADOR
+        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
+            mainContentArea.add(createReportePanel(), "reporte");
+        }
+        
+        // USUARIOS - Solo ADMINISTRADOR
+        if (rolUsuario == Rol.ADMINISTRADOR) {
             mainContentArea.add(createUsuariosPanel(), "usuarios");
         }
-        mainContentArea.add(createAlertasPanel(), "alertas");
+        
+        // ALERTAS - Solo SUPERVISOR y ADMINISTRADOR
+        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
+            mainContentArea.add(createAlertasPanel(), "alertas");
+        }
         
         add(mainContentArea, BorderLayout.CENTER);
     }
@@ -119,7 +147,9 @@ public class DashboardFrame extends JFrame {
         lblFechaHora.setFont(UIUtils.DEFAULT_FONT);
         lblFechaHora.setForeground(TEXT_SECONDARY);
         
-        lblUsuario = new JLabel("👤 Juan Pérez");
+        String nombreUsuario = usuarioActual != null ? usuarioActual.getNombreCompleto() : "Usuario";
+        String rolUsuario = usuarioActual != null ? usuarioActual.getRol().getDescripcion() : "Sin rol";
+        lblUsuario = new JLabel("👤 " + nombreUsuario + " (" + rolUsuario + ")");
         lblUsuario.setFont(UIUtils.BOLD_FONT);
         lblUsuario.setForeground(TEXT_PRIMARY);
         
@@ -128,8 +158,10 @@ public class DashboardFrame extends JFrame {
         JButton btnSalir = createHeaderButton("🚪");
         
         btnSalir.addActionListener(e -> {
-            if (UIUtils.confirmar(this, "¿Estás seguro de que quieres salir?")) {
-                System.exit(0);
+            if (UIUtils.confirmar(this, "¿Estás seguro de que quieres cerrar sesión?")) {
+                UsuarioSesion.getInstance().logout();
+                dispose();
+                new LoginFrame();
             }
         });
         
@@ -169,36 +201,53 @@ public class DashboardFrame extends JFrame {
         navTitle.setBorder(new EmptyBorder(20, 20, 15, 20));
         sidebar.add(navTitle);
         
-        // Botones de navegación principales
+        // Botones según permisos del rol
+        Rol rolUsuario = usuarioActual != null ? usuarioActual.getRol() : Rol.CAJERO;
+        
+        // INICIO - Todos los roles pueden ver (pero contenido diferente)
         JButton btnInicio = createSidebarButton("🏠 Inicio", "inicio", true);
-        JButton btnPOS = createSidebarButton("🛒 Caja / Punto de Venta", "pos", false);
-        JButton btnInventario = createSidebarButton("📦 Inventario y Kardex", "inventario", false);
-        JButton btnHistorial = createSidebarButton("📄 Historial de Ventas", "historial", false);
-        JButton btnReporte = createSidebarButton("📊 Reporte Diario", "reporte", false);
-        
         sidebar.add(btnInicio);
-        sidebar.add(btnPOS);
-        sidebar.add(btnInventario);
-        sidebar.add(btnHistorial);
-        sidebar.add(btnReporte);
-        
-        // Agregar a la lista de botones
         sidebarButtons.add(btnInicio);
-        sidebarButtons.add(btnPOS);
-        sidebarButtons.add(btnInventario);
-        sidebarButtons.add(btnHistorial);
-        sidebarButtons.add(btnReporte);
         
-        // Solo mostrar "Usuarios y Permisos" si es Admin
-        if (usuarioActual != null && usuarioActual.getRol() == Rol.ADMINISTRADOR) {
+        // CAJA/POS - Todos los roles pueden usar
+        JButton btnPOS = createSidebarButton("💰 Caja / Punto de Venta", "pos", false);
+        sidebar.add(btnPOS);
+        sidebarButtons.add(btnPOS);
+        
+        // INVENTARIO - Solo SUPERVISOR y ADMINISTRADOR
+        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
+            JButton btnInventario = createSidebarButton("📦 Inventario y Kardex", "inventario", false);
+            sidebar.add(btnInventario);
+            sidebarButtons.add(btnInventario);
+        }
+        
+        // HISTORIAL DE VENTAS - Solo SUPERVISOR y ADMINISTRADOR
+        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
+            JButton btnHistorial = createSidebarButton("📋 Historial de Ventas", "historial", false);
+            sidebar.add(btnHistorial);
+            sidebarButtons.add(btnHistorial);
+        }
+        
+        // REPORTE DIARIO - Solo SUPERVISOR y ADMINISTRADOR
+        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
+            JButton btnReporte = createSidebarButton("📊 Reporte Diario", "reporte", false);
+            sidebar.add(btnReporte);
+            sidebarButtons.add(btnReporte);
+        }
+        
+        // USUARIOS Y PERMISOS - Solo ADMINISTRADOR
+        if (rolUsuario == Rol.ADMINISTRADOR) {
             JButton btnUsuarios = createSidebarButton("👥 Usuarios y Permisos", "usuarios", false);
             sidebar.add(btnUsuarios);
             sidebarButtons.add(btnUsuarios);
         }
         
-        JButton btnAlertas = createSidebarButton("⚠️ Alertas de Vencimiento", "alertas", false);
-        sidebar.add(btnAlertas);
-        sidebarButtons.add(btnAlertas);
+        // ALERTAS DE VENCIMIENTO - Solo SUPERVISOR y ADMINISTRADOR
+        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
+            JButton btnAlertas = createSidebarButton("⚠️ Alertas de Vencimiento", "alertas", false);
+            sidebar.add(btnAlertas);
+            sidebarButtons.add(btnAlertas);
+        }
         
         // Establecer el botón inicial como activo
         currentActiveButton = btnInicio;
@@ -329,35 +378,53 @@ public class DashboardFrame extends JFrame {
         }
     }
 
-    // ZONA SUPERIOR: Tarjetas de Resumen (KPIs)
+    // ZONA SUPERIOR: Tarjetas de Resumen (KPIs) - Contenido según rol
     private JPanel createKPISection() {
         JPanel kpiSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
         kpiSection.setBackground(SECONDARY_COLOR);
         
-        // Obtener datos reales del dashboard
+        Rol rolUsuario = usuarioActual != null ? usuarioActual.getRol() : Rol.CAJERO;
         DashboardService.DashboardData data = DashboardService.obtenerDatosDashboard();
         
-        // Tarjeta 1: Ventas del Día (datos reales)
-        String ventasTexto = String.format("S/. %.2f", data.ventasDelDia);
-        JPanel ventasCard = createKPICard("Ventas del Día", ventasTexto, "💰", SUCCESS_COLOR);
-        ventasCard.setToolTipText("Total de ingresos generados hoy por todas las ventas realizadas");
-        
-        // Tarjeta 2: Transacciones (datos reales)
-        JPanel transaccionesCard = createKPICard("Transacciones", String.valueOf(data.transacciones), "📊", new Color(54, 162, 235));
-        transaccionesCard.setToolTipText("Número total de boletas/facturas emitidas en el día");
-        
-        // Tarjeta 3: Productos Vendidos (datos reales)
-        JPanel productosCard = createKPICard("Productos Vendidos", String.valueOf(data.productosVendidos), "📦", new Color(255, 159, 64));
-        productosCard.setToolTipText("Cantidad total de productos vendidos (suma de todas las cantidades)");
-        
-        // Tarjeta 4: Método de Pago (datos reales)
-        JPanel metodoPagoCard = createKPICard("Método de Pago", data.metodoPago, "💳", new Color(75, 192, 192));
-        metodoPagoCard.setToolTipText("Distribución porcentual de los métodos de pago utilizados hoy");
-        
-        kpiSection.add(ventasCard);
-        kpiSection.add(transaccionesCard);
-        kpiSection.add(productosCard);
-        kpiSection.add(metodoPagoCard);
+        if (rolUsuario == Rol.CAJERO) {
+            // TRABAJADOR: Dashboard simplificado sin datos financieros sensibles
+            JPanel metaCard = createKPICard("Mi Meta del Día", "Meta: 20 ventas", "🎯", new Color(54, 162, 235));
+            metaCard.setToolTipText("Tu objetivo de ventas para el día de hoy");
+            
+            JPanel ventasRealizadasCard = createKPICard("Mis Ventas", String.valueOf(data.transacciones), "📊", SUCCESS_COLOR);
+            ventasRealizadasCard.setToolTipText("Número de ventas que has realizado hoy");
+            
+            JPanel estadoCard = createKPICard("Estado del Sistema", "✅ Operativo", "🔧", new Color(75, 192, 192));
+            estadoCard.setToolTipText("Estado actual del sistema de punto de venta");
+            
+            JPanel turnoCard = createKPICard("Turno Actual", "Mañana", "⏰", new Color(255, 159, 64));
+            turnoCard.setToolTipText("Tu turno de trabajo actual");
+            
+            kpiSection.add(metaCard);
+            kpiSection.add(ventasRealizadasCard);
+            kpiSection.add(estadoCard);
+            kpiSection.add(turnoCard);
+            
+        } else {
+            // SUPERVISOR y ADMINISTRADOR: Dashboard completo con datos financieros
+            String ventasTexto = String.format("S/. %.2f", data.ventasDelDia);
+            JPanel ventasCard = createKPICard("Ventas del Día", ventasTexto, "💰", SUCCESS_COLOR);
+            ventasCard.setToolTipText("Total de ingresos generados hoy por todas las ventas realizadas");
+            
+            JPanel transaccionesCard = createKPICard("Transacciones", String.valueOf(data.transacciones), "📊", new Color(54, 162, 235));
+            transaccionesCard.setToolTipText("Número total de boletas/facturas emitidas en el día");
+            
+            JPanel productosCard = createKPICard("Productos Vendidos", String.valueOf(data.productosVendidos), "📦", new Color(255, 159, 64));
+            productosCard.setToolTipText("Cantidad total de productos vendidos (suma de todas las cantidades)");
+            
+            JPanel metodoPagoCard = createKPICard("Método de Pago", data.metodoPago, "💳", new Color(75, 192, 192));
+            metodoPagoCard.setToolTipText("Distribución porcentual de los métodos de pago utilizados hoy");
+            
+            kpiSection.add(ventasCard);
+            kpiSection.add(transaccionesCard);
+            kpiSection.add(productosCard);
+            kpiSection.add(metodoPagoCard);
+        }
         
         return kpiSection;
     }
@@ -527,47 +594,78 @@ public class DashboardFrame extends JFrame {
         return panel;
     }
     
-    // ZONA INFERIOR: Accesos Rápidos (Command Pattern)
+    // ZONA INFERIOR: Accesos Rápidos (Command Pattern) - Según rol
     private JPanel createQuickActionsSection() {
         JPanel quickActions = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0));
         quickActions.setBackground(SECONDARY_COLOR);
         
-        // Botón Nueva Venta
+        Rol rolUsuario = usuarioActual != null ? usuarioActual.getRol() : Rol.CAJERO;
+        
+        // Nueva Venta - Todos los roles
         JButton btnNuevaVenta = createQuickActionButton(
             "Nueva Venta 🛒", 
             "Iniciar proceso de venta",
             new Color(40, 167, 69),
             e -> cardLayout.show(mainContentArea, "pos")
         );
-        
-        // Botón Cierre de Caja
-        JButton btnCierreCaja = createQuickActionButton(
-            "Cierre de Caja 🔒", 
-            "Reporte de ventas del día",
-            new Color(108, 117, 125),
-            e -> cardLayout.show(mainContentArea, "reporte")
-        );
-        
-        // Botón Consultar Precio
-        JButton btnConsultarPrecio = createQuickActionButton(
-            "Consultar Precio 🔍", 
-            "Buscar productos y precios",
-            new Color(108, 117, 125),
-            e -> cardLayout.show(mainContentArea, "inventario")
-        );
-        
-        // Botón Reporte PDF
-        JButton btnReportePDF = createQuickActionButton(
-            "Reporte PDF 📄", 
-            "Generar reporte de ventas del día en PDF",
-            new Color(220, 53, 69),
-            e -> generarReportePDF()
-        );
-        
         quickActions.add(btnNuevaVenta);
-        quickActions.add(btnCierreCaja);
-        quickActions.add(btnConsultarPrecio);
-        quickActions.add(btnReportePDF);
+        
+        if (rolUsuario == Rol.CAJERO) {
+            // TRABAJADOR: Solo accesos básicos
+            JButton btnConsultarPrecio = createQuickActionButton(
+                "Consultar Precio 🔍", 
+                "Verificar precio de productos",
+                new Color(54, 162, 235),
+                e -> UIUtils.mostrarExito(this, "Función de consulta de precios disponible en el módulo de ventas")
+            );
+            quickActions.add(btnConsultarPrecio);
+            
+        } else if (rolUsuario == Rol.SUPERVISOR) {
+            // SUPERVISOR: Accesos operativos
+            JButton btnInventario = createQuickActionButton(
+                "Ver Inventario 📦", 
+                "Revisar stock y productos",
+                new Color(255, 159, 64),
+                e -> cardLayout.show(mainContentArea, "inventario")
+            );
+            
+            JButton btnCierreCaja = createQuickActionButton(
+                "Cierre de Caja 🔒", 
+                "Reporte de ventas del día",
+                new Color(108, 117, 125),
+                e -> cardLayout.show(mainContentArea, "reporte")
+            );
+            
+            quickActions.add(btnInventario);
+            quickActions.add(btnCierreCaja);
+            
+        } else if (rolUsuario == Rol.ADMINISTRADOR) {
+            // ADMINISTRADOR: Accesos completos
+            JButton btnCierreCaja = createQuickActionButton(
+                "Cierre de Caja 🔒", 
+                "Reporte de ventas del día",
+                new Color(108, 117, 125),
+                e -> cardLayout.show(mainContentArea, "reporte")
+            );
+            
+            JButton btnInventario = createQuickActionButton(
+                "Ver Inventario 📦", 
+                "Gestionar stock y productos",
+                new Color(255, 159, 64),
+                e -> cardLayout.show(mainContentArea, "inventario")
+            );
+            
+            JButton btnReportePDF = createQuickActionButton(
+                "Reporte PDF 📄", 
+                "Generar reporte de ventas del día en PDF",
+                new Color(220, 53, 69),
+                e -> generarReportePDF()
+            );
+            
+            quickActions.add(btnCierreCaja);
+            quickActions.add(btnInventario);
+            quickActions.add(btnReportePDF);
+        }
         
         return quickActions;
     }

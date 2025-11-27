@@ -1,7 +1,7 @@
 package com.minimarket;
 
 import com.minimarket.config.DatabaseConnection;
-import com.minimarket.ui.swing.DashboardFrame;
+import com.minimarket.ui.swing.LoginFrame;
 
 /**
  * Clase Main principal del Sistema POS del Minimarket
@@ -19,8 +19,8 @@ public class Main {
             return;
         }
 
-        // Iniciar la aplicación
-        iniciarAplicacion();
+        // Mostrar pantalla de login
+        mostrarLogin();
     }
 
     private static void configurarLookAndFeel() {
@@ -60,11 +60,10 @@ public class Main {
         });
     }
 
-    private static void iniciarAplicacion() {
+    private static void mostrarLogin() {
         javax.swing.SwingUtilities.invokeLater(() -> {
             try {
-                DashboardFrame dashboard = new DashboardFrame();
-                dashboard.setVisible(true);
+                new LoginFrame();
             } catch (Exception e) {
                 javax.swing.JOptionPane.showMessageDialog(null, 
                     "❌ Error al iniciar la aplicación: " + e.getMessage(),
