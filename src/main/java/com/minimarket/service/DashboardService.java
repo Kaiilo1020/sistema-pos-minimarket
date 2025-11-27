@@ -91,15 +91,12 @@ public class DashboardService {
     
     
     /**
-     * Obtiene las ventas del día actual (usando la misma consulta que ReporteVentasPanel)
+     * Obtiene las ventas del día actual (consulta simple que funciona en pgAdmin)
      */
     private static double obtenerVentasDelDia(Connection conn) throws SQLException {
-        String sql = """
-            SELECT COALESCE(SUM(v.total), 0) as total_ventas
-            FROM ventas v
-            WHERE DATE(v.fecha_hora) = CURRENT_DATE 
-              AND v.estado = 'ACTIVA'
-        """;
+        String sql = "SELECT COALESCE(SUM(total), 0) as total_ventas " +
+                    "FROM ventas " +
+                    "WHERE DATE(fecha_hora) = CURRENT_DATE AND estado = 'ACTIVA'";
         
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -112,15 +109,12 @@ public class DashboardService {
     }
     
     /**
-     * Obtiene el número de transacciones del día (usando la misma consulta que ReporteVentasPanel)
+     * Obtiene el número de transacciones del día (consulta simple)
      */
     private static int obtenerTransaccionesDelDia(Connection conn) throws SQLException {
-        String sql = """
-            SELECT COUNT(DISTINCT v.id) as total_transacciones
-            FROM ventas v
-            WHERE DATE(v.fecha_hora) = CURRENT_DATE 
-              AND v.estado = 'ACTIVA'
-        """;
+        String sql = "SELECT COUNT(*) as total_transacciones " +
+                    "FROM ventas " +
+                    "WHERE DATE(fecha_hora) = CURRENT_DATE AND estado = 'ACTIVA'";
         
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -133,16 +127,14 @@ public class DashboardService {
     }
     
     /**
-     * Obtiene el total de productos vendidos del día (usando la misma consulta que ReporteVentasPanel)
+     * Obtiene el total de productos vendidos del día (consulta simple con JOIN básico)
      */
     private static int obtenerProductosVendidos(Connection conn) throws SQLException {
-        String sql = """
-            SELECT COALESCE(SUM(dv.cantidad), 0) as productos_vendidos
-            FROM detalle_ventas dv
-            INNER JOIN ventas v ON dv.venta_id = v.id
-            WHERE DATE(v.fecha_hora) = CURRENT_DATE 
-              AND v.estado = 'ACTIVA'
-        """;
+        String sql = "SELECT COALESCE(SUM(dv.cantidad), 0) as productos_vendidos " +
+                    "FROM detalle_ventas dv, ventas v " +
+                    "WHERE dv.venta_id = v.id " +
+                    "AND DATE(v.fecha_hora) = CURRENT_DATE " +
+                    "AND v.estado = 'ACTIVA'";
         
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -155,7 +147,7 @@ public class DashboardService {
     }
     
     /**
-     * Obtiene la distribución de métodos de pago del día
+     * Obtiene la distribución de métodos de pago del día (consulta simple)
      */
     private static String obtenerMetodosPago(Connection conn) throws SQLException {
         String sql = "SELECT metodo_pago, COUNT(*) as cantidad " +
@@ -165,6 +157,7 @@ public class DashboardService {
         
         int efectivo = 0;
         int yape = 0;
+        int otros = 0;
         int total = 0;
         
         try (PreparedStatement stmt = conn.prepareStatement(sql);
@@ -179,6 +172,8 @@ public class DashboardService {
                     efectivo = cantidad;
                 } else if ("YAPE".equalsIgnoreCase(metodo)) {
                     yape = cantidad;
+                } else {
+                    otros += cantidad;
                 }
             }
         }
@@ -189,12 +184,17 @@ public class DashboardService {
         
         int porcentajeEfectivo = (efectivo * 100) / total;
         int porcentajeYape = (yape * 100) / total;
+        int porcentajeOtros = (otros * 100) / total;
         
-        return porcentajeEfectivo + "% Efectivo | " + porcentajeYape + "% Yape";
+        if (otros > 0) {
+            return porcentajeEfectivo + "% Efectivo | " + porcentajeYape + "% Yape | " + porcentajeOtros + "% Otros";
+        } else {
+            return porcentajeEfectivo + "% Efectivo | " + porcentajeYape + "% Yape";
+        }
     }
     
     /**
-     * Obtiene productos con stock bajo (< 10 unidades)
+     * Obtiene productos con stock bajo (< 10 unidades) - consulta simple
      */
     private static List<AlertaStock> obtenerAlertasStock(Connection conn) throws SQLException {
         List<AlertaStock> alertas = new ArrayList<>();
@@ -213,22 +213,26 @@ public class DashboardService {
                 int stock = rs.getInt("stock");
                 alertas.add(new AlertaStock(nombre, stock));
             }
+        } catch (SQLException e) {
+            // Si hay error, devolver lista vacía
+            System.out.println("Error en alertas de stock: " + e.getMessage());
         }
         
         return alertas;
     }
     
     /**
-     * Obtiene productos próximos a vencer (siguiente semana)
+     * Obtiene productos próximos a vencer (siguiente semana) - consulta simplificada
      */
     private static List<LoteVencer> obtenerLotesVencer(Connection conn) throws SQLException {
         List<LoteVencer> lotes = new ArrayList<>();
         
-        String sql = "SELECT nombre, fecha_vencimiento, " +
-                    "DATE_PART('day', fecha_vencimiento - CURRENT_DATE) as dias_restantes " +
+        // Consulta más simple sin funciones complejas de fecha
+        String sql = "SELECT nombre, fecha_vencimiento " +
                     "FROM productos " +
                     "WHERE fecha_vencimiento IS NOT NULL " +
-                    "AND fecha_vencimiento <= CURRENT_DATE + INTERVAL '7 days' " +
+                    "AND fecha_vencimiento >= CURRENT_DATE " +
+                    "AND fecha_vencimiento <= CURRENT_DATE + 7 " +
                     "AND activo = true " +
                     "ORDER BY fecha_vencimiento ASC " +
                     "LIMIT 5";
@@ -237,15 +241,23 @@ public class DashboardService {
              ResultSet rs = stmt.executeQuery()) {
             
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            java.time.LocalDate hoy = java.time.LocalDate.now();
             
             while (rs.next()) {
                 String nombre = rs.getString("nombre");
                 Date fechaVenc = rs.getDate("fecha_vencimiento");
-                int diasRestantes = rs.getInt("dias_restantes");
                 
-                String fechaFormateada = fechaVenc.toLocalDate().format(formatter);
-                lotes.add(new LoteVencer(nombre, fechaFormateada, diasRestantes));
+                if (fechaVenc != null) {
+                    java.time.LocalDate fechaVencimiento = fechaVenc.toLocalDate();
+                    int diasRestantes = (int) java.time.temporal.ChronoUnit.DAYS.between(hoy, fechaVencimiento);
+                    
+                    String fechaFormateada = fechaVencimiento.format(formatter);
+                    lotes.add(new LoteVencer(nombre, fechaFormateada, diasRestantes));
+                }
             }
+        } catch (SQLException e) {
+            // Si hay error, devolver lista vacía
+            System.out.println("Error en lotes por vencer: " + e.getMessage());
         }
         
         return lotes;
