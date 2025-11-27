@@ -599,7 +599,7 @@ public class DashboardFrame extends JFrame {
         // Botón de acción
         JButton btnVerAlertas = new JButton("Ver Alertas Completas");
         UIUtils.configurarBotonSecundario(btnVerAlertas);
-        btnVerAlertas.addActionListener(e -> cardLayout.show(mainContentArea, "alertas"));
+        btnVerAlertas.addActionListener(e -> navegarAPanel("alertas"));
         
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setBackground(CARD_BACKGROUND);
@@ -624,7 +624,7 @@ public class DashboardFrame extends JFrame {
             "Nueva Venta 🛒", 
             "Iniciar proceso de venta",
             new Color(40, 167, 69),
-            e -> cardLayout.show(mainContentArea, "pos")
+            e -> navegarAPanel("pos")
         );
         quickActions.add(btnNuevaVenta);
         
@@ -634,14 +634,14 @@ public class DashboardFrame extends JFrame {
                 "Consultar Inventario 📦", 
                 "Ver productos disponibles y fechas",
                 new Color(255, 159, 64),
-                e -> cardLayout.show(mainContentArea, "inventario")
+                e -> navegarAPanel("inventario")
             );
             
             JButton btnVerAlertas = createQuickActionButton(
                 "Ver Alertas ⚠️", 
                 "Productos próximos a vencer",
                 new Color(255, 87, 34),
-                e -> cardLayout.show(mainContentArea, "alertas")
+                e -> navegarAPanel("alertas")
             );
             
             quickActions.add(btnConsultarInventario);
@@ -653,14 +653,14 @@ public class DashboardFrame extends JFrame {
                 "Ver Inventario 📦", 
                 "Revisar stock y productos",
                 new Color(255, 159, 64),
-                e -> cardLayout.show(mainContentArea, "inventario")
+                e -> navegarAPanel("inventario")
             );
             
             JButton btnCierreCaja = createQuickActionButton(
                 "Cierre de Caja 🔒", 
                 "Reporte de ventas del día",
                 new Color(108, 117, 125),
-                e -> cardLayout.show(mainContentArea, "reporte")
+                e -> navegarAPanel("reporte")
             );
             
             quickActions.add(btnInventario);
@@ -672,14 +672,14 @@ public class DashboardFrame extends JFrame {
                 "Cierre de Caja 🔒", 
                 "Reporte de ventas del día",
                 new Color(108, 117, 125),
-                e -> cardLayout.show(mainContentArea, "reporte")
+                e -> navegarAPanel("reporte")
             );
             
             JButton btnInventario = createQuickActionButton(
                 "Ver Inventario 📦", 
                 "Gestionar stock y productos",
                 new Color(255, 159, 64),
-                e -> cardLayout.show(mainContentArea, "inventario")
+                e -> navegarAPanel("inventario")
             );
             
             JButton btnReportePDF = createQuickActionButton(
@@ -775,6 +775,44 @@ public class DashboardFrame extends JFrame {
     // Método para cambiar entre paneles
     private void cambiarPanel(String panelName) {
         cardLayout.show(mainContentArea, panelName);
+    }
+    
+    // Método para navegar a un panel y actualizar el sidebar automáticamente
+    private void navegarAPanel(String panelName) {
+        // Cambiar el panel
+        cardLayout.show(mainContentArea, panelName);
+        
+        // Encontrar y activar el botón correspondiente en el sidebar
+        JButton botonCorrespondiente = encontrarBotonSidebar(panelName);
+        if (botonCorrespondiente != null) {
+            setActiveButton(botonCorrespondiente);
+        }
+    }
+    
+    // Método para encontrar el botón del sidebar que corresponde a un panel
+    private JButton encontrarBotonSidebar(String panelName) {
+        for (JButton button : sidebarButtons) {
+            // Obtener la acción del botón desde sus ActionListeners
+            String buttonAction = obtenerAccionDelBoton(button);
+            if (panelName.equals(buttonAction)) {
+                return button;
+            }
+        }
+        return null;
+    }
+    
+    // Método auxiliar para obtener la acción de un botón del sidebar
+    private String obtenerAccionDelBoton(JButton button) {
+        // Mapear botones por su texto (más confiable)
+        String texto = button.getText();
+        if (texto.contains("Inicio")) return "inicio";
+        if (texto.contains("Caja") || texto.contains("Punto de Venta")) return "pos";
+        if (texto.contains("Inventario")) return "inventario";
+        if (texto.contains("Historial")) return "historial";
+        if (texto.contains("Reporte")) return "reporte";
+        if (texto.contains("Usuarios")) return "usuarios";
+        if (texto.contains("Alertas")) return "alertas";
+        return "";
     }
     
     // Método para establecer el botón activo
