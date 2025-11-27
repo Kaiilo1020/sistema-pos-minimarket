@@ -1,6 +1,7 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -33,17 +34,16 @@ public class UsuariosPanel extends JPanel {
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         // Panel de botones
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelBotones.setBackground(Color.WHITE);
+        JPanel panelBotones = UIUtils.crearPanelBotones(FlowLayout.LEFT);
         
         btnCrearUsuario = new JButton("Crear Usuario");
         btnEliminarUsuario = new JButton("Eliminar Usuario");
         btnActualizar = new JButton("Actualizar");
         
-        // Estilo de botones
-        configurarBoton(btnCrearUsuario, new Color(46, 125, 50));
-        configurarBoton(btnEliminarUsuario, new Color(211, 47, 47));
-        configurarBoton(btnActualizar, new Color(117, 117, 117));
+        // Estilo de botones usando UIUtils
+        UIUtils.configurarBotonExito(btnCrearUsuario);
+        UIUtils.configurarBotonPeligro(btnEliminarUsuario);
+        UIUtils.configurarBotonSecundario(btnActualizar);
         
         // Eventos de botones
         btnCrearUsuario.addActionListener(e -> abrirDialogoCrearUsuario());
@@ -68,9 +68,7 @@ public class UsuariosPanel extends JPanel {
         tablaUsuarios = new JTable(modeloTabla);
         tablaUsuarios.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaUsuarios.setRowHeight(30);
-        tablaUsuarios.getTableHeader().setBackground(Color.LIGHT_GRAY);
-        tablaUsuarios.getTableHeader().setForeground(Color.BLACK);
-        tablaUsuarios.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        UIUtils.configurarTabla(tablaUsuarios);
         
         // Configurar ancho de columnas
         tablaUsuarios.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
@@ -87,8 +85,7 @@ public class UsuariosPanel extends JPanel {
         panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         // Navegación (simulada)
-        JPanel panelNavegacion = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        panelNavegacion.setBackground(Color.WHITE);
+        JPanel panelNavegacion = UIUtils.crearPanelBotones(FlowLayout.CENTER);
         
         JButton btnPrimera = new JButton("<< Primera");
         JButton btnAnterior = new JButton("< Anterior");
@@ -96,13 +93,13 @@ public class UsuariosPanel extends JPanel {
         JButton btnSiguiente = new JButton("Siguiente >");
         JButton btnUltima = new JButton("Última >>");
         
-        // Estilo de botones de navegación
-        configurarBotonNavegacion(btnPrimera);
-        configurarBotonNavegacion(btnAnterior);
-        configurarBotonNavegacion(btnSiguiente);
-        configurarBotonNavegacion(btnUltima);
+        // Estilo de botones de navegación usando UIUtils
+        UIUtils.configurarBotonSecundario(btnPrimera);
+        UIUtils.configurarBotonSecundario(btnAnterior);
+        UIUtils.configurarBotonSecundario(btnSiguiente);
+        UIUtils.configurarBotonSecundario(btnUltima);
         
-        labelTotalUsuarios.setFont(new Font("Arial", Font.BOLD, 12));
+        labelTotalUsuarios.setFont(UIUtils.BOLD_FONT);
         
         panelNavegacion.add(btnPrimera);
         panelNavegacion.add(btnAnterior);
@@ -116,8 +113,8 @@ public class UsuariosPanel extends JPanel {
         
         JLabel labelNota = new JLabel("<html><b>Nota:</b> Solo se pueden eliminar usuarios que NO tengan ventas registradas.<br>" +
                                      "Si un trabajador tiene ventas, se conservan para el historial del negocio.</html>");
-        labelNota.setFont(new Font("Arial", Font.PLAIN, 11));
-        labelNota.setForeground(new Color(100, 100, 100));
+        labelNota.setFont(UIUtils.DEFAULT_FONT);
+        labelNota.setForeground(Color.GRAY);
         
         panelNota.add(labelNota);
         
@@ -127,24 +124,6 @@ public class UsuariosPanel extends JPanel {
         add(panelSuperior, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
         add(panelInferior, BorderLayout.SOUTH);
-    }
-    
-    private void configurarBoton(JButton boton, Color color) {
-        boton.setBackground(color);
-        boton.setForeground(Color.WHITE);
-        boton.setFocusPainted(false);
-        boton.setBorderPainted(false);
-        boton.setFont(new Font("Arial", Font.BOLD, 11));
-        boton.setPreferredSize(new Dimension(120, 35));
-    }
-    
-    private void configurarBotonNavegacion(JButton boton) {
-        boton.setBackground(Color.WHITE);
-        boton.setForeground(new Color(63, 81, 181));
-        boton.setFocusPainted(false);
-        boton.setBorder(BorderFactory.createLineBorder(new Color(63, 81, 181)));
-        boton.setFont(new Font("Arial", Font.PLAIN, 11));
-        boton.setPreferredSize(new Dimension(80, 30));
     }
     
     private void cargarUsuarios() {
@@ -193,10 +172,7 @@ public class UsuariosPanel extends JPanel {
             labelTotalUsuarios.setText("Total: " + totalUsuarios + " usuarios");
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar usuarios: " + e.getMessage(), 
-                "Error de Base de Datos", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al cargar usuarios: " + e.getMessage());
         }
     }
     
@@ -213,10 +189,7 @@ public class UsuariosPanel extends JPanel {
     private void eliminarUsuarioSeleccionado() {
         int filaSeleccionada = tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Por favor, selecciona un usuario para eliminar.", 
-                "Selección Requerida", 
-                JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "Por favor, selecciona un usuario para eliminar.");
             return;
         }
         
@@ -225,21 +198,13 @@ public class UsuariosPanel extends JPanel {
         
         // Verificar si tiene ventas
         if (!ventasTexto.equals("0 ventas")) {
-            JOptionPane.showMessageDialog(this, 
+            UIUtils.mostrarError(this, 
                 "No se puede eliminar el usuario '" + nombreUsuario + "' porque tiene ventas registradas.\n" +
-                "Los usuarios con ventas se conservan para mantener el historial del negocio.", 
-                "No se puede eliminar", 
-                JOptionPane.WARNING_MESSAGE);
+                "Los usuarios con ventas se conservan para mantener el historial del negocio.");
             return;
         }
         
-        int confirmacion = JOptionPane.showConfirmDialog(this, 
-            "¿Estás seguro de que deseas eliminar el usuario '" + nombreUsuario + "'?", 
-            "Confirmar Eliminación", 
-            JOptionPane.YES_NO_OPTION, 
-            JOptionPane.QUESTION_MESSAGE);
-        
-        if (confirmacion == JOptionPane.YES_OPTION) {
+        if (UIUtils.confirmar(this, "¿Estás seguro de que deseas eliminar el usuario '" + nombreUsuario + "'?")) {
             Long usuarioId = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
             
             String sql = "UPDATE usuarios SET activo = false WHERE id = ?";
@@ -251,23 +216,14 @@ public class UsuariosPanel extends JPanel {
                 int filasAfectadas = pstmt.executeUpdate();
                 
                 if (filasAfectadas > 0) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Usuario eliminado exitosamente.", 
-                        "Eliminación Exitosa", 
-                        JOptionPane.INFORMATION_MESSAGE);
+                    UIUtils.mostrarExito(this, "Usuario eliminado exitosamente.");
                     cargarUsuarios(); // Recargar la tabla
                 } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "No se pudo eliminar el usuario.", 
-                        "Error", 
-                        JOptionPane.ERROR_MESSAGE);
+                    UIUtils.mostrarError(this, "No se pudo eliminar el usuario.");
                 }
                 
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, 
-                    "Error al eliminar usuario: " + e.getMessage(), 
-                    "Error de Base de Datos", 
-                    JOptionPane.ERROR_MESSAGE);
+                UIUtils.mostrarError(this, "Error al eliminar usuario: " + e.getMessage());
             }
         }
     }
