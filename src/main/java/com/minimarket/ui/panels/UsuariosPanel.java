@@ -29,9 +29,7 @@ public class UsuariosPanel extends JPanel {
         setBackground(Color.WHITE);
         
         // Panel superior con botones
-        JPanel panelSuperior = new JPanel(new BorderLayout());
-        panelSuperior.setBackground(Color.WHITE);
-        panelSuperior.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel panelSuperior = UIUtils.configurarPanel(new BorderLayout(), 10);
         
         // Panel de botones
         JPanel panelBotones = UIUtils.crearPanelBotones(FlowLayout.LEFT);
@@ -70,46 +68,25 @@ public class UsuariosPanel extends JPanel {
         tablaUsuarios.setRowHeight(30);
         UIUtils.configurarTabla(tablaUsuarios);
         
-        // Configurar ancho de columnas
-        tablaUsuarios.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
-        tablaUsuarios.getColumnModel().getColumn(1).setPreferredWidth(200); // Usuario
-        tablaUsuarios.getColumnModel().getColumn(2).setPreferredWidth(150); // Rol
-        tablaUsuarios.getColumnModel().getColumn(3).setPreferredWidth(150); // Ventas
+        // Configurar ancho de columnas de forma flexible
+        UIUtils.configurarColumnasTabla(tablaUsuarios, 50, 200, 150, 150);
         
         JScrollPane scrollPane = new JScrollPane(tablaUsuarios);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Lista de Usuarios"));
         
         // Panel inferior con información
-        JPanel panelInferior = new JPanel(new BorderLayout());
-        panelInferior.setBackground(Color.WHITE);
-        panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel panelInferior = UIUtils.configurarPanel(new BorderLayout(), 10);
         
-        // Navegación (simulada)
-        JPanel panelNavegacion = UIUtils.crearPanelBotones(FlowLayout.CENTER);
+        // Panel de información (eliminamos navegación innecesaria)
+        JPanel panelInfo = UIUtils.crearPanelBotones(FlowLayout.CENTER);
         
-        JButton btnPrimera = new JButton("<< Primera");
-        JButton btnAnterior = new JButton("< Anterior");
         labelTotalUsuarios = new JLabel("Total: 0 usuarios");
-        JButton btnSiguiente = new JButton("Siguiente >");
-        JButton btnUltima = new JButton("Última >>");
-        
-        // Estilo de botones de navegación usando UIUtils
-        UIUtils.configurarBotonSecundario(btnPrimera);
-        UIUtils.configurarBotonSecundario(btnAnterior);
-        UIUtils.configurarBotonSecundario(btnSiguiente);
-        UIUtils.configurarBotonSecundario(btnUltima);
-        
         labelTotalUsuarios.setFont(UIUtils.BOLD_FONT);
         
-        panelNavegacion.add(btnPrimera);
-        panelNavegacion.add(btnAnterior);
-        panelNavegacion.add(labelTotalUsuarios);
-        panelNavegacion.add(btnSiguiente);
-        panelNavegacion.add(btnUltima);
+        panelInfo.add(labelTotalUsuarios);
         
         // Nota informativa
-        JPanel panelNota = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelNota.setBackground(Color.WHITE);
+        JPanel panelNota = UIUtils.crearPanelBotones(FlowLayout.LEFT);
         
         JLabel labelNota = new JLabel("<html><b>Nota:</b> Solo se pueden eliminar usuarios que NO tengan ventas registradas.<br>" +
                                      "Si un trabajador tiene ventas, se conservan para el historial del negocio.</html>");
@@ -118,7 +95,7 @@ public class UsuariosPanel extends JPanel {
         
         panelNota.add(labelNota);
         
-        panelInferior.add(panelNavegacion, BorderLayout.CENTER);
+        panelInferior.add(panelInfo, BorderLayout.CENTER);
         panelInferior.add(panelNota, BorderLayout.SOUTH);
         
         add(panelSuperior, BorderLayout.NORTH);

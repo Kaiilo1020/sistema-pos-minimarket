@@ -234,4 +234,25 @@ public class UIUtils {
             }
         });
     }
+    
+    /**
+     * Configura un panel con layout y padding específicos
+     */
+    public static JPanel configurarPanel(LayoutManager layout, int padding) {
+        JPanel panel = new JPanel(layout);
+        panel.setBackground(Color.WHITE);
+        if (padding > 0) {
+            panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
+        }
+        return panel;
+    }
+    
+    /**
+     * Configura anchos de columnas de tabla de forma flexible
+     */
+    public static void configurarColumnasTabla(JTable tabla, int... anchos) {
+        for (int i = 0; i < anchos.length && i < tabla.getColumnCount(); i++) {
+            tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
+        }
+    }
 }
