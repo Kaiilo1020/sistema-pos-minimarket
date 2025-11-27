@@ -2,6 +2,11 @@
 
 Sistema de Punto de Venta profesional para minimarket desarrollado en Java con implementación de patrones de diseño y base de datos PostgreSQL.
 
+## Vista Previa del Sistema
+
+![Sistema POS en Funcionamiento](docs/screenshots/sistema-pos-preview.png)
+*Interfaz principal del sistema mostrando el módulo de Punto de Venta con catálogo de productos y carrito de compras*
+
 ## Características Principales
 
 ### Módulos del Sistema
@@ -101,6 +106,12 @@ mvn exec:java -Dexec.mainClass="com.minimarket.Main"
 - **Historial** - Consulta de ventas realizadas
 - **Reportes** - Métricas y estadísticas
 - **Alertas** - Productos próximos a vencer
+
+### Capturas de Pantalla
+
+#### Punto de Venta
+![Sistema POS](docs/screenshots/sistema-pos-preview.png)
+*Interfaz principal del punto de venta con catálogo de productos, carrito de compras y datos del cliente*
 
 ## Arquitectura del Proyecto
 
