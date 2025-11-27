@@ -243,8 +243,8 @@ public class VentasPanel extends JPanel {
     }
     
     private void configurarTabla(JTable tabla) {
-        tabla.getTableHeader().setBackground(new Color(63, 81, 181));
-        tabla.getTableHeader().setForeground(Color.WHITE);
+        tabla.getTableHeader().setBackground(Color.LIGHT_GRAY);
+        tabla.getTableHeader().setForeground(Color.BLACK);
         tabla.getTableHeader().setFont(new Font("Arial", Font.BOLD, 11));
     }
     

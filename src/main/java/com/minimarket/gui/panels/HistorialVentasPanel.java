@@ -60,8 +60,8 @@ public class HistorialVentasPanel extends JPanel {
         tablaHistorial = new JTable(modeloTabla);
         tablaHistorial.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaHistorial.setRowHeight(25);
-        tablaHistorial.getTableHeader().setBackground(new Color(63, 81, 181));
-        tablaHistorial.getTableHeader().setForeground(Color.WHITE);
+        tablaHistorial.getTableHeader().setBackground(Color.LIGHT_GRAY);
+        tablaHistorial.getTableHeader().setForeground(Color.BLACK);
         tablaHistorial.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
         
         // Configurar ancho de columnas

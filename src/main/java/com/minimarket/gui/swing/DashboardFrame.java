@@ -41,6 +41,10 @@ public class DashboardFrame extends JFrame {
     private JPanel mainContentArea;
     private CardLayout cardLayout;
     
+    // Sistema de navegación
+    private java.util.List<JButton> sidebarButtons = new java.util.ArrayList<>();
+    private JButton currentActiveButton;
+    
     private Timer reloj;
     private int patronesCompletados = 7;
     private final int totalPatrones = 7;
@@ -192,18 +196,38 @@ public class DashboardFrame extends JFrame {
         sidebar.add(navTitle);
         
         // Botones de navegación principales
-        sidebar.add(createSidebarButton("🏠 Inicio", "inicio", true));
-        sidebar.add(createSidebarButton("🛒 Caja / Punto de Venta", "pos", false));
-        sidebar.add(createSidebarButton("📦 Inventario y Kardex", "inventario", false));
-        sidebar.add(createSidebarButton("📄 Historial de Ventas", "historial", false));
-        sidebar.add(createSidebarButton("📊 Reporte Diario", "reporte", false));
+        JButton btnInicio = createSidebarButton("🏠 Inicio", "inicio", true);
+        JButton btnPOS = createSidebarButton("🛒 Caja / Punto de Venta", "pos", false);
+        JButton btnInventario = createSidebarButton("📦 Inventario y Kardex", "inventario", false);
+        JButton btnHistorial = createSidebarButton("📄 Historial de Ventas", "historial", false);
+        JButton btnReporte = createSidebarButton("📊 Reporte Diario", "reporte", false);
+        
+        sidebar.add(btnInicio);
+        sidebar.add(btnPOS);
+        sidebar.add(btnInventario);
+        sidebar.add(btnHistorial);
+        sidebar.add(btnReporte);
+        
+        // Agregar a la lista de botones
+        sidebarButtons.add(btnInicio);
+        sidebarButtons.add(btnPOS);
+        sidebarButtons.add(btnInventario);
+        sidebarButtons.add(btnHistorial);
+        sidebarButtons.add(btnReporte);
         
         // Solo mostrar "Usuarios y Permisos" si es Admin
         if (usuarioActual != null && usuarioActual.getRol() == Rol.ADMINISTRADOR) {
-            sidebar.add(createSidebarButton("👥 Usuarios y Permisos", "usuarios", false));
+            JButton btnUsuarios = createSidebarButton("👥 Usuarios y Permisos", "usuarios", false);
+            sidebar.add(btnUsuarios);
+            sidebarButtons.add(btnUsuarios);
         }
         
-        sidebar.add(createSidebarButton("⚙️ Configuración del Sistema", "configuracion", false));
+        JButton btnConfiguracion = createSidebarButton("⚙️ Configuración del Sistema", "configuracion", false);
+        sidebar.add(btnConfiguracion);
+        sidebarButtons.add(btnConfiguracion);
+        
+        // Establecer el botón inicial como activo
+        currentActiveButton = btnInicio;
         
         // Espaciador
         sidebar.add(Box.createVerticalGlue());
@@ -237,7 +261,10 @@ public class DashboardFrame extends JFrame {
         }
         
         // Agregar acción al botón
-        button.addActionListener(e -> cambiarPanel(action));
+        button.addActionListener(e -> {
+            cambiarPanel(action);
+            setActiveButton(button);
+        });
         
         return button;
     }
@@ -637,6 +664,27 @@ public class DashboardFrame extends JFrame {
     // Método para cambiar entre paneles
     private void cambiarPanel(String panelName) {
         cardLayout.show(mainContentArea, panelName);
+    }
+    
+    // Método para establecer el botón activo
+    private void setActiveButton(JButton activeButton) {
+        // Desactivar el botón anterior
+        if (currentActiveButton != null) {
+            currentActiveButton.setBackground(new Color(0, 0, 0, 0));
+            currentActiveButton.setForeground(TEXT_PRIMARY);
+            currentActiveButton.setBorder(new EmptyBorder(12, 20, 12, 20));
+        }
+        
+        // Activar el nuevo botón
+        activeButton.setBackground(new Color(227, 242, 253));
+        activeButton.setForeground(new Color(25, 118, 210));
+        activeButton.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 0, 3, new Color(25, 118, 210)),
+            new EmptyBorder(12, 20, 12, 17)
+        ));
+        
+        // Actualizar referencia del botón activo
+        currentActiveButton = activeButton;
     }
     
     // Panel de información del usuario

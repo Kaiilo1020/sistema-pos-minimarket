@@ -92,8 +92,8 @@ public class ReporteVentasPanel extends JPanel {
         tablaReporte = new JTable(modeloTabla);
         tablaReporte.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaReporte.setRowHeight(30);
-        tablaReporte.getTableHeader().setBackground(new Color(63, 81, 181));
-        tablaReporte.getTableHeader().setForeground(Color.WHITE);
+        tablaReporte.getTableHeader().setBackground(Color.LIGHT_GRAY);
+        tablaReporte.getTableHeader().setForeground(Color.BLACK);
         tablaReporte.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
         
         // Configurar ancho de columnas

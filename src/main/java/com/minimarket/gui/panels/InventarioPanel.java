@@ -90,8 +90,8 @@ public class InventarioPanel extends JPanel {
         tablaProductos = new JTable(modeloTabla);
         tablaProductos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaProductos.setRowHeight(25);
-        tablaProductos.getTableHeader().setBackground(new Color(63, 81, 181));
-        tablaProductos.getTableHeader().setForeground(Color.WHITE);
+        tablaProductos.getTableHeader().setBackground(Color.LIGHT_GRAY);
+        tablaProductos.getTableHeader().setForeground(Color.BLACK);
         tablaProductos.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
         
         // Configurar colores alternados en las filas

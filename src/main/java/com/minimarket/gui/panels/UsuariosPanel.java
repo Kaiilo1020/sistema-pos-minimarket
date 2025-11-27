@@ -68,8 +68,8 @@ public class UsuariosPanel extends JPanel {
         tablaUsuarios = new JTable(modeloTabla);
         tablaUsuarios.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaUsuarios.setRowHeight(30);
-        tablaUsuarios.getTableHeader().setBackground(new Color(63, 81, 181));
-        tablaUsuarios.getTableHeader().setForeground(Color.WHITE);
+        tablaUsuarios.getTableHeader().setBackground(Color.LIGHT_GRAY);
+        tablaUsuarios.getTableHeader().setForeground(Color.BLACK);
         tablaUsuarios.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
         
         // Configurar ancho de columnas
