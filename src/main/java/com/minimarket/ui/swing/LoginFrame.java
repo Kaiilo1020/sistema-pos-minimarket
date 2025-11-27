@@ -45,7 +45,7 @@ public class LoginFrame extends JFrame {
     private void initializeComponents() {
         setTitle("Sistema POS MiniMarket - Iniciar Sesión");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(480, 420);
+        setSize(520, 480);
         setResizable(false);
         
         // Configurar icono
@@ -65,7 +65,7 @@ public class LoginFrame extends JFrame {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(SECONDARY_COLOR);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
         
         // Logo y título
         JPanel headerPanel = createHeaderPanel();
@@ -80,11 +80,11 @@ public class LoginFrame extends JFrame {
         JPanel statusPanel = createStatusPanel();
         
         mainPanel.add(headerPanel);
-        mainPanel.add(Box.createVerticalStrut(25));
+        mainPanel.add(Box.createVerticalStrut(30));
         mainPanel.add(formPanel);
-        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(Box.createVerticalStrut(25));
         mainPanel.add(buttonPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(Box.createVerticalStrut(20));
         mainPanel.add(statusPanel);
         
         add(mainPanel, BorderLayout.CENTER);
@@ -127,7 +127,7 @@ public class LoginFrame extends JFrame {
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(222, 226, 230)),
-            BorderFactory.createEmptyBorder(30, 30, 30, 30)
+            BorderFactory.createEmptyBorder(35, 35, 35, 35)
         ));
         
         // Campo usuario
@@ -138,8 +138,8 @@ public class LoginFrame extends JFrame {
         
         txtUsuario = new JTextField();
         txtUsuario.setFont(UIUtils.DEFAULT_FONT);
-        txtUsuario.setPreferredSize(new Dimension(320, 40));
-        txtUsuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        txtUsuario.setPreferredSize(new Dimension(350, 45));
+        txtUsuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         txtUsuario.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(206, 212, 218)),
             BorderFactory.createEmptyBorder(10, 15, 10, 15)
@@ -153,8 +153,8 @@ public class LoginFrame extends JFrame {
         
         txtPassword = new JPasswordField();
         txtPassword.setFont(UIUtils.DEFAULT_FONT);
-        txtPassword.setPreferredSize(new Dimension(320, 40));
-        txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        txtPassword.setPreferredSize(new Dimension(350, 45));
+        txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         txtPassword.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(206, 212, 218)),
             BorderFactory.createEmptyBorder(10, 15, 10, 15)
@@ -165,8 +165,8 @@ public class LoginFrame extends JFrame {
         btnLogin.setFont(UIUtils.BOLD_FONT);
         btnLogin.setBackground(PRIMARY_COLOR);
         btnLogin.setForeground(Color.WHITE);
-        btnLogin.setPreferredSize(new Dimension(320, 45));
-        btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        btnLogin.setPreferredSize(new Dimension(350, 50));
+        btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
         btnLogin.setBorder(null);
         btnLogin.setFocusPainted(false);
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -189,13 +189,13 @@ public class LoginFrame extends JFrame {
         });
         
         panel.add(lblUsuario);
-        panel.add(Box.createVerticalStrut(8));
+        panel.add(Box.createVerticalStrut(10));
         panel.add(txtUsuario);
-        panel.add(Box.createVerticalStrut(20));
-        panel.add(lblPassword);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(txtPassword);
         panel.add(Box.createVerticalStrut(25));
+        panel.add(lblPassword);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(txtPassword);
+        panel.add(Box.createVerticalStrut(30));
         panel.add(btnLogin);
         
         return panel;
@@ -209,7 +209,7 @@ public class LoginFrame extends JFrame {
         btnSalir.setFont(UIUtils.DEFAULT_FONT);
         btnSalir.setBackground(new Color(108, 117, 125));
         btnSalir.setForeground(Color.WHITE);
-        btnSalir.setPreferredSize(new Dimension(140, 35));
+        btnSalir.setPreferredSize(new Dimension(150, 40));
         btnSalir.setBorder(null);
         btnSalir.setFocusPainted(false);
         btnSalir.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -368,6 +368,7 @@ public class LoginFrame extends JFrame {
     private Usuario verificarCredenciales(String username, String password) throws SQLException {
         System.out.println("=== VERIFICANDO CREDENCIALES ===");
         System.out.println("Buscando usuario: " + username);
+        System.out.println("Password ingresado: " + password);
         
         // MODO DE PRUEBA: Usuarios hardcodeados mientras verificamos la BD
         if ("admin".equals(username) && "admin123".equals(password)) {
