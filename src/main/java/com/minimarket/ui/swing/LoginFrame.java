@@ -11,8 +11,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * Pantalla de login del sistema POS
@@ -454,34 +452,6 @@ public class LoginFrame extends JFrame {
         
         System.out.println("Credenciales inválidas");
         return null; // Credenciales inválidas
-    }
-    
-    private boolean verificarPassword(String password, String hash) {
-        try {
-            // Si no hay hash, comparar directamente (para usuarios de prueba)
-            if (hash == null || hash.isEmpty()) {
-                return false;
-            }
-            
-            // Si el hash es texto plano (para pruebas), comparar directamente
-            if (!hash.startsWith("$") && hash.length() < 32) {
-                return password.equals(hash);
-            }
-            
-            // Hash MD5 simple para compatibilidad
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hashBytes = md.digest(password.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hashBytes) {
-                sb.append(String.format("%02x", b));
-            }
-            String passwordHash = sb.toString();
-            
-            return passwordHash.equals(hash) || password.equals(hash);
-            
-        } catch (NoSuchAlgorithmException e) {
-            return password.equals(hash); // Fallback a comparación directa
-        }
     }
     
     private void mostrarError(String mensaje) {
