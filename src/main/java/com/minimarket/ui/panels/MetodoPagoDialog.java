@@ -1,9 +1,8 @@
 package com.minimarket.ui.panels;
 
+import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Diálogo para seleccionar método de pago
@@ -17,13 +16,11 @@ public class MetodoPagoDialog extends JDialog {
     
     public MetodoPagoDialog(JFrame parent) {
         super(parent, "Método de Pago", true);
+        UIUtils.configurarDialogo(this, "Método de Pago", 400, 200);
         initializeComponents();
-        setLocationRelativeTo(parent);
     }
     
     private void initializeComponents() {
-        setLayout(new BorderLayout());
-        setSize(400, 200);
         
         // Panel principal
         JPanel panelPrincipal = new JPanel(new GridBagLayout());
@@ -52,17 +49,12 @@ public class MetodoPagoDialog extends JDialog {
         panelPrincipal.add(campoReferencia, gbc);
         
         // Panel de botones
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel panelBotones = UIUtils.crearPanelBotones(FlowLayout.RIGHT);
         JButton btnConfirmar = new JButton("Confirmar Venta");
         JButton btnCancelar = new JButton("Cancelar");
         
-        btnConfirmar.setBackground(new Color(46, 125, 50));
-        btnConfirmar.setForeground(Color.WHITE);
-        btnConfirmar.setFocusPainted(false);
-        
-        btnCancelar.setBackground(new Color(158, 158, 158));
-        btnCancelar.setForeground(Color.WHITE);
-        btnCancelar.setFocusPainted(false);
+        UIUtils.configurarBotonExito(btnConfirmar);
+        UIUtils.configurarBotonSecundario(btnCancelar);
         
         btnConfirmar.addActionListener(e -> {
             metodoPagoSeleccionado = (String) comboMetodoPago.getSelectedItem();
