@@ -302,15 +302,48 @@ public class LoginFrame extends JFrame {
                     
                     if (usuarioAutenticado != null) {
                         // Login exitoso
+                        System.out.println("Login exitoso para: " + usuarioAutenticado.getUsername());
                         UsuarioSesion.getInstance().login(usuarioAutenticado);
+                        
+                        // Verificar que se guardó correctamente
+                        Usuario usuarioEnSesion = UsuarioSesion.getInstance().getUsuarioActual();
+                        System.out.println("Usuario guardado en sesión: " + (usuarioEnSesion != null ? usuarioEnSesion.getUsername() : "null"));
                         
                         lblEstado.setText("¡Bienvenido " + usuarioAutenticado.getNombreCompleto() + "!");
                         lblEstado.setForeground(SUCCESS_COLOR);
                         
                         // Esperar un momento y abrir dashboard
                         Timer timer = new Timer(1000, ev -> {
-                            dispose(); // Cerrar login
-                            new DashboardFrame(); // Abrir dashboard
+                            try {
+                                System.out.println("Creando DashboardFrame...");
+                                
+                                // Crear dashboard en el hilo de Swing
+                                SwingUtilities.invokeLater(() -> {
+                                    try {
+                                        DashboardFrame dashboard = new DashboardFrame(); // Crear dashboard
+                                        dashboard.setVisible(true); // Mostrar dashboard
+                                        System.out.println("Dashboard creado exitosamente");
+                                        dispose(); // Cerrar login solo si el dashboard se creó correctamente
+                                    } catch (Exception ex) {
+                                        System.out.println("ERROR al crear dashboard: " + ex.getMessage());
+                                        ex.printStackTrace();
+                                        
+                                        // Mostrar error y mantener login abierto
+                                        lblEstado.setText("Error al abrir el sistema: " + ex.getMessage());
+                                        lblEstado.setForeground(DANGER_COLOR);
+                                        btnLogin.setEnabled(true);
+                                    }
+                                });
+                                
+                            } catch (Exception ex) {
+                                System.out.println("ERROR general: " + ex.getMessage());
+                                ex.printStackTrace();
+                                
+                                // Mostrar error y mantener login abierto
+                                lblEstado.setText("Error al abrir el sistema: " + ex.getMessage());
+                                lblEstado.setForeground(DANGER_COLOR);
+                                btnLogin.setEnabled(true);
+                            }
                         });
                         timer.setRepeats(false);
                         timer.start();

@@ -43,21 +43,45 @@ public class DashboardFrame extends JFrame {
     private Usuario usuarioActual;
 
     public DashboardFrame() {
+        System.out.println("=== INICIANDO DASHBOARD ===");
+        
         // Obtener usuario actual de la sesión
         usuarioActual = UsuarioSesion.getInstance().getUsuarioActual();
         
+        System.out.println("Usuario en sesión: " + (usuarioActual != null ? usuarioActual.getUsername() : "null"));
+        
         // Verificar que hay un usuario logueado
         if (usuarioActual == null) {
+            System.out.println("ERROR: No hay usuario en sesión, regresando al login");
             dispose();
-            new LoginFrame();
+            SwingUtilities.invokeLater(() -> new LoginFrame());
             return;
         }
         
-        initializeComponents();
-        setupLayout();
-        setupEventHandlers();
-        startClock();
-        startDashboardAutoRefresh();
+        System.out.println("Usuario válido: " + usuarioActual.getUsername() + " - Rol: " + usuarioActual.getRol());
+        
+        try {
+            System.out.println("Inicializando componentes...");
+            initializeComponents();
+            
+            System.out.println("Configurando layout...");
+            setupLayout();
+            
+            System.out.println("Configurando event handlers...");
+            setupEventHandlers();
+            
+            System.out.println("Iniciando reloj...");
+            startClock();
+            
+            System.out.println("Iniciando auto-refresh...");
+            startDashboardAutoRefresh();
+            
+            System.out.println("Dashboard inicializado correctamente");
+        } catch (Exception e) {
+            System.out.println("ERROR al inicializar dashboard: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-lanzar para que se maneje en el login
+        }
     }
 
     private void initializeComponents() {
