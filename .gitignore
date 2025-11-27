@@ -115,4 +115,3 @@ Thumbs.db
 # Application specific
 config/database.properties
 *.backup
-screenshots/
