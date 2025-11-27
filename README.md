@@ -4,8 +4,8 @@ Sistema de Punto de Venta profesional para minimarket desarrollado en Java con i
 
 ## Vista Previa del Sistema
 
-![Sistema POS en Funcionamiento](docs/screenshots/sistema-pos-preview.png)
-*Interfaz principal del sistema mostrando el módulo de Punto de Venta con catálogo de productos y carrito de compras*
+![Sistema POS - Módulo de Ventas](docs/screenshots/ventas.png)
+*Interfaz del módulo de ventas mostrando el catálogo de productos, carrito de compras y datos del cliente*
 
 ## Características Principales
 
@@ -109,9 +109,20 @@ mvn exec:java -Dexec.mainClass="com.minimarket.Main"
 
 ### Capturas de Pantalla
 
-#### Punto de Venta
-![Sistema POS](docs/screenshots/sistema-pos-preview.png)
-*Interfaz principal del punto de venta con catálogo de productos, carrito de compras y datos del cliente*
+#### Módulo de Ventas
+![Sistema POS - Ventas](docs/screenshots/ventas.png)
+*Punto de venta con catálogo de productos, carrito de compras, datos del cliente y opciones de facturación*
+
+### Interfaz del Sistema
+
+El sistema cuenta con una interfaz gráfica completa desarrollada en Java Swing que incluye:
+
+- **Punto de Venta**: Catálogo de productos, carrito de compras y facturación
+- **Dashboard**: Panel de control con navegación lateral
+- **Gestión de Inventario**: CRUD completo de productos
+- **Sistema de Usuarios**: Administración con roles RBAC
+- **Reportes**: Métricas y estadísticas de ventas
+- **Alertas**: Monitoreo de productos próximos a vencer
 
 ## Arquitectura del Proyecto
 
