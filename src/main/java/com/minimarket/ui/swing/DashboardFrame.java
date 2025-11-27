@@ -5,12 +5,11 @@ import com.minimarket.util.DatabaseVerifier;
 import com.minimarket.security.UsuarioSesion;
 import com.minimarket.security.Rol;
 import com.minimarket.model.Usuario;
+import com.minimarket.ui.util.UIUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -120,7 +119,7 @@ public class DashboardFrame extends JFrame {
         
         // Logo
         JLabel logo = new JLabel("MINIMARKET PRO");
-        logo.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        logo.setFont(UIUtils.HEADER_FONT);
         logo.setForeground(TEXT_PRIMARY);
         
         // User info panel
@@ -128,11 +127,11 @@ public class DashboardFrame extends JFrame {
         userPanel.setBackground(CARD_BACKGROUND);
         
         lblFechaHora = new JLabel();
-        lblFechaHora.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblFechaHora.setFont(UIUtils.DEFAULT_FONT);
         lblFechaHora.setForeground(TEXT_SECONDARY);
         
         lblUsuario = new JLabel("👤 Juan Pérez");
-        lblUsuario.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblUsuario.setFont(UIUtils.BOLD_FONT);
         lblUsuario.setForeground(TEXT_PRIMARY);
         
         JButton btnPerfil = createHeaderButton("👤");
@@ -140,11 +139,7 @@ public class DashboardFrame extends JFrame {
         JButton btnSalir = createHeaderButton("🚪");
         
         btnSalir.addActionListener(e -> {
-            int result = JOptionPane.showConfirmDialog(this,
-                "¿Estás seguro de que quieres salir?",
-                "Confirmar salida",
-                JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.YES_OPTION) {
+            if (UIUtils.confirmar(this, "¿Estás seguro de que quieres salir?")) {
                 System.exit(0);
             }
         });
@@ -180,7 +175,7 @@ public class DashboardFrame extends JFrame {
         
         // Título de navegación
         JLabel navTitle = new JLabel("NAVEGACIÓN");
-        navTitle.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        navTitle.setFont(UIUtils.DEFAULT_FONT);
         navTitle.setForeground(new Color(142, 154, 175));
         navTitle.setBorder(new EmptyBorder(20, 20, 15, 20));
         sidebar.add(navTitle);
@@ -233,7 +228,7 @@ public class DashboardFrame extends JFrame {
         button.setHorizontalAlignment(SwingConstants.LEFT);
         button.setMaximumSize(new Dimension(280, 45));
         button.setPreferredSize(new Dimension(280, 45));
-        button.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        button.setFont(UIUtils.DEFAULT_FONT);
         button.setBorder(new EmptyBorder(12, 20, 12, 20));
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -295,11 +290,11 @@ public class DashboardFrame extends JFrame {
         textPanel.setBackground(SECONDARY_COLOR);
         
         JLabel title = new JLabel("HOLA, JUAN");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        title.setFont(new Font("Segoe UI", Font.BOLD, 32)); // Mantener tamaño especial
         title.setForeground(TEXT_PRIMARY);
         
         JLabel subtitle = new JLabel("Bienvenido al sistema de patrones de diseño");
-        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subtitle.setFont(UIUtils.HEADER_FONT);
         subtitle.setForeground(TEXT_SECONDARY);
         
         textPanel.add(title);
@@ -319,7 +314,7 @@ public class DashboardFrame extends JFrame {
         mainCard.setLayout(new BorderLayout());
         
         JLabel cardTitle = new JLabel("DEMOSTRACIÓN PRINCIPAL");
-        cardTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        cardTitle.setFont(UIUtils.HEADER_FONT);
         cardTitle.setForeground(TEXT_PRIMARY);
         
         JPanel progressPanel = new JPanel(new FlowLayout());
@@ -331,14 +326,14 @@ public class DashboardFrame extends JFrame {
         progressPatrones.setForeground(SUCCESS_COLOR);
         
         lblProgreso = new JLabel("Progreso: " + ((patronesCompletados * 100) / totalPatrones) + "%");
-        lblProgreso.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblProgreso.setFont(UIUtils.BOLD_FONT);
         lblProgreso.setForeground(SUCCESS_COLOR);
         
         progressPanel.add(progressPatrones);
         progressPanel.add(lblProgreso);
         
         JButton mainActionButton = new JButton("EJECUTAR DEMOSTRACIÓN COMPLETA");
-        mainActionButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        mainActionButton.setFont(UIUtils.BOLD_FONT);
         mainActionButton.setBackground(ACCENT_COLOR);
         mainActionButton.setForeground(Color.WHITE);
         mainActionButton.setPreferredSize(new Dimension(250, 45));
@@ -363,7 +358,7 @@ public class DashboardFrame extends JFrame {
         statusCard.setLayout(new BorderLayout());
         
         JLabel statusTitle = new JLabel("ESTADO DEL SISTEMA");
-        statusTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        statusTitle.setFont(UIUtils.HEADER_FONT);
         statusTitle.setForeground(TEXT_PRIMARY);
         
         JPanel statusContent = new JPanel();
@@ -374,22 +369,22 @@ public class DashboardFrame extends JFrame {
         estadoPanel.setBackground(CARD_BACKGROUND);
         
         JLabel estadoLabel = new JLabel("Estado: ");
-        estadoLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        estadoLabel.setFont(UIUtils.DEFAULT_FONT);
         estadoLabel.setForeground(TEXT_SECONDARY);
         
         lblEstadoSistema = new JLabel("ACTIVO");
-        lblEstadoSistema.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblEstadoSistema.setFont(UIUtils.BOLD_FONT);
         lblEstadoSistema.setForeground(SUCCESS_COLOR);
         
         estadoPanel.add(estadoLabel);
         estadoPanel.add(lblEstadoSistema);
         
         JLabel bdLabel = new JLabel("Base de Datos:");
-        bdLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        bdLabel.setFont(UIUtils.DEFAULT_FONT);
         bdLabel.setForeground(TEXT_SECONDARY);
         
         lblEstadoBD = new JLabel("✅ PostgreSQL Conectado");
-        lblEstadoBD.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblEstadoBD.setFont(UIUtils.DEFAULT_FONT);
         lblEstadoBD.setForeground(SUCCESS_COLOR);
         
         statusContent.add(estadoPanel);
@@ -411,7 +406,7 @@ public class DashboardFrame extends JFrame {
         patternsSection.setBackground(SECONDARY_COLOR);
         
         JLabel sectionTitle = new JLabel("PATRONES DE DISEÑO IMPLEMENTADOS");
-        sectionTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        sectionTitle.setFont(UIUtils.HEADER_FONT);
         sectionTitle.setForeground(TEXT_PRIMARY);
         
         panelPatrones = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
@@ -429,7 +424,7 @@ public class DashboardFrame extends JFrame {
         activitySection.setLayout(new BorderLayout());
         
         JLabel activityTitle = new JLabel("ACTIVIDAD RECIENTE");
-        activityTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        activityTitle.setFont(UIUtils.HEADER_FONT);
         activityTitle.setForeground(TEXT_PRIMARY);
         
         panelActividad = new JPanel();
@@ -530,7 +525,7 @@ public class DashboardFrame extends JFrame {
         card.setLayout(new BorderLayout());
         
         JLabel title = new JLabel(titulo);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        title.setFont(UIUtils.BOLD_FONT);
         title.setForeground(TEXT_PRIMARY);
         
         JPanel content = new JPanel();
@@ -559,18 +554,18 @@ public class DashboardFrame extends JFrame {
         infoPanel.setBackground(new Color(248, 249, 250));
         
         JLabel nombreLabel = new JLabel(nombre);
-        nombreLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        nombreLabel.setFont(UIUtils.BOLD_FONT);
         nombreLabel.setForeground(TEXT_PRIMARY);
         
         JLabel descLabel = new JLabel(descripcion);
-        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        descLabel.setFont(UIUtils.DEFAULT_FONT);
         descLabel.setForeground(TEXT_SECONDARY);
         
         infoPanel.add(nombreLabel);
         infoPanel.add(descLabel);
         
         JLabel statusLabel = new JLabel(implementado ? "✅" : "⏳");
-        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        statusLabel.setFont(UIUtils.HEADER_FONT);
         
         patronPanel.add(infoPanel, BorderLayout.CENTER);
         patronPanel.add(statusLabel, BorderLayout.EAST);
@@ -613,11 +608,11 @@ public class DashboardFrame extends JFrame {
         item.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         
         JLabel actividadLabel = new JLabel(actividad);
-        actividadLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        actividadLabel.setFont(UIUtils.DEFAULT_FONT);
         actividadLabel.setForeground(TEXT_PRIMARY);
         
         JLabel tiempoLabel = new JLabel(tiempo);
-        tiempoLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        tiempoLabel.setFont(UIUtils.DEFAULT_FONT);
         tiempoLabel.setForeground(new Color(142, 154, 175));
         
         item.add(actividadLabel, BorderLayout.WEST);
@@ -627,16 +622,14 @@ public class DashboardFrame extends JFrame {
     }
 
     private void abrirPatron(String patron) {
-        JOptionPane.showMessageDialog(this,
+        UIUtils.mostrarExito(this,
             "Demostración del patrón: " + patron + "\n\n" +
             "Esta funcionalidad mostrará la implementación\n" +
-            "y demostración visual del patrón seleccionado.",
-            "Patrón " + patron,
-            JOptionPane.INFORMATION_MESSAGE);
+            "y demostración visual del patrón seleccionado.");
     }
 
     private void ejecutarDemostracionCompleta() {
-        JOptionPane.showMessageDialog(this,
+        UIUtils.mostrarExito(this,
             "🚀 Ejecutando Demostración Completa\n\n" +
             "Se ejecutarán todos los patrones de diseño implementados:\n" +
             "• Singleton - Conexión única a BD\n" +
@@ -646,9 +639,7 @@ public class DashboardFrame extends JFrame {
             "• Command - Operaciones reversibles\n" +
             "• Observer - Eventos del sistema\n" +
             "• Chain of Responsibility - Cadena de aprobaciones\n\n" +
-            "¡Todos los patrones están funcionando correctamente!",
-            "Demostración Completa",
-            JOptionPane.INFORMATION_MESSAGE);
+            "¡Todos los patrones están funcionando correctamente!");
     }
     
     // Método para cambiar entre paneles
@@ -685,11 +676,11 @@ public class DashboardFrame extends JFrame {
         userInfo.setBorder(new EmptyBorder(15, 20, 15, 20));
         
         JLabel userLabel = new JLabel("👤 " + (usuarioActual != null ? usuarioActual.getNombreCompleto() : "Usuario"));
-        userLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        userLabel.setFont(UIUtils.BOLD_FONT);
         userLabel.setForeground(TEXT_PRIMARY);
         
         JLabel roleLabel = new JLabel("🏷️ " + (usuarioActual != null ? usuarioActual.getRol().getDescripcion() : "Sin rol"));
-        roleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        roleLabel.setFont(UIUtils.DEFAULT_FONT);
         roleLabel.setForeground(TEXT_SECONDARY);
         
         userInfo.add(userLabel);
@@ -750,11 +741,11 @@ public class DashboardFrame extends JFrame {
         subcategory.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        titleLabel.setFont(UIUtils.BOLD_FONT);
         titleLabel.setForeground(TEXT_PRIMARY);
         
         JLabel descLabel = new JLabel(description);
-        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        descLabel.setFont(UIUtils.DEFAULT_FONT);
         descLabel.setForeground(TEXT_SECONDARY);
         
         subcategory.add(titleLabel, BorderLayout.NORTH);
@@ -766,7 +757,7 @@ public class DashboardFrame extends JFrame {
     // Método auxiliar para crear botones de acción
     private JButton createActionButton(String text, Color backgroundColor) {
         JButton button = new JButton(text);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        button.setFont(UIUtils.BOLD_FONT);
         button.setForeground(Color.WHITE);
         button.setBackground(backgroundColor);
         button.setBorder(new EmptyBorder(10, 20, 10, 20));
