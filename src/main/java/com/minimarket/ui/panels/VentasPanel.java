@@ -1,6 +1,7 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -132,16 +133,14 @@ public class VentasPanel extends JPanel {
         tablaProductos = new JTable(modeloProductos);
         tablaProductos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaProductos.setRowHeight(25);
-        configurarTabla(tablaProductos);
+        UIUtils.configurarTabla(tablaProductos);
         
         // Botón agregar al carrito
         btnAgregarCarrito = new JButton("Agregar al Carrito");
-        btnAgregarCarrito.setFont(new Font("Arial", Font.BOLD, 12));
-        btnAgregarCarrito.setPreferredSize(new Dimension(150, 35));
+        UIUtils.configurarBotonPrimario(btnAgregarCarrito);
         btnAgregarCarrito.addActionListener(e -> agregarAlCarrito());
         
-        JPanel panelBotonAgregar = new JPanel(new FlowLayout());
-        panelBotonAgregar.setBackground(Color.WHITE);
+        JPanel panelBotonAgregar = UIUtils.crearPanelBotones(FlowLayout.CENTER);
         panelBotonAgregar.add(btnAgregarCarrito);
         
         panelCatalogo.add(panelBusqueda, BorderLayout.NORTH);
@@ -164,7 +163,7 @@ public class VentasPanel extends JPanel {
         tablaCarrito = new JTable(modeloCarrito);
         tablaCarrito.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaCarrito.setRowHeight(25);
-        configurarTabla(tablaCarrito);
+        UIUtils.configurarTabla(tablaCarrito);
         
         // Listener para cambios en cantidad
         tablaCarrito.getModel().addTableModelListener(e -> {
@@ -194,22 +193,19 @@ public class VentasPanel extends JPanel {
         
         // Total
         labelTotal = new JLabel("TOTAL: S/0.00", JLabel.RIGHT);
-        labelTotal.setFont(new Font("Arial", Font.BOLD, 16));
+        labelTotal.setFont(UIUtils.HEADER_FONT);
         labelTotal.setForeground(new Color(46, 125, 50));
         
         // Botones del carrito
-        JPanel panelBotonesCarrito = new JPanel(new FlowLayout());
-        panelBotonesCarrito.setBackground(Color.WHITE);
+        JPanel panelBotonesCarrito = UIUtils.crearPanelBotones(FlowLayout.CENTER);
         
         btnQuitar = new JButton("Quitar");
         btnLimpiar = new JButton("Limpiar");
         
-        btnQuitar.setFont(new Font("Arial", Font.PLAIN, 12));
-        btnQuitar.setPreferredSize(new Dimension(80, 30));
+        UIUtils.configurarBotonSecundario(btnQuitar);
         btnQuitar.addActionListener(e -> quitarDelCarrito());
         
-        btnLimpiar.setFont(new Font("Arial", Font.PLAIN, 12));
-        btnLimpiar.setPreferredSize(new Dimension(80, 30));
+        UIUtils.configurarBotonSecundario(btnLimpiar);
         btnLimpiar.addActionListener(e -> limpiarCarrito());
         
         panelBotonesCarrito.add(btnQuitar);
@@ -228,12 +224,11 @@ public class VentasPanel extends JPanel {
     }
     
     private JPanel crearPanelBotones() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panel.setBackground(Color.WHITE);
+        JPanel panel = UIUtils.crearPanelBotones(FlowLayout.RIGHT);
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         
         btnRegistrarVenta = new JButton("Registrar Venta / Emitir Comprobante");
-        btnRegistrarVenta.setFont(new Font("Arial", Font.BOLD, 13));
+        UIUtils.configurarBotonExito(btnRegistrarVenta);
         btnRegistrarVenta.setPreferredSize(new Dimension(280, 40));
         btnRegistrarVenta.addActionListener(e -> registrarVenta());
         
@@ -242,11 +237,6 @@ public class VentasPanel extends JPanel {
         return panel;
     }
     
-    private void configurarTabla(JTable tabla) {
-        tabla.getTableHeader().setBackground(Color.LIGHT_GRAY);
-        tabla.getTableHeader().setForeground(Color.BLACK);
-        tabla.getTableHeader().setFont(new Font("Arial", Font.BOLD, 11));
-    }
     
     private void cargarProductos() {
         modeloProductos.setRowCount(0);
@@ -273,10 +263,7 @@ public class VentasPanel extends JPanel {
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar productos: " + e.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al cargar productos: " + e.getMessage());
         }
     }
     
@@ -312,20 +299,14 @@ public class VentasPanel extends JPanel {
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al buscar productos: " + e.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al buscar productos: " + e.getMessage());
         }
     }
     
     private void agregarAlCarrito() {
         int filaSeleccionada = tablaProductos.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Por favor, selecciona un producto para agregar al carrito.", 
-                "Selección Requerida", 
-                JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "Por favor, selecciona un producto para agregar al carrito.");
             return;
         }
         
@@ -352,10 +333,7 @@ public class VentasPanel extends JPanel {
         int stockRestante = stockDisponible - cantidadEnCarrito;
         
         if (stockRestante <= 0) {
-            JOptionPane.showMessageDialog(this, 
-                "No hay más stock disponible para este producto.", 
-                "Stock Agotado", 
-                JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "No hay más stock disponible para este producto.");
             return;
         }
         
@@ -421,10 +399,7 @@ public class VentasPanel extends JPanel {
     private void quitarDelCarrito() {
         int filaSeleccionada = tablaCarrito.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Por favor, selecciona un producto para quitar del carrito.", 
-                "Selección Requerida", 
-                JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "Por favor, selecciona un producto para quitar del carrito.");
             return;
         }
         
@@ -439,18 +414,12 @@ public class VentasPanel extends JPanel {
     
     private void registrarVenta() {
         if (modeloCarrito.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this, 
-                "El carrito está vacío. Agrega productos antes de registrar la venta.", 
-                "Carrito Vacío", 
-                JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El carrito está vacío. Agrega productos antes de registrar la venta.");
             return;
         }
         
         if (totalVenta <= 0) {
-            JOptionPane.showMessageDialog(this, 
-                "El total de la venta debe ser mayor a 0.", 
-                "Total Inválido", 
-                JOptionPane.WARNING_MESSAGE);
+            UIUtils.mostrarError(this, "El total de la venta debe ser mayor a 0.");
             return;
         }
         
@@ -532,11 +501,9 @@ public class VentasPanel extends JPanel {
             conn.commit(); // Confirmar transacción
             
             // Mostrar mensaje de éxito
-            JOptionPane.showMessageDialog(this, 
+            UIUtils.mostrarExito(this, 
                 "Venta registrada exitosamente.\nNúmero de venta: " + numeroVenta + 
-                "\nTotal: S/" + String.format("%.2f", totalVenta), 
-                "Venta Exitosa", 
-                JOptionPane.INFORMATION_MESSAGE);
+                "\nTotal: S/" + String.format("%.2f", totalVenta));
             
             // Limpiar formulario
             limpiarFormulario();
@@ -548,10 +515,7 @@ public class VentasPanel extends JPanel {
                 // Log error
             }
             
-            JOptionPane.showMessageDialog(this, 
-                "Error al registrar la venta: " + e.getMessage(), 
-                "Error de Base de Datos", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al registrar la venta: " + e.getMessage());
         } finally {
             try {
                 if (conn != null) {
