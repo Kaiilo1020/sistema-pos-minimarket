@@ -11,8 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Panel de Ventas/Facturación - Interfaz para registrar ventas
- * Replica exactamente la funcionalidad mostrada en la imagen
+ * Panel de ventas y facturación
  */
 public class VentasPanel extends JPanel {
     

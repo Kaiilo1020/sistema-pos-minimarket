@@ -7,8 +7,7 @@ import java.awt.*;
 import java.sql.*;
 
 /**
- * Panel de Usuarios/Vendedores - Gestión de usuarios del sistema
- * Replica la funcionalidad mostrada en la imagen
+ * Panel de gestión de usuarios del sistema
  */
 public class UsuariosPanel extends JPanel {
     

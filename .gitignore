@@ -74,6 +74,10 @@ Desktop.ini
 # Logs
 logs/
 *.log
+alertas_criticas.log
+inventario.log
+seguridad.log
+ventas.log
 
 # Runtime data
 pids

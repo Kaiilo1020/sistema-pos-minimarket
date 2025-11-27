@@ -13,8 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Panel de Inventario - Muestra todos los productos de la base de datos
- * Incluye funcionalidades de búsqueda, agregar, editar y eliminar productos
+ * Panel de gestión de inventario con CRUD de productos
  */
 public class InventarioPanel extends JPanel {
     

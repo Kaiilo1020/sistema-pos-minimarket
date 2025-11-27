@@ -1,119 +1,85 @@
-# 🏪 Sistema POS Minimarket - Patrones de Diseño
+# Sistema POS Minimarket
 
-Sistema de Punto de Venta (POS) para minimarket desarrollado en Java con implementación de múltiples patrones de diseño y base de datos PostgreSQL.
+Sistema de Punto de Venta para minimarket desarrollado en Java con implementación de patrones de diseño y base de datos PostgreSQL.
 
-## 🎯 **Características Principales**
+## Características Principales
 
-### ✅ **Módulos Implementados**
-- **🛒 Punto de Venta (POS)** - Registro completo de ventas con carrito de compras
-- **📦 Gestión de Inventario** - CRUD de productos con manejo de lotes y fechas de vencimiento
-- **👥 Gestión de Usuarios** - Sistema de usuarios con roles y permisos (RBAC)
-- **📄 Historial de Ventas** - Auditoría completa de todas las transacciones
-- **📊 Reportes Diarios** - Métricas por trabajador y totales del día
+### Módulos Implementados
+- **Punto de Venta (POS)** - Registro de ventas con carrito de compras
+- **Gestión de Inventario** - CRUD de productos con manejo de lotes FIFO
+- **Gestión de Usuarios** - Sistema RBAC con roles y permisos
+- **Historial de Ventas** - Auditoría completa de transacciones
+- **Reportes Diarios** - Métricas por trabajador
 
-### 🏗️ **Patrones de Diseño Aplicados**
+### Patrones de Diseño Aplicados
 
-#### **Patrones Creacionales**
-- **Singleton**: Conexión única a base de datos (`DatabaseConnection`)
-- **Builder**: Construcción de boletas y reportes complejos
+#### Patrones Creacionales
+- **Singleton**: Conexión única a base de datos
+- **Builder**: Construcción de reportes complejos
 
-#### **Patrones Estructurales**
-- **Adapter**: Adaptación entre diferentes sistemas de pago
-- **Decorator**: Extensión de funcionalidades de productos
+#### Patrones Estructurales
+- **Adapter**: Adaptación entre sistemas de pago
+- **Decorator**: Extensión de funcionalidades
 
-#### **Patrones Comportamentales**
+#### Patrones Comportamentales
 - **Command**: Registro de comandos de venta
-- **Observer**: Alertas automáticas de stock bajo
-- **Chain of Responsibility**: Manejo de aprobaciones por niveles
+- **Observer**: Alertas automáticas de stock
+- **Chain of Responsibility**: Manejo de aprobaciones
 
-### 🔐 **Sistema RBAC (Role-Based Access Control)**
-- **Administrador**: Acceso completo al sistema
+### Sistema RBAC
+- **Administrador**: Acceso completo
 - **Supervisor**: Gestión de inventario y reportes
-- **Cajero**: Solo registro de ventas y consulta de precios
+- **Cajero**: Registro de ventas y consultas
 
-### 🗄️ **Base de Datos PostgreSQL**
-- Esquema completo con 10+ tablas
-- Triggers automáticos para auditoría
+### Base de Datos PostgreSQL
+- Esquema normalizado con triggers
 - Manejo de lotes con lógica FIFO
-- Integridad referencial garantizada
+- Integridad referencial
 
-## 🛠️ **Tecnologías Utilizadas**
+## Tecnologías
 
-- **Java 17** - Lenguaje principal
-- **Maven** - Gestión de dependencias
-- **PostgreSQL** - Base de datos
-- **Swing** - Interfaz gráfica de usuario
-- **JDBC** - Conectividad con base de datos
+- Java 17 + Maven
+- PostgreSQL + JDBC
+- Swing GUI
 
-## 📋 **Requisitos del Sistema**
+## Requisitos
 
-- Java 17 o superior
-- PostgreSQL 12 o superior
-- Maven 3.6 o superior
-- 4GB RAM mínimo
-- 500MB espacio en disco
+- Java 17+
+- PostgreSQL 12+
+- Maven 3.6+
 
-## 🚀 **Instalación y Configuración**
+## Instalación
 
-### 1. **Clonar el repositorio**
+1. **Clonar repositorio**
 ```bash
-git clone https://github.com/tu-usuario/sistema-pos-minimarket.git
+git clone https://github.com/Kaiilo1020/sistema-pos-minimarket.git
 cd sistema-pos-minimarket
 ```
 
-### 2. **Configurar PostgreSQL**
+2. **Configurar PostgreSQL**
 ```sql
--- Crear base de datos
 CREATE DATABASE minimarket_db;
-
--- Ejecutar script de creación
 \i database/minimarket_db_postgresql.sql
-
--- Ejecutar script de actualización
 \i database/actualizacion_pos_personalizada.sql
 ```
 
-### 3. **Configurar conexión**
-Editar `src/main/java/com/minimarket/patterns/creational/DatabaseConnection.java`:
-```java
-private static final String URL = "jdbc:postgresql://localhost:5432/minimarket_db";
-private static final String USERNAME = "tu_usuario";
-private static final String PASSWORD = "tu_password";
-```
-
-### 4. **Compilar y ejecutar**
+3. **Ejecutar**
 ```bash
-# Compilar el proyecto
-mvn clean compile
-
-# Ejecutar la aplicación
-mvn exec:java
+mvn clean compile exec:java
 ```
 
-## 📱 **Uso del Sistema**
+## Uso
 
-### **Login Inicial**
-- **Admin**: `admin` / `admin123`
-- **Cajero**: `cajera1` / `cajera123`
+**Usuarios por defecto:**
+- Admin: `admin` / `admin123`
+- Cajero: `cajera1` / `cajera123`
 
-### **Navegación Principal**
-1. **🏠 Inicio** - Dashboard principal
-2. **🛒 Caja/POS** - Registro de ventas
-3. **📦 Inventario** - Gestión de productos
-4. **📄 Historial** - Auditoría de ventas
-5. **📊 Reportes** - Métricas diarias
-6. **👥 Usuarios** - Gestión de personal (Solo Admin)
-
-## 🎨 **Capturas de Pantalla**
-
-### Dashboard Principal
-![Dashboard](docs/screenshots/dashboard.png)
-
-### Punto de Venta
-![POS](docs/screenshots/pos.png)
-
-### Gestión de Inventario
-![Inventario](docs/screenshots/inventario.png)
+**Módulos disponibles:**
+- Punto de Venta
+- Inventario
+- Usuarios
+- Reportes
+- Historial
 
 ## 🏆 **Problemas Solucionados**
 

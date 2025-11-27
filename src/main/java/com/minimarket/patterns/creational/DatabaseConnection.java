@@ -6,8 +6,7 @@ import java.sql.SQLException;
 import java.util.logging.Logger;
 
 /**
- * Patrón Singleton para gestionar la conexión a la base de datos
- * Resuelve: Múltiples conexiones simultáneas que causan inconsistencias
+ * Singleton para conexión a base de datos PostgreSQL
  */
 public class DatabaseConnection {
     private static DatabaseConnection instance;
@@ -19,7 +18,7 @@ public class DatabaseConnection {
     private static final String USERNAME = "postgres";
     private static final String PASSWORD = "postgres";
     
-    // Constructor privado para evitar instanciación externa
+    // Constructor privado
     private DatabaseConnection() {
         try {
             Class.forName("org.postgresql.Driver");
@@ -32,8 +31,7 @@ public class DatabaseConnection {
     }
     
     /**
-     * Método para obtener la única instancia de la conexión
-     * Thread-safe usando sincronización
+     * Obtiene la instancia única (thread-safe)
      */
     public static synchronized DatabaseConnection getInstance() {
         if (instance == null) {
