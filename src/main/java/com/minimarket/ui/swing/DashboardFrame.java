@@ -37,7 +37,6 @@ public class DashboardFrame extends JFrame {
     private JButton currentActiveButton;
     
     private Timer reloj;
-    private Timer actualizadorDashboard;
     
     // Usuario actual de la sesión
     private Usuario usuarioActual;
@@ -767,34 +766,6 @@ public class DashboardFrame extends JFrame {
             lblFechaHora.setText(now.format(formatter));
         });
         reloj.start();
-    }
-    
-    private void startDashboardAutoRefresh() {
-        // Actualizar dashboard cada 60 segundos (menos frecuente)
-        actualizadorDashboard = new Timer(60000, e -> {
-            SwingUtilities.invokeLater(() -> {
-                // Solo actualizar datos si estamos en el panel de inicio
-                // NO cambiar de panel automáticamente
-                Component currentPanel = null;
-                for (Component comp : mainContentArea.getComponents()) {
-                    if (comp.isVisible()) {
-                        currentPanel = comp;
-                        break;
-                    }
-                }
-                
-                // Solo actualizar si estamos viendo el dashboard de inicio
-                if (currentPanel instanceof JScrollPane) {
-                    // Actualizar silenciosamente sin cambiar navegación
-                    mainContentArea.remove(0);
-                    mainContentArea.add(createDashboardPanel(), "inicio", 0);
-                    mainContentArea.revalidate();
-                    mainContentArea.repaint();
-                    System.out.println("Dashboard actualizado automáticamente (solo datos)");
-                }
-            });
-        });
-        actualizadorDashboard.start();
     }
 
     
