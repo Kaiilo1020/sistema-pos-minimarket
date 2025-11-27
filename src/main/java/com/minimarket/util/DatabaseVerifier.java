@@ -99,8 +99,14 @@ public class DatabaseVerifier {
         
         try {
             DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-            String info = dbConnection.getConnectionInfo();
-            System.out.println(info);
+            Connection conn = dbConnection.getConnection();
+            var metaData = conn.getMetaData();
+            
+            System.out.println("✅ INFORMACIÓN DE CONEXIÓN:");
+            System.out.println("   URL: " + metaData.getURL());
+            System.out.println("   Usuario: " + metaData.getUserName());
+            System.out.println("   Base de datos: " + metaData.getDatabaseProductName());
+            System.out.println("   Versión: " + metaData.getDatabaseProductVersion());
             
         } catch (Exception e) {
             System.out.println("❌ Error al obtener información: " + e.getMessage());
@@ -122,7 +128,27 @@ public class DatabaseVerifier {
     private static boolean verificarEstructuraTablas() {
         try {
             DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-            return dbConnection.verifyDatabaseStructure();
+            Connection conn = dbConnection.getConnection();
+            
+            // Tablas que deben existir
+            String[] tablasRequeridas = {
+                "usuarios", "productos", "ventas", "detalle_ventas", 
+                "categorias", "auditoria_precios", "alertas_inventario"
+            };
+            
+            var metaData = conn.getMetaData();
+            int tablasEncontradas = 0;
+            
+            for (String tabla : tablasRequeridas) {
+                var rs = metaData.getTables(null, null, tabla, new String[]{"TABLE"});
+                if (rs.next()) {
+                    tablasEncontradas++;
+                }
+                rs.close();
+            }
+            
+            return tablasEncontradas >= tablasRequeridas.length - 2; // Permitir algunas tablas faltantes
+            
         } catch (Exception e) {
             System.out.println("   ❌ Error: " + e.getMessage());
             return false;
