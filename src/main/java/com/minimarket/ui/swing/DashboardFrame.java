@@ -1,6 +1,5 @@
 package com.minimarket.ui.swing;
 
-import com.minimarket.util.DatabaseVerifier;
 import com.minimarket.security.UsuarioSesion;
 import com.minimarket.security.Rol;
 import com.minimarket.model.Usuario;
@@ -20,7 +19,6 @@ public class DashboardFrame extends JFrame {
     
     // Colores del tema
     private static final Color SECONDARY_COLOR = new Color(245, 247, 250);
-    private static final Color ACCENT_COLOR = new Color(212, 165, 116);
     private static final Color TEXT_PRIMARY = new Color(44, 62, 80);
     private static final Color TEXT_SECONDARY = new Color(108, 117, 125);
     private static final Color SUCCESS_COLOR = new Color(40, 167, 69);
@@ -29,12 +27,6 @@ public class DashboardFrame extends JFrame {
     // Componentes principales
     private JLabel lblUsuario;
     private JLabel lblFechaHora;
-    private JLabel lblEstadoSistema;
-    private JLabel lblEstadoBD;
-    private JProgressBar progressPatrones;
-    private JLabel lblProgreso;
-    private JPanel panelPatrones;
-    private JPanel panelActividad;
     private JPanel mainContentArea;
     private CardLayout cardLayout;
     
@@ -43,8 +35,6 @@ public class DashboardFrame extends JFrame {
     private JButton currentActiveButton;
     
     private Timer reloj;
-    private int patronesCompletados = 7;
-    private final int totalPatrones = 7;
     
     // Usuario actual (simulado para demo)
     private Usuario usuarioActual;
@@ -59,9 +49,6 @@ public class DashboardFrame extends JFrame {
         setupLayout();
         setupEventHandlers();
         startClock();
-        verificarEstadoSistema();
-        cargarPatrones();
-        cargarActividadReciente();
     }
 
     private void initializeComponents() {
@@ -258,20 +245,16 @@ public class DashboardFrame extends JFrame {
         mainContent.setBackground(SECONDARY_COLOR);
         mainContent.setBorder(new EmptyBorder(30, 30, 30, 30));
         
-        // Welcome section
-        mainContent.add(createWelcomeSection());
+        // ZONA SUPERIOR: Tarjetas de Resumen (KPIs)
+        mainContent.add(createKPISection());
         mainContent.add(Box.createVerticalStrut(25));
         
-        // Main cards
-        mainContent.add(createMainCardsSection());
+        // ZONA MEDIA: Centro de Notificaciones (Observer Pattern)
+        mainContent.add(createNotificationCenter());
         mainContent.add(Box.createVerticalStrut(25));
         
-        // Patterns section
-        mainContent.add(createPatternsSection());
-        mainContent.add(Box.createVerticalStrut(25));
-        
-        // Activity section
-        mainContent.add(createActivitySection());
+        // ZONA INFERIOR: Accesos Rápidos (Command Pattern)
+        mainContent.add(createQuickActionsSection());
         
         JScrollPane scrollPane = new JScrollPane(mainContent);
         scrollPane.setBorder(null);
@@ -279,161 +262,252 @@ public class DashboardFrame extends JFrame {
         return scrollPane;
     }
 
-    private JPanel createWelcomeSection() {
-        JPanel welcome = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        welcome.setBackground(SECONDARY_COLOR);
+    // ZONA SUPERIOR: Tarjetas de Resumen (KPIs)
+    private JPanel createKPISection() {
+        JPanel kpiSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
+        kpiSection.setBackground(SECONDARY_COLOR);
         
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setBackground(SECONDARY_COLOR);
+        // Tarjeta 1: Ventas del Día
+        JPanel ventasCard = createKPICard("Ventas del Día", "S/. 1,250.00", "💰", SUCCESS_COLOR);
         
-        JLabel title = new JLabel("HOLA, JUAN");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 32)); // Mantener tamaño especial
-        title.setForeground(TEXT_PRIMARY);
+        // Tarjeta 2: Transacciones
+        JPanel transaccionesCard = createKPICard("Transacciones", "45", "📊", new Color(54, 162, 235));
         
-        JLabel subtitle = new JLabel("Bienvenido al sistema de patrones de diseño");
-        subtitle.setFont(UIUtils.HEADER_FONT);
-        subtitle.setForeground(TEXT_SECONDARY);
+        // Tarjeta 3: Método de Pago
+        JPanel metodoPagoCard = createKPICard("Método de Pago", "60% Efectivo | 40% Yape", "💳", new Color(255, 159, 64));
         
-        textPanel.add(title);
-        textPanel.add(Box.createVerticalStrut(5));
-        textPanel.add(subtitle);
+        // Tarjeta 4: Integridad de Datos
+        JPanel integridadCard = createKPICard("Integridad Datos", "✅ Boletas Correctas", "🔒", new Color(75, 192, 192));
         
-        welcome.add(textPanel);
-        return welcome;
+        kpiSection.add(ventasCard);
+        kpiSection.add(transaccionesCard);
+        kpiSection.add(metodoPagoCard);
+        kpiSection.add(integridadCard);
+        
+        return kpiSection;
+    }
+    
+    private JPanel createKPICard(String title, String value, String icon, Color accentColor) {
+        JPanel card = createCard(280, 120);
+        card.setLayout(new BorderLayout(10, 10));
+        card.setBorder(new EmptyBorder(15, 15, 15, 15));
+        
+        // Icono
+        JLabel iconLabel = new JLabel(icon);
+        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        iconLabel.setPreferredSize(new Dimension(40, 40));
+        
+        // Contenido
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBackground(CARD_BACKGROUND);
+        
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(UIUtils.DEFAULT_FONT);
+        titleLabel.setForeground(TEXT_SECONDARY);
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        JLabel valueLabel = new JLabel(value);
+        valueLabel.setFont(UIUtils.BOLD_FONT);
+        valueLabel.setForeground(accentColor);
+        valueLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        contentPanel.add(titleLabel);
+        contentPanel.add(Box.createVerticalStrut(5));
+        contentPanel.add(valueLabel);
+        
+        card.add(iconLabel, BorderLayout.WEST);
+        card.add(contentPanel, BorderLayout.CENTER);
+        
+        return card;
     }
 
-    private JPanel createMainCardsSection() {
-        JPanel cardsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
-        cardsPanel.setBackground(SECONDARY_COLOR);
+    // ZONA MEDIA: Centro de Notificaciones (Observer Pattern)
+    private JPanel createNotificationCenter() {
+        JPanel notificationCenter = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
+        notificationCenter.setBackground(SECONDARY_COLOR);
         
-        // Main action card
-        JPanel mainCard = createCard(400, 200);
-        mainCard.setLayout(new BorderLayout());
+        // Panel A: Alertas de Stock Crítico
+        JPanel stockAlertsPanel = createStockAlertsPanel();
         
-        JLabel cardTitle = new JLabel("DEMOSTRACIÓN PRINCIPAL");
-        cardTitle.setFont(UIUtils.HEADER_FONT);
-        cardTitle.setForeground(TEXT_PRIMARY);
+        // Panel B: Lotes por Vencer
+        JPanel lotesVencerPanel = createLotesVencerPanel();
         
-        JPanel progressPanel = new JPanel(new FlowLayout());
-        progressPanel.setBackground(CARD_BACKGROUND);
+        notificationCenter.add(stockAlertsPanel);
+        notificationCenter.add(lotesVencerPanel);
         
-        progressPatrones = new JProgressBar(0, 100);
-        progressPatrones.setValue((patronesCompletados * 100) / totalPatrones);
-        progressPatrones.setPreferredSize(new Dimension(200, 20));
-        progressPatrones.setForeground(SUCCESS_COLOR);
+        return notificationCenter;
+    }
+    
+    private JPanel createStockAlertsPanel() {
+        JPanel panel = createCard(400, 250);
+        panel.setLayout(new BorderLayout(10, 10));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
         
-        lblProgreso = new JLabel("Progreso: " + ((patronesCompletados * 100) / totalPatrones) + "%");
-        lblProgreso.setFont(UIUtils.BOLD_FONT);
-        lblProgreso.setForeground(SUCCESS_COLOR);
+        // Título
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        headerPanel.setBackground(CARD_BACKGROUND);
         
-        progressPanel.add(progressPatrones);
-        progressPanel.add(lblProgreso);
+        JLabel titleLabel = new JLabel("⚠️ ALERTAS DE STOCK (Crítico)");
+        titleLabel.setFont(UIUtils.BOLD_FONT);
+        titleLabel.setForeground(new Color(220, 53, 69)); // Color de alerta
         
-        JButton mainActionButton = new JButton("EJECUTAR DEMOSTRACIÓN COMPLETA");
-        mainActionButton.setFont(UIUtils.BOLD_FONT);
-        mainActionButton.setBackground(ACCENT_COLOR);
-        mainActionButton.setForeground(Color.WHITE);
-        mainActionButton.setPreferredSize(new Dimension(250, 45));
-        mainActionButton.setBorder(null);
-        mainActionButton.setFocusPainted(false);
-        mainActionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        headerPanel.add(titleLabel);
         
-        mainActionButton.addActionListener(e -> ejecutarDemostracionCompleta());
+        // Contenido de alertas
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBackground(CARD_BACKGROUND);
         
-        JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-        centerPanel.setBackground(CARD_BACKGROUND);
-        centerPanel.add(progressPanel);
-        centerPanel.add(Box.createVerticalStrut(15));
-        centerPanel.add(mainActionButton);
+        // Simular productos con stock bajo
+        String[] productosStockBajo = {
+            "🔴 Leche Gloria (Stock: 4 un.)",
+            "🟡 Arroz Costeño (Stock: 9 un.)",
+            "🔴 Aceite Primor (Stock: 2 un.)",
+            "🟡 Azúcar Cartavio (Stock: 8 un.)"
+        };
         
-        mainCard.add(cardTitle, BorderLayout.NORTH);
-        mainCard.add(centerPanel, BorderLayout.CENTER);
+        for (String producto : productosStockBajo) {
+            JLabel productoLabel = new JLabel(producto);
+            productoLabel.setFont(UIUtils.DEFAULT_FONT);
+            productoLabel.setForeground(TEXT_PRIMARY);
+            productoLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
+            contentPanel.add(productoLabel);
+        }
         
-        // Status card
-        JPanel statusCard = createCard(300, 200);
-        statusCard.setLayout(new BorderLayout());
+        // Botón de acción
+        JButton btnVerInventario = new JButton("Ver Inventario Completo");
+        UIUtils.configurarBotonPrimario(btnVerInventario);
+        btnVerInventario.addActionListener(e -> cardLayout.show(mainContentArea, "inventario"));
         
-        JLabel statusTitle = new JLabel("ESTADO DEL SISTEMA");
-        statusTitle.setFont(UIUtils.HEADER_FONT);
-        statusTitle.setForeground(TEXT_PRIMARY);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setBackground(CARD_BACKGROUND);
+        buttonPanel.add(btnVerInventario);
         
-        JPanel statusContent = new JPanel();
-        statusContent.setLayout(new BoxLayout(statusContent, BoxLayout.Y_AXIS));
-        statusContent.setBackground(CARD_BACKGROUND);
+        panel.add(headerPanel, BorderLayout.NORTH);
+        panel.add(contentPanel, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
         
-        JPanel estadoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        estadoPanel.setBackground(CARD_BACKGROUND);
+        return panel;
+    }
+    
+    private JPanel createLotesVencerPanel() {
+        JPanel panel = createCard(400, 250);
+        panel.setLayout(new BorderLayout(10, 10));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
         
-        JLabel estadoLabel = new JLabel("Estado: ");
-        estadoLabel.setFont(UIUtils.DEFAULT_FONT);
-        estadoLabel.setForeground(TEXT_SECONDARY);
+        // Título
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        headerPanel.setBackground(CARD_BACKGROUND);
         
-        lblEstadoSistema = new JLabel("ACTIVO");
-        lblEstadoSistema.setFont(UIUtils.BOLD_FONT);
-        lblEstadoSistema.setForeground(SUCCESS_COLOR);
+        JLabel titleLabel = new JLabel("📅 LOTES POR VENCER");
+        titleLabel.setFont(UIUtils.BOLD_FONT);
+        titleLabel.setForeground(new Color(255, 193, 7)); // Color de advertencia
         
-        estadoPanel.add(estadoLabel);
-        estadoPanel.add(lblEstadoSistema);
+        headerPanel.add(titleLabel);
         
-        JLabel bdLabel = new JLabel("Base de Datos:");
-        bdLabel.setFont(UIUtils.DEFAULT_FONT);
-        bdLabel.setForeground(TEXT_SECONDARY);
+        // Contenido de lotes
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBackground(CARD_BACKGROUND);
         
-        lblEstadoBD = new JLabel("✅ PostgreSQL Conectado");
-        lblEstadoBD.setFont(UIUtils.DEFAULT_FONT);
-        lblEstadoBD.setForeground(SUCCESS_COLOR);
+        // Simular productos próximos a vencer
+        String[] lotesVencer = {
+            "🟠 Yogurt Fresa (Vence: Mañana)",
+            "🟠 Jamón San Fernando (Vence: 28/11/2025)",
+            "🟡 Pan Integral (Vence: 30/11/2025)",
+            "🟡 Queso Fresco (Vence: 01/12/2025)"
+        };
         
-        statusContent.add(estadoPanel);
-        statusContent.add(bdLabel);
-        statusContent.add(lblEstadoBD);
+        for (String lote : lotesVencer) {
+            JLabel loteLabel = new JLabel(lote);
+            loteLabel.setFont(UIUtils.DEFAULT_FONT);
+            loteLabel.setForeground(TEXT_PRIMARY);
+            loteLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
+            contentPanel.add(loteLabel);
+        }
         
-        statusCard.add(statusTitle, BorderLayout.NORTH);
-        statusCard.add(statusContent, BorderLayout.CENTER);
+        // Botón de acción
+        JButton btnVerAlertas = new JButton("Ver Alertas Completas");
+        UIUtils.configurarBotonSecundario(btnVerAlertas);
+        btnVerAlertas.addActionListener(e -> cardLayout.show(mainContentArea, "alertas"));
         
-        cardsPanel.add(mainCard);
-        cardsPanel.add(statusCard);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setBackground(CARD_BACKGROUND);
+        buttonPanel.add(btnVerAlertas);
         
-        return cardsPanel;
+        panel.add(headerPanel, BorderLayout.NORTH);
+        panel.add(contentPanel, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        return panel;
+    }
+    
+    // ZONA INFERIOR: Accesos Rápidos (Command Pattern)
+    private JPanel createQuickActionsSection() {
+        JPanel quickActions = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0));
+        quickActions.setBackground(SECONDARY_COLOR);
+        
+        // Botón Nueva Venta
+        JButton btnNuevaVenta = createQuickActionButton(
+            "Nueva Venta 🛒", 
+            "Iniciar proceso de venta",
+            new Color(40, 167, 69),
+            e -> cardLayout.show(mainContentArea, "pos")
+        );
+        
+        // Botón Cierre de Caja
+        JButton btnCierreCaja = createQuickActionButton(
+            "Cierre de Caja 🔒", 
+            "Reporte de ventas del día",
+            new Color(108, 117, 125),
+            e -> cardLayout.show(mainContentArea, "reporte")
+        );
+        
+        // Botón Consultar Precio
+        JButton btnConsultarPrecio = createQuickActionButton(
+            "Consultar Precio 🔍", 
+            "Buscar productos y precios",
+            new Color(108, 117, 125),
+            e -> cardLayout.show(mainContentArea, "inventario")
+        );
+        
+        quickActions.add(btnNuevaVenta);
+        quickActions.add(btnCierreCaja);
+        quickActions.add(btnConsultarPrecio);
+        
+        return quickActions;
+    }
+    
+    private JButton createQuickActionButton(String text, String tooltip, Color backgroundColor, java.awt.event.ActionListener action) {
+        JButton button = new JButton("<html><center>" + text + "</center></html>");
+        button.setFont(UIUtils.BOLD_FONT);
+        button.setBackground(backgroundColor);
+        button.setForeground(Color.WHITE);
+        button.setPreferredSize(new Dimension(200, 80));
+        button.setBorder(BorderFactory.createRaisedSoftBevelBorder());
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setToolTipText(tooltip);
+        
+        // Efecto hover
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                button.setBackground(backgroundColor.darker());
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                button.setBackground(backgroundColor);
+            }
+        });
+        
+        button.addActionListener(action);
+        return button;
     }
 
-    private JPanel createPatternsSection() {
-        JPanel patternsSection = new JPanel();
-        patternsSection.setLayout(new BoxLayout(patternsSection, BoxLayout.Y_AXIS));
-        patternsSection.setBackground(SECONDARY_COLOR);
-        
-        JLabel sectionTitle = new JLabel("PATRONES DE DISEÑO IMPLEMENTADOS");
-        sectionTitle.setFont(UIUtils.HEADER_FONT);
-        sectionTitle.setForeground(TEXT_PRIMARY);
-        
-        panelPatrones = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
-        panelPatrones.setBackground(SECONDARY_COLOR);
-        
-        patternsSection.add(sectionTitle);
-        patternsSection.add(Box.createVerticalStrut(20));
-        patternsSection.add(panelPatrones);
-        
-        return patternsSection;
-    }
-
-    private JPanel createActivitySection() {
-        JPanel activitySection = createCard(0, 0);
-        activitySection.setLayout(new BorderLayout());
-        
-        JLabel activityTitle = new JLabel("ACTIVIDAD RECIENTE");
-        activityTitle.setFont(UIUtils.HEADER_FONT);
-        activityTitle.setForeground(TEXT_PRIMARY);
-        
-        panelActividad = new JPanel();
-        panelActividad.setLayout(new BoxLayout(panelActividad, BoxLayout.Y_AXIS));
-        panelActividad.setBackground(CARD_BACKGROUND);
-        
-        activitySection.add(activityTitle, BorderLayout.NORTH);
-        activitySection.add(panelActividad, BorderLayout.CENTER);
-        
-        return activitySection;
-    }
 
     private JPanel createCard(int width, int height) {
         JPanel card = new JPanel();
@@ -463,182 +537,6 @@ public class DashboardFrame extends JFrame {
         reloj.start();
     }
 
-    private void verificarEstadoSistema() {
-        SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
-            @Override
-            protected Boolean doInBackground() throws Exception {
-                return DatabaseVerifier.verificacionRapida();
-            }
-            
-            @Override
-            protected void done() {
-                try {
-                    boolean conectado = get();
-                    if (conectado) {
-                        lblEstadoSistema.setText("ACTIVO");
-                        lblEstadoSistema.setForeground(SUCCESS_COLOR);
-                        lblEstadoBD.setText("✅ PostgreSQL Conectado");
-                        lblEstadoBD.setForeground(SUCCESS_COLOR);
-                    } else {
-                        lblEstadoSistema.setText("INACTIVO");
-                        lblEstadoSistema.setForeground(Color.RED);
-                        lblEstadoBD.setText("❌ Sin conexión");
-                        lblEstadoBD.setForeground(Color.RED);
-                    }
-                } catch (Exception e) {
-                    lblEstadoSistema.setText("ERROR");
-                    lblEstadoSistema.setForeground(Color.RED);
-                    lblEstadoBD.setText("❌ Error de conexión");
-                    lblEstadoBD.setForeground(Color.RED);
-                }
-            }
-        };
-        worker.execute();
-    }
-
-    private void cargarPatrones() {
-        // Patrones Creacionales
-        JPanel creationalCard = createPatternSectionCard("🔧 CREACIONALES");
-        agregarPatronACard(creationalCard, "🔗 Singleton", "Conexión única a BD", true);
-        agregarPatronACard(creationalCard, "🏗️ Builder", "Construcción de boletas", true);
-        
-        // Patrones Estructurales
-        JPanel structuralCard = createPatternSectionCard("🏗️ ESTRUCTURALES");
-        agregarPatronACard(structuralCard, "🔌 Adapter", "Roles de usuario", true);
-        agregarPatronACard(structuralCard, "🎨 Decorator", "Sistema de notificaciones", true);
-        
-        // Patrones Comportamentales
-        JPanel behavioralCard = createPatternSectionCard("⚡ COMPORTAMENTALES");
-        agregarPatronACard(behavioralCard, "⚡ Command", "Operaciones reversibles", true);
-        agregarPatronACard(behavioralCard, "👁️ Observer", "Eventos del sistema", true);
-        agregarPatronACard(behavioralCard, "🔗 Chain", "Cadena de aprobaciones", true);
-        
-        panelPatrones.add(creationalCard);
-        panelPatrones.add(structuralCard);
-        panelPatrones.add(behavioralCard);
-    }
-
-    private JPanel createPatternSectionCard(String titulo) {
-        JPanel card = createCard(350, 0);
-        card.setLayout(new BorderLayout());
-        
-        JLabel title = new JLabel(titulo);
-        title.setFont(UIUtils.BOLD_FONT);
-        title.setForeground(TEXT_PRIMARY);
-        
-        JPanel content = new JPanel();
-        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.setBackground(CARD_BACKGROUND);
-        
-        card.add(title, BorderLayout.NORTH);
-        card.add(content, BorderLayout.CENTER);
-        
-        return card;
-    }
-
-    private void agregarPatronACard(JPanel card, String nombre, String descripcion, boolean implementado) {
-        JPanel content = (JPanel) ((JPanel) card).getComponent(1);
-        
-        JPanel patronPanel = new JPanel(new BorderLayout());
-        patronPanel.setBackground(new Color(248, 249, 250));
-        patronPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(222, 226, 230)),
-            new EmptyBorder(10, 15, 10, 15)
-        ));
-        patronPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.setBackground(new Color(248, 249, 250));
-        
-        JLabel nombreLabel = new JLabel(nombre);
-        nombreLabel.setFont(UIUtils.BOLD_FONT);
-        nombreLabel.setForeground(TEXT_PRIMARY);
-        
-        JLabel descLabel = new JLabel(descripcion);
-        descLabel.setFont(UIUtils.DEFAULT_FONT);
-        descLabel.setForeground(TEXT_SECONDARY);
-        
-        infoPanel.add(nombreLabel);
-        infoPanel.add(descLabel);
-        
-        JLabel statusLabel = new JLabel(implementado ? "✅" : "⏳");
-        statusLabel.setFont(UIUtils.HEADER_FONT);
-        
-        patronPanel.add(infoPanel, BorderLayout.CENTER);
-        patronPanel.add(statusLabel, BorderLayout.EAST);
-        
-        // Agregar click handler
-        patronPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                abrirPatron(nombre);
-            }
-            
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                patronPanel.setBackground(new Color(233, 236, 239));
-                infoPanel.setBackground(new Color(233, 236, 239));
-            }
-            
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                patronPanel.setBackground(new Color(248, 249, 250));
-                infoPanel.setBackground(new Color(248, 249, 250));
-            }
-        });
-        
-        content.add(patronPanel);
-        content.add(Box.createVerticalStrut(8));
-    }
-
-    private void cargarActividadReciente() {
-        agregarItemActividad("✅ Patrón Singleton implementado", "Hace 2 horas");
-        agregarItemActividad("🔍 Conexión BD verificada", "Hace 1 hora");
-        agregarItemActividad("🎨 Interfaz actualizada", "Hace 30 min");
-        agregarItemActividad("📊 Sistema iniciado", "Hace 5 min");
-    }
-
-    private void agregarItemActividad(String actividad, String tiempo) {
-        JPanel item = new JPanel(new BorderLayout());
-        item.setBackground(CARD_BACKGROUND);
-        item.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(241, 243, 244)));
-        item.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        
-        JLabel actividadLabel = new JLabel(actividad);
-        actividadLabel.setFont(UIUtils.DEFAULT_FONT);
-        actividadLabel.setForeground(TEXT_PRIMARY);
-        
-        JLabel tiempoLabel = new JLabel(tiempo);
-        tiempoLabel.setFont(UIUtils.DEFAULT_FONT);
-        tiempoLabel.setForeground(new Color(142, 154, 175));
-        
-        item.add(actividadLabel, BorderLayout.WEST);
-        item.add(tiempoLabel, BorderLayout.EAST);
-        
-        panelActividad.add(item);
-    }
-
-    private void abrirPatron(String patron) {
-        UIUtils.mostrarExito(this,
-            "Demostración del patrón: " + patron + "\n\n" +
-            "Esta funcionalidad mostrará la implementación\n" +
-            "y demostración visual del patrón seleccionado.");
-    }
-
-    private void ejecutarDemostracionCompleta() {
-        UIUtils.mostrarExito(this,
-            "🚀 Ejecutando Demostración Completa\n\n" +
-            "Se ejecutarán todos los patrones de diseño implementados:\n" +
-            "• Singleton - Conexión única a BD\n" +
-            "• Builder - Construcción de boletas\n" +
-            "• Adapter - Roles de usuario\n" +
-            "• Decorator - Sistema de notificaciones\n" +
-            "• Command - Operaciones reversibles\n" +
-            "• Observer - Eventos del sistema\n" +
-            "• Chain of Responsibility - Cadena de aprobaciones\n\n" +
-            "¡Todos los patrones están funcionando correctamente!");
-    }
     
     // Método para cambiar entre paneles
     private void cambiarPanel(String panelName) {
