@@ -55,8 +55,6 @@ public class Producto {
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
     
-    public Long getCategoriaId() { return 1L; } // Simplificado para demo
-    public void setCategoriaId(Long categoriaId) { /* Simplificado */ }
     
     public String getLote() { return lote; }
     public void setLote(String lote) { this.lote = lote; }

@@ -96,6 +96,7 @@ public class Boleta {
                cajera != null &&
                metodoPago != null &&
                detalles != null && !detalles.isEmpty() &&
+               detalles.stream().allMatch(DetalleVenta::esValido) &&
                total != null && total.compareTo(BigDecimal.ZERO) > 0;
     }
     

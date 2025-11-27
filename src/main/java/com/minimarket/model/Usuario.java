@@ -87,12 +87,6 @@ public class Usuario {
         }
     }
     
-    /**
-     * Verifica si el usuario es administrador o supervisor
-     */
-    public boolean esAdministrativo() {
-        return rol != null && rol.esAdministrativo();
-    }
     
     /**
      * Obtiene el nombre completo del usuario

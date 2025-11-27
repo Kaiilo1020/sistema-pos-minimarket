@@ -20,7 +20,7 @@ public class DetalleVenta {
         this.producto = producto;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
-        this.loteVendido = producto.getLote();
+        this.loteVendido = producto != null ? producto.getLote() : null;
         calcularSubtotal();
     }
     
