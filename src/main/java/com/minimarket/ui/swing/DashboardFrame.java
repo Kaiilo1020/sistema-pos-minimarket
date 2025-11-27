@@ -19,7 +19,6 @@ import java.time.format.DateTimeFormatter;
 public class DashboardFrame extends JFrame {
     
     // Colores del tema
-    private static final Color PRIMARY_COLOR = new Color(33, 150, 243);
     private static final Color SECONDARY_COLOR = new Color(245, 247, 250);
     private static final Color ACCENT_COLOR = new Color(212, 165, 116);
     private static final Color TEXT_PRIMARY = new Color(44, 62, 80);
@@ -727,52 +726,5 @@ public class DashboardFrame extends JFrame {
     // Panel Alertas de Vencimiento
     private JPanel createAlertasPanel() {
         return new com.minimarket.ui.panels.AlertasVencimientoPanel();
-    }
-    
-    // Método auxiliar para crear botones de subcategoría
-    private JPanel createSubcategoryButton(String title, String description) {
-        JPanel subcategory = new JPanel(new BorderLayout());
-        subcategory.setBackground(CARD_BACKGROUND);
-        subcategory.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(222, 226, 230)),
-            new EmptyBorder(15, 20, 15, 20)
-        ));
-        subcategory.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(UIUtils.BOLD_FONT);
-        titleLabel.setForeground(TEXT_PRIMARY);
-        
-        JLabel descLabel = new JLabel(description);
-        descLabel.setFont(UIUtils.DEFAULT_FONT);
-        descLabel.setForeground(TEXT_SECONDARY);
-        
-        subcategory.add(titleLabel, BorderLayout.NORTH);
-        subcategory.add(descLabel, BorderLayout.CENTER);
-        
-        return subcategory;
-    }
-    
-    // Método auxiliar para crear botones de acción
-    private JButton createActionButton(String text, Color backgroundColor) {
-        JButton button = new JButton(text);
-        button.setFont(UIUtils.BOLD_FONT);
-        button.setForeground(Color.WHITE);
-        button.setBackground(backgroundColor);
-        button.setBorder(new EmptyBorder(10, 20, 10, 20));
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        // Agregar efecto hover
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(backgroundColor.darker());
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(backgroundColor);
-            }
-        });
-        
-        return button;
     }
 }
