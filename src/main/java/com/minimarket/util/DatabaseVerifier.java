@@ -3,14 +3,17 @@ package com.minimarket.util;
 import com.minimarket.config.DatabaseConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 /**
  * Utilidad para verificar y diagnosticar la conexión a la base de datos
  */
 public class DatabaseVerifier {
     
-    private static final Logger logger = Logger.getLogger(DatabaseVerifier.class.getName());
+    // Configuración centralizada
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/minimarket_db";
+    private static final String DB_USER = "postgres";
+    private static final String DB_DRIVER = "org.postgresql.Driver";
+    private static final String DRIVER_VERSION = "postgresql-42.7.8.jar";
     
     /**
      * Ejecuta una verificación completa de la base de datos
@@ -237,7 +240,7 @@ public class DatabaseVerifier {
                 "SELECT u.nombre, COUNT(v.id) as ventas " +
                 "FROM usuarios u " +
                 "LEFT JOIN ventas v ON u.id = v.cajera_id " +
-                "WHERE u.rol = 'CAJERA' " +
+                "WHERE u.rol = 'CAJERO' " +
                 "GROUP BY u.id, u.nombre"
             );
             
@@ -271,18 +274,18 @@ public class DatabaseVerifier {
         
         // Verificar driver
         try {
-            Class.forName("org.postgresql.Driver");
+            Class.forName(DB_DRIVER);
             System.out.println("✅ Driver PostgreSQL: Encontrado");
         } catch (ClassNotFoundException e) {
             System.out.println("❌ Driver PostgreSQL: NO ENCONTRADO");
-            System.out.println("   💡 Solución: Agregar postgresql-42.7.1.jar al classpath");
+            System.out.println("   💡 Solución: Agregar " + DRIVER_VERSION + " al classpath");
             System.out.println("   💡 O ejecutar: mvn clean install");
         }
         
         // Verificar configuración
         System.out.println("\n📋 Configuración actual:");
-        System.out.println("   URL: jdbc:postgresql://localhost:5432/minimarket_db");
-        System.out.println("   Usuario: postgres");
+        System.out.println("   URL: " + DB_URL);
+        System.out.println("   Usuario: " + DB_USER);
         System.out.println("   💡 Verifica que estos datos sean correctos");
         
         // Sugerencias
@@ -290,7 +293,7 @@ public class DatabaseVerifier {
         System.out.println("   1. Verificar que PostgreSQL esté ejecutándose");
         System.out.println("   2. Verificar usuario y contraseña");
         System.out.println("   3. Verificar que la base de datos 'minimarket_db' exista");
-        System.out.println("   4. Ejecutar: database/setup_database.bat");
+        System.out.println("   4. Ejecutar script SQL de configuración");
         System.out.println("   5. Verificar firewall/puertos (5432)");
     }
     
