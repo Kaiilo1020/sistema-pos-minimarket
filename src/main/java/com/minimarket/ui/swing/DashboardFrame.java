@@ -73,8 +73,8 @@ public class DashboardFrame extends JFrame {
             System.out.println("Iniciando reloj...");
             startClock();
             
-            System.out.println("Iniciando auto-refresh...");
-            startDashboardAutoRefresh();
+            System.out.println("Auto-refresh deshabilitado para evitar navegación automática");
+            // startDashboardAutoRefresh(); // DESHABILITADO temporalmente
             
             System.out.println("Dashboard inicializado correctamente");
         } catch (Exception e) {
@@ -90,6 +90,9 @@ public class DashboardFrame extends JFrame {
         setSize(1400, 900);
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
+        
+        // Asegurar que no hay barras extra
+        setResizable(true);
         
         // Configurar icono
         try {
@@ -349,14 +352,26 @@ public class DashboardFrame extends JFrame {
      * Actualiza los datos del dashboard
      */
     private void actualizarDashboard() {
-        // Mostrar el panel de inicio actualizado
-        cardLayout.show(mainContentArea, "inicio");
+        // NO cambiar de panel automáticamente - solo actualizar datos
+        // Solo recrear el contenido si estamos en el panel de inicio
+        Component currentComponent = null;
+        for (Component comp : mainContentArea.getComponents()) {
+            if (comp.isVisible()) {
+                currentComponent = comp;
+                break;
+            }
+        }
         
-        // Recrear el contenido del dashboard
-        mainContentArea.remove(mainContentArea.getComponent(0)); // Remover el panel anterior
-        mainContentArea.add(createDashboardPanel(), "inicio", 0); // Agregar el nuevo panel
+        // Solo actualizar si estamos viendo el dashboard de inicio
+        if (currentComponent instanceof JScrollPane) {
+            // Recrear el contenido del dashboard sin cambiar de panel
+            mainContentArea.remove(0);
+            mainContentArea.add(createDashboardPanel(), "inicio", 0);
+            mainContentArea.revalidate();
+            mainContentArea.repaint();
+        }
         
-        UIUtils.mostrarExito(this, "Dashboard actualizado con datos en tiempo real");
+        UIUtils.mostrarExito(this, "Datos actualizados correctamente");
     }
     
     /**
@@ -755,18 +770,29 @@ public class DashboardFrame extends JFrame {
     }
     
     private void startDashboardAutoRefresh() {
-        // Actualizar dashboard cada 30 segundos
-        actualizadorDashboard = new Timer(30000, e -> {
-            // Solo actualizar si estamos en el panel de inicio
-            if (mainContentArea.getComponent(0) instanceof JScrollPane) {
-                SwingUtilities.invokeLater(() -> {
-                    // Recrear silenciosamente el contenido del dashboard
+        // Actualizar dashboard cada 60 segundos (menos frecuente)
+        actualizadorDashboard = new Timer(60000, e -> {
+            SwingUtilities.invokeLater(() -> {
+                // Solo actualizar datos si estamos en el panel de inicio
+                // NO cambiar de panel automáticamente
+                Component currentPanel = null;
+                for (Component comp : mainContentArea.getComponents()) {
+                    if (comp.isVisible()) {
+                        currentPanel = comp;
+                        break;
+                    }
+                }
+                
+                // Solo actualizar si estamos viendo el dashboard de inicio
+                if (currentPanel instanceof JScrollPane) {
+                    // Actualizar silenciosamente sin cambiar navegación
                     mainContentArea.remove(0);
                     mainContentArea.add(createDashboardPanel(), "inicio", 0);
                     mainContentArea.revalidate();
                     mainContentArea.repaint();
-                });
-            }
+                    System.out.println("Dashboard actualizado automáticamente (solo datos)");
+                }
+            });
         });
         actualizadorDashboard.start();
     }
