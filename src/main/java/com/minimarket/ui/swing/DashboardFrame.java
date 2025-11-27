@@ -5,6 +5,7 @@ import com.minimarket.security.Rol;
 import com.minimarket.model.Usuario;
 import com.minimarket.ui.util.UIUtils;
 import com.minimarket.service.DashboardService;
+import com.minimarket.service.ReportePDFService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -288,6 +289,43 @@ public class DashboardFrame extends JFrame {
         
         UIUtils.mostrarExito(this, "Dashboard actualizado con datos en tiempo real");
     }
+    
+    /**
+     * Genera un reporte PDF de las ventas del día
+     */
+    private void generarReportePDF() {
+        try {
+            // Mostrar mensaje de progreso
+            setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            
+            // Generar el reporte
+            String rutaArchivo = ReportePDFService.generarReporteVentasDelDia();
+            
+            // Restaurar cursor
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            
+            // Mostrar mensaje de éxito
+            UIUtils.mostrarExito(this, 
+                "¡Reporte PDF generado exitosamente!\n\n" +
+                "Archivo guardado en:\n" + rutaArchivo + "\n\n" +
+                "El archivo se ha guardado en tu carpeta de Descargas.");
+            
+            // Opcional: Abrir el archivo automáticamente
+            try {
+                java.awt.Desktop.getDesktop().open(new java.io.File(rutaArchivo));
+            } catch (Exception e) {
+                // Si no se puede abrir automáticamente, no es crítico
+            }
+            
+        } catch (Exception e) {
+            // Restaurar cursor en caso de error
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            
+            UIUtils.mostrarError(this, 
+                "Error al generar el reporte PDF:\n" + e.getMessage() + "\n\n" +
+                "Verifica que tengas permisos de escritura en la carpeta de Descargas.");
+        }
+    }
 
     // ZONA SUPERIOR: Tarjetas de Resumen (KPIs)
     private JPanel createKPISection() {
@@ -514,9 +552,18 @@ public class DashboardFrame extends JFrame {
             e -> cardLayout.show(mainContentArea, "inventario")
         );
         
+        // Botón Reporte PDF
+        JButton btnReportePDF = createQuickActionButton(
+            "Reporte PDF 📄", 
+            "Generar reporte de ventas del día en PDF",
+            new Color(220, 53, 69),
+            e -> generarReportePDF()
+        );
+        
         quickActions.add(btnNuevaVenta);
         quickActions.add(btnCierreCaja);
         quickActions.add(btnConsultarPrecio);
+        quickActions.add(btnReportePDF);
         
         return quickActions;
     }

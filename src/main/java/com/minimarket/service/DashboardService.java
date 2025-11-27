@@ -92,8 +92,8 @@ public class DashboardService {
      */
     private static double obtenerVentasDelDia(Connection conn) throws SQLException {
         String sql = "SELECT COALESCE(SUM(total), 0) as total_ventas " +
-                    "FROM boletas " +
-                    "WHERE DATE(fecha_emision) = CURRENT_DATE";
+                    "FROM ventas " +
+                    "WHERE DATE(fecha_hora) = CURRENT_DATE AND estado = 'ACTIVA'";
         
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -110,8 +110,8 @@ public class DashboardService {
      */
     private static int obtenerTransaccionesDelDia(Connection conn) throws SQLException {
         String sql = "SELECT COUNT(*) as total_transacciones " +
-                    "FROM boletas " +
-                    "WHERE DATE(fecha_emision) = CURRENT_DATE";
+                    "FROM ventas " +
+                    "WHERE DATE(fecha_hora) = CURRENT_DATE AND estado = 'ACTIVA'";
         
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -128,8 +128,8 @@ public class DashboardService {
      */
     private static String obtenerMetodosPago(Connection conn) throws SQLException {
         String sql = "SELECT metodo_pago, COUNT(*) as cantidad " +
-                    "FROM boletas " +
-                    "WHERE DATE(fecha_emision) = CURRENT_DATE " +
+                    "FROM ventas " +
+                    "WHERE DATE(fecha_hora) = CURRENT_DATE AND estado = 'ACTIVA' " +
                     "GROUP BY metodo_pago";
         
         int efectivo = 0;
