@@ -1,153 +1,171 @@
 # Sistema POS Minimarket
 
-Sistema de Punto de Venta para minimarket desarrollado en Java con implementación de patrones de diseño y base de datos PostgreSQL.
+Sistema de Punto de Venta profesional para minimarket desarrollado en Java con implementación de patrones de diseño y base de datos PostgreSQL.
 
 ## Características Principales
 
-### Módulos Implementados
-- **Punto de Venta (POS)** - Registro de ventas con carrito de compras
-- **Gestión de Inventario** - CRUD de productos con manejo de lotes FIFO
-- **Gestión de Usuarios** - Sistema RBAC con roles y permisos
+### Módulos del Sistema
+- **Punto de Venta** - Interfaz de caja con carrito de compras y facturación
+- **Gestión de Inventario** - CRUD de productos con manejo de lotes y vencimientos
+- **Gestión de Usuarios** - Sistema RBAC con roles y permisos diferenciados
 - **Historial de Ventas** - Auditoría completa de transacciones
-- **Reportes Diarios** - Métricas por trabajador
+- **Reportes de Ventas** - Métricas detalladas por trabajador
+- **Alertas de Vencimiento** - Monitoreo automático de productos próximos a vencer
 
-### Patrones de Diseño Aplicados
+### Patrones de Diseño Implementados
 
 #### Patrones Creacionales
-- **Singleton**: Conexión única a base de datos
-- **Builder**: Construcción de reportes complejos
+- **Singleton**: Gestión única de conexión a base de datos y sesión de usuario
 
 #### Patrones Estructurales
-- **Adapter**: Adaptación entre sistemas de pago
-- **Decorator**: Extensión de funcionalidades
+- **Adapter**: Integración entre diferentes sistemas de pago
 
 #### Patrones Comportamentales
-- **Command**: Registro de comandos de venta
-- **Observer**: Alertas automáticas de stock
-- **Chain of Responsibility**: Manejo de aprobaciones
+- **Command**: Registro y ejecución de comandos de venta
+- **Observer**: Sistema de alertas automáticas de stock crítico
+- **Chain of Responsibility**: Manejo de flujo de aprobaciones
 
-### Sistema RBAC
-- **Administrador**: Acceso completo
-- **Supervisor**: Gestión de inventario y reportes
-- **Cajero**: Registro de ventas y consultas
+### Sistema de Seguridad RBAC
+- **Administrador**: Acceso completo al sistema
+- **Supervisor**: Gestión de inventario, usuarios y reportes
+- **Cajero**: Registro de ventas y consulta de precios (acceso limitado)
 
-### Base de Datos PostgreSQL
-- Esquema normalizado con triggers
-- Manejo de lotes con lógica FIFO
-- Integridad referencial
+### Características Técnicas
+- **Base de Datos**: PostgreSQL con esquema normalizado
+- **Manejo de Inventario**: Lógica FIFO para productos con lote
+- **Validación Flexible**: Permite ventas sin lote con logging de advertencias
+- **Integridad de Datos**: Timestamps exactos y métodos de pago obligatorios
+- **Alertas No Bloqueantes**: Notificaciones de stock crítico sin interrumpir ventas
 
-## Tecnologías
+## Tecnologías Utilizadas
 
-- Java 17 + Maven
-- PostgreSQL + JDBC
-- Swing GUI
+- **Java 17** - Lenguaje principal
+- **Maven** - Gestión de dependencias
+- **PostgreSQL** - Base de datos relacional
+- **JDBC** - Conectividad con base de datos
+- **Java Swing** - Interfaz gráfica de usuario
 
-## Requisitos
+## Requisitos del Sistema
 
-- Java 17+
-- PostgreSQL 12+
-- Maven 3.6+
+- Java 17 o superior
+- PostgreSQL 12 o superior
+- Maven 3.6 o superior
+- 4GB RAM mínimo
+- 500MB espacio en disco
 
-## Instalación
+## Instalación y Configuración
 
-1. **Clonar repositorio**
+### 1. Clonar el Repositorio
 ```bash
 git clone https://github.com/Kaiilo1020/sistema-pos-minimarket.git
 cd sistema-pos-minimarket
 ```
 
-2. **Configurar PostgreSQL**
+### 2. Configurar Base de Datos
 ```sql
+-- Crear base de datos
 CREATE DATABASE minimarket_db;
+
+-- Ejecutar scripts (en orden)
 \i database/minimarket_db_postgresql.sql
 \i database/actualizacion_pos_personalizada.sql
 ```
 
-3. **Ejecutar**
+### 3. Configurar Conexión
+Verificar credenciales en `DatabaseConnection.java`:
+- **Host**: localhost:5432
+- **Database**: minimarket_db
+- **Usuario**: postgres
+- **Password**: postgres
+
+### 4. Compilar y Ejecutar
 ```bash
-mvn clean compile exec:java
+# Compilar proyecto
+mvn clean compile
+
+# Ejecutar aplicación
+mvn exec:java -Dexec.mainClass="com.minimarket.Main"
 ```
 
-## Uso
+## Uso del Sistema
 
-**Usuarios por defecto:**
-- Admin: `admin` / `admin123`
-- Cajero: `cajera1` / `cajera123`
+### Credenciales por Defecto
+- **Administrador**: `admin` / `admin123`
+- **Cajero**: `cajera1` / `cajera123`
 
-**Módulos disponibles:**
-- Punto de Venta
-- Inventario
-- Usuarios
-- Reportes
-- Historial
+### Navegación Principal
+- **Inicio** - Dashboard con resumen del sistema
+- **Caja** - Punto de venta y facturación
+- **Inventario** - Gestión de productos
+- **Usuarios** - Administración de personal
+- **Historial** - Consulta de ventas realizadas
+- **Reportes** - Métricas y estadísticas
+- **Alertas** - Productos próximos a vencer
 
-## 🏆 **Problemas Solucionados**
-
-### **Problema #1: Control de Acceso**
-- ❌ **Antes**: Cajeras con acceso administrativo
-- ✅ **Después**: RBAC con roles específicos y auditoría
-
-### **Problema #2: Manejo de Lotes**
-- ❌ **Antes**: Sistema bloqueaba ventas sin lote
-- ✅ **Después**: Validación flexible con lógica FIFO
-
-### **Problema #3: Datos de Facturación**
-- ❌ **Antes**: Boletas sin hora exacta ni método de pago
-- ✅ **Después**: Timestamp completo y método obligatorio
-
-### **Problema #4: Alertas de Stock**
-- ❌ **Antes**: Sin notificaciones de stock crítico
-- ✅ **Después**: Alertas automáticas no bloqueantes
-
-## 📁 **Estructura del Proyecto**
+## Arquitectura del Proyecto
 
 ```
-sistema-pos-minimarket/
-├── src/main/java/com/minimarket/
-│   ├── gui/
-│   │   ├── panels/          # Paneles de la interfaz
-│   │   └── swing/           # Componentes Swing
-│   ├── patterns/
-│   │   ├── creational/      # Patrones creacionales
-│   │   ├── structural/      # Patrones estructurales
-│   │   └── behavioral/      # Patrones comportamentales
-│   ├── models/              # Modelos de datos
-│   ├── security/            # Sistema RBAC
-│   ├── inventory/           # Gestión de inventario
-│   ├── billing/             # Facturación
-│   └── alerts/              # Sistema de alertas
-├── database/
-│   ├── minimarket_db_postgresql.sql
-│   └── actualizacion_pos_personalizada.sql
-├── lib/
-│   └── postgresql-42.7.8.jar
-└── docs/
-    └── screenshots/
+src/main/java/com/minimarket/
+├── config/              # Configuración de base de datos
+├── model/               # Modelos de datos (Producto, Usuario, etc.)
+├── security/            # Sistema RBAC y auditoría
+├── ui/
+│   ├── panels/          # Paneles de la interfaz
+│   ├── swing/           # Componentes Swing principales
+│   └── util/            # Utilidades de UI
+├── util/                # Utilidades generales
+└── Main.java            # Punto de entrada de la aplicación
+
+database/
+├── minimarket_db_postgresql.sql      # Esquema base
+└── actualizacion_pos_personalizada.sql  # Actualizaciones
+
+lib/
+└── postgresql-42.7.8.jar            # Driver PostgreSQL
 ```
 
-## 🤝 **Contribución**
+## Funcionalidades Destacadas
+
+### Sistema de Ventas
+- Carrito de compras interactivo
+- Cálculo automático de totales con precisión decimal
+- Selección de método de pago
+- Generación de boletas con timestamp exacto
+
+### Gestión de Inventario
+- CRUD completo de productos
+- Manejo de lotes con fechas de vencimiento
+- Lógica FIFO automática
+- Alertas de stock crítico (≤ 10 unidades)
+
+### Seguridad y Auditoría
+- Autenticación por roles
+- Registro de todas las operaciones sensibles
+- Sesión de usuario segura
+- Bloqueo de funciones según permisos
+
+### Reportes y Análisis
+- Historial completo de ventas
+- Métricas por trabajador
+- Productos próximos a vencer
+- Exportación de datos
+
+## Contribución
 
 1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+2. Crear rama feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit cambios (`git commit -m 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Crear Pull Request
 
-## 📄 **Licencia**
+## Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
 
-## 👨‍💻 **Autor**
+## Autor
 
-**Andre** - *Desarrollo completo* - [Tu GitHub](https://github.com/tu-usuario)
-
-## 🙏 **Agradecimientos**
-
-- Curso de Patrones de Diseño
-- Comunidad Java
-- PostgreSQL Team
-- Swing Documentation
+**Andre Kailo** - [GitHub](https://github.com/Kaiilo1020)
 
 ---
 
-⭐ **¡No olvides dar una estrella si te gustó el proyecto!** ⭐
+*Sistema desarrollado como proyecto académico para el curso de Patrones de Diseño*
