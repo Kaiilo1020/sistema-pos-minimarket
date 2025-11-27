@@ -1,6 +1,5 @@
 package com.minimarket.ui.swing;
 
-import com.minimarket.config.DatabaseConnection;
 import com.minimarket.util.DatabaseVerifier;
 import com.minimarket.security.UsuarioSesion;
 import com.minimarket.security.Rol;
