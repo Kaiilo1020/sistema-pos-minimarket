@@ -241,14 +241,14 @@ public class DashboardService {
              ResultSet rs = stmt.executeQuery()) {
             
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            java.time.LocalDate hoy = java.time.LocalDate.now();
+            LocalDate hoy = LocalDate.now();
             
             while (rs.next()) {
                 String nombre = rs.getString("nombre");
                 Date fechaVenc = rs.getDate("fecha_vencimiento");
                 
                 if (fechaVenc != null) {
-                    java.time.LocalDate fechaVencimiento = fechaVenc.toLocalDate();
+                    LocalDate fechaVencimiento = fechaVenc.toLocalDate();
                     int diasRestantes = (int) java.time.temporal.ChronoUnit.DAYS.between(hoy, fechaVencimiento);
                     
                     String fechaFormateada = fechaVencimiento.format(formatter);
