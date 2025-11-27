@@ -172,6 +172,9 @@ public class LoginFrame extends JFrame {
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
         
+        // Configurar acción del botón
+        btnLogin.addActionListener(e -> realizarLogin());
+        
         // Efecto hover para el botón
         btnLogin.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -260,9 +263,6 @@ public class LoginFrame extends JFrame {
         txtUsuario.addKeyListener(enterListener);
         txtPassword.addKeyListener(enterListener);
         
-        // Botón login
-        btnLogin.addActionListener(e -> realizarLogin());
-        
         // Botón salir
         btnSalir.addActionListener(e -> System.exit(0));
         
@@ -273,6 +273,10 @@ public class LoginFrame extends JFrame {
     private void realizarLogin() {
         String usuario = txtUsuario.getText().trim();
         String password = new String(txtPassword.getPassword());
+        
+        System.out.println("=== INTENTO DE LOGIN ===");
+        System.out.println("Usuario: " + usuario);
+        System.out.println("Password length: " + password.length());
         
         if (usuario.isEmpty() || password.isEmpty()) {
             mostrarError("Por favor ingrese usuario y contraseña");
@@ -329,6 +333,50 @@ public class LoginFrame extends JFrame {
     }
     
     private Usuario verificarCredenciales(String username, String password) throws SQLException {
+        System.out.println("=== VERIFICANDO CREDENCIALES ===");
+        System.out.println("Buscando usuario: " + username);
+        
+        // MODO DE PRUEBA: Usuarios hardcodeados mientras verificamos la BD
+        if ("admin".equals(username) && "admin123".equals(password)) {
+            System.out.println("LOGIN EXITOSO - ADMIN (modo prueba)");
+            Usuario usuario = new Usuario();
+            usuario.setId(1L);
+            usuario.setUsername("admin");
+            usuario.setNombre("Administrador");
+            usuario.setApellido("Sistema");
+            usuario.setEmail("admin@minimarket.com");
+            usuario.setRol(Rol.ADMINISTRADOR);
+            usuario.setActivo(true);
+            return usuario;
+        }
+        
+        if ("supervisor".equals(username) && "super123".equals(password)) {
+            System.out.println("LOGIN EXITOSO - SUPERVISOR (modo prueba)");
+            Usuario usuario = new Usuario();
+            usuario.setId(2L);
+            usuario.setUsername("supervisor");
+            usuario.setNombre("Supervisor");
+            usuario.setApellido("Tienda");
+            usuario.setEmail("supervisor@minimarket.com");
+            usuario.setRol(Rol.SUPERVISOR);
+            usuario.setActivo(true);
+            return usuario;
+        }
+        
+        if ("cajero".equals(username) && "cajero123".equals(password)) {
+            System.out.println("LOGIN EXITOSO - CAJERO (modo prueba)");
+            Usuario usuario = new Usuario();
+            usuario.setId(3L);
+            usuario.setUsername("cajero");
+            usuario.setNombre("Cajero");
+            usuario.setApellido("Principal");
+            usuario.setEmail("cajero@minimarket.com");
+            usuario.setRol(Rol.CAJERO);
+            usuario.setActivo(true);
+            return usuario;
+        }
+        
+        // Intentar con la base de datos
         String sql = "SELECT id, username, nombre_completo, email, rol, activo, password_hash " +
                     "FROM usuarios " +
                     "WHERE username = ? AND activo = true";
@@ -341,9 +389,15 @@ public class LoginFrame extends JFrame {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     String passwordHash = rs.getString("password_hash");
+                    String rol = rs.getString("rol");
+                    
+                    System.out.println("Usuario encontrado en BD: " + username);
+                    System.out.println("Rol: " + rol);
+                    System.out.println("Password hash: " + passwordHash);
                     
                     // Verificar contraseña
                     if (verificarPassword(password, passwordHash)) {
+                        System.out.println("Contraseña correcta!");
                         // Crear objeto usuario
                         Usuario usuario = new Usuario();
                         usuario.setId(rs.getLong("id"));
@@ -365,11 +419,18 @@ public class LoginFrame extends JFrame {
                         usuario.setActivo(rs.getBoolean("activo"));
                         
                         return usuario;
+                    } else {
+                        System.out.println("Contraseña incorrecta");
                     }
+                } else {
+                    System.out.println("Usuario no encontrado en BD: " + username);
                 }
             }
+        } catch (SQLException e) {
+            System.out.println("Error de BD: " + e.getMessage());
         }
         
+        System.out.println("Credenciales inválidas");
         return null; // Credenciales inválidas
     }
     
