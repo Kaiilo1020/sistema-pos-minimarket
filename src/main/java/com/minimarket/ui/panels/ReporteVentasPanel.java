@@ -1,6 +1,7 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -42,26 +43,21 @@ public class ReporteVentasPanel extends JPanel {
         panelTitulo.setBackground(Color.WHITE);
         
         labelTitulo = new JLabel("REPORTE DE VENTAS DEL DÍA", JLabel.CENTER);
-        labelTitulo.setFont(new Font("Arial", Font.BOLD, 18));
-        labelTitulo.setForeground(new Color(33, 33, 33));
+        labelTitulo.setFont(UIUtils.HEADER_FONT);
+        labelTitulo.setForeground(Color.DARK_GRAY);
         
         labelUltimaActualizacion = new JLabel("", JLabel.CENTER);
-        labelUltimaActualizacion.setFont(new Font("Arial", Font.PLAIN, 12));
-        labelUltimaActualizacion.setForeground(new Color(100, 100, 100));
+        labelUltimaActualizacion.setFont(UIUtils.DEFAULT_FONT);
+        labelUltimaActualizacion.setForeground(Color.GRAY);
         
         panelTitulo.add(labelTitulo, BorderLayout.NORTH);
         panelTitulo.add(labelUltimaActualizacion, BorderLayout.SOUTH);
         
         // Botón actualizar
-        JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelBoton.setBackground(Color.WHITE);
+        JPanel panelBoton = UIUtils.crearPanelBotones(FlowLayout.RIGHT);
         
         btnActualizarReporte = new JButton("Actualizar Reporte");
-        btnActualizarReporte.setBackground(new Color(25, 118, 210));
-        btnActualizarReporte.setForeground(Color.WHITE);
-        btnActualizarReporte.setFocusPainted(false);
-        btnActualizarReporte.setBorderPainted(false);
-        btnActualizarReporte.setFont(new Font("Arial", Font.BOLD, 11));
+        UIUtils.configurarBotonPrimario(btnActualizarReporte);
         btnActualizarReporte.setPreferredSize(new Dimension(140, 35));
         btnActualizarReporte.addActionListener(e -> cargarReporteVentas());
         
@@ -77,7 +73,7 @@ public class ReporteVentasPanel extends JPanel {
         
         // Título de la sección
         JLabel labelSeccion = new JLabel("Resumen por Trabajador");
-        labelSeccion.setFont(new Font("Arial", Font.BOLD, 14));
+        labelSeccion.setFont(UIUtils.HEADER_FONT);
         labelSeccion.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         
         // Tabla de reporte por trabajador
@@ -92,41 +88,13 @@ public class ReporteVentasPanel extends JPanel {
         tablaReporte = new JTable(modeloTabla);
         tablaReporte.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaReporte.setRowHeight(30);
-        tablaReporte.getTableHeader().setBackground(Color.LIGHT_GRAY);
-        tablaReporte.getTableHeader().setForeground(Color.BLACK);
-        tablaReporte.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        UIUtils.configurarTablaConAlineacionNumerica(tablaReporte, 1); // Columnas 1+ son numéricas
         
         // Configurar ancho de columnas
         tablaReporte.getColumnModel().getColumn(0).setPreferredWidth(200); // Trabajador
         tablaReporte.getColumnModel().getColumn(1).setPreferredWidth(120); // Transacciones
         tablaReporte.getColumnModel().getColumn(2).setPreferredWidth(150); // Productos Vendidos
         tablaReporte.getColumnModel().getColumn(3).setPreferredWidth(150); // Total Recaudado
-        
-        // Configurar colores alternados en las filas
-        tablaReporte.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, 
-                    boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                
-                if (!isSelected) {
-                    if (row % 2 == 0) {
-                        c.setBackground(Color.WHITE);
-                    } else {
-                        c.setBackground(new Color(248, 249, 250));
-                    }
-                }
-                
-                // Alinear números a la derecha
-                if (column > 0) {
-                    setHorizontalAlignment(JLabel.RIGHT);
-                } else {
-                    setHorizontalAlignment(JLabel.LEFT);
-                }
-                
-                return c;
-            }
-        });
         
         JScrollPane scrollPane = new JScrollPane(tablaReporte);
         scrollPane.setPreferredSize(new Dimension(0, 200));
@@ -149,7 +117,7 @@ public class ReporteVentasPanel extends JPanel {
         
         // Título de la sección
         JLabel labelTituloTotales = new JLabel("TOTALES DEL DÍA");
-        labelTituloTotales.setFont(new Font("Arial", Font.BOLD, 14));
+        labelTituloTotales.setFont(UIUtils.HEADER_FONT);
         labelTituloTotales.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         
         // Panel con los totales
@@ -186,14 +154,14 @@ public class ReporteVentasPanel extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         
         JLabel labelTitulo = new JLabel(titulo, JLabel.CENTER);
-        labelTitulo.setFont(new Font("Arial", Font.PLAIN, 12));
-        labelTitulo.setForeground(new Color(100, 100, 100));
+        labelTitulo.setFont(UIUtils.DEFAULT_FONT);
+        labelTitulo.setForeground(Color.GRAY);
         
         JPanel panelValor = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));
         panelValor.setBackground(Color.WHITE);
         
         JLabel labelValor = new JLabel(valor, JLabel.CENTER);
-        labelValor.setFont(new Font("Arial", Font.BOLD, 20));
+        labelValor.setFont(new Font("Arial", Font.BOLD, 20)); // Mantener tamaño especial
         labelValor.setForeground(color);
         
         panelValor.add(labelValor);
@@ -263,16 +231,13 @@ public class ReporteVentasPanel extends JPanel {
             
             // Cambiar color de los totales según el valor
             if (totalIngresos > 0) {
-                labelIngresosTotales.setForeground(new Color(76, 175, 80)); // Verde
+                labelIngresosTotales.setForeground(UIUtils.SUCCESS_COLOR); // Verde
             } else {
-                labelIngresosTotales.setForeground(new Color(158, 158, 158)); // Gris
+                labelIngresosTotales.setForeground(UIUtils.SECONDARY_COLOR); // Gris
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar reporte de ventas: " + e.getMessage(), 
-                "Error de Base de Datos", 
-                JOptionPane.ERROR_MESSAGE);
+            UIUtils.mostrarError(this, "Error al cargar reporte de ventas: " + e.getMessage());
         }
     }
 }

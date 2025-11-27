@@ -201,4 +201,37 @@ public class UIUtils {
             }
         });
     }
+    
+    /**
+     * Configura una tabla con filas alternadas y alineación numérica
+     * @param tabla La tabla a configurar
+     * @param primeraColumnaNumerica Índice de la primera columna numérica (las siguientes también serán numéricas)
+     */
+    public static void configurarTablaConAlineacionNumerica(JTable tabla, int primeraColumnaNumerica) {
+        configurarTabla(tabla);
+        tabla.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, 
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                
+                if (!isSelected) {
+                    if (row % 2 == 0) {
+                        c.setBackground(Color.WHITE);
+                    } else {
+                        c.setBackground(new Color(248, 249, 250));
+                    }
+                }
+                
+                // Alinear números a la derecha
+                if (column >= primeraColumnaNumerica) {
+                    setHorizontalAlignment(JLabel.RIGHT);
+                } else {
+                    setHorizontalAlignment(JLabel.LEFT);
+                }
+                
+                return c;
+            }
+        });
+    }
 }
