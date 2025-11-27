@@ -182,7 +182,8 @@ public class ReportePDFService {
             
             // Obtener ventas del día
             String sqlVentas = """
-                SELECT v.numero, v.fecha_hora, u.nombre_completo as cajera, 
+                SELECT v.numero, v.fecha_hora, 
+                       COALESCE(u.nombre || ' ' || u.apellido, u.username, 'N/A') as cajera, 
                        v.metodo_pago, v.total
                 FROM ventas v
                 LEFT JOIN usuarios u ON v.cajera_id = u.id
