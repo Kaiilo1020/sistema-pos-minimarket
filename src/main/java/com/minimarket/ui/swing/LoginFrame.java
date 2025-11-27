@@ -45,7 +45,7 @@ public class LoginFrame extends JFrame {
     private void initializeComponents() {
         setTitle("Sistema POS MiniMarket - Iniciar Sesión");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(450, 350);
+        setSize(480, 420);
         setResizable(false);
         
         // Configurar icono
@@ -80,9 +80,9 @@ public class LoginFrame extends JFrame {
         JPanel statusPanel = createStatusPanel();
         
         mainPanel.add(headerPanel);
-        mainPanel.add(Box.createVerticalStrut(30));
+        mainPanel.add(Box.createVerticalStrut(25));
         mainPanel.add(formPanel);
-        mainPanel.add(Box.createVerticalStrut(20));
+        mainPanel.add(Box.createVerticalStrut(15));
         mainPanel.add(buttonPanel);
         mainPanel.add(Box.createVerticalStrut(10));
         mainPanel.add(statusPanel);
@@ -127,7 +127,7 @@ public class LoginFrame extends JFrame {
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(222, 226, 230)),
-            BorderFactory.createEmptyBorder(25, 25, 25, 25)
+            BorderFactory.createEmptyBorder(30, 30, 30, 30)
         ));
         
         // Campo usuario
@@ -138,11 +138,11 @@ public class LoginFrame extends JFrame {
         
         txtUsuario = new JTextField();
         txtUsuario.setFont(UIUtils.DEFAULT_FONT);
-        txtUsuario.setPreferredSize(new Dimension(300, 35));
-        txtUsuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        txtUsuario.setPreferredSize(new Dimension(320, 40));
+        txtUsuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         txtUsuario.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(206, 212, 218)),
-            BorderFactory.createEmptyBorder(8, 12, 8, 12)
+            BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
         
         // Campo contraseña
@@ -153,20 +153,47 @@ public class LoginFrame extends JFrame {
         
         txtPassword = new JPasswordField();
         txtPassword.setFont(UIUtils.DEFAULT_FONT);
-        txtPassword.setPreferredSize(new Dimension(300, 35));
-        txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        txtPassword.setPreferredSize(new Dimension(320, 40));
+        txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         txtPassword.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(206, 212, 218)),
-            BorderFactory.createEmptyBorder(8, 12, 8, 12)
+            BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
         
+        // Botón Iniciar Sesión (dentro del formulario)
+        btnLogin = new JButton("Iniciar Sesión");
+        btnLogin.setFont(UIUtils.BOLD_FONT);
+        btnLogin.setBackground(PRIMARY_COLOR);
+        btnLogin.setForeground(Color.WHITE);
+        btnLogin.setPreferredSize(new Dimension(320, 45));
+        btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        btnLogin.setBorder(null);
+        btnLogin.setFocusPainted(false);
+        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        // Efecto hover para el botón
+        btnLogin.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btnLogin.setBackground(PRIMARY_COLOR.darker());
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                btnLogin.setBackground(PRIMARY_COLOR);
+            }
+        });
+        
         panel.add(lblUsuario);
-        panel.add(Box.createVerticalStrut(5));
+        panel.add(Box.createVerticalStrut(8));
         panel.add(txtUsuario);
-        panel.add(Box.createVerticalStrut(15));
+        panel.add(Box.createVerticalStrut(20));
         panel.add(lblPassword);
-        panel.add(Box.createVerticalStrut(5));
+        panel.add(Box.createVerticalStrut(8));
         panel.add(txtPassword);
+        panel.add(Box.createVerticalStrut(25));
+        panel.add(btnLogin);
         
         return panel;
     }
@@ -175,25 +202,28 @@ public class LoginFrame extends JFrame {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         panel.setBackground(SECONDARY_COLOR);
         
-        btnLogin = new JButton("Iniciar Sesión");
-        btnLogin.setFont(UIUtils.BOLD_FONT);
-        btnLogin.setBackground(PRIMARY_COLOR);
-        btnLogin.setForeground(Color.WHITE);
-        btnLogin.setPreferredSize(new Dimension(140, 40));
-        btnLogin.setBorder(null);
-        btnLogin.setFocusPainted(false);
-        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        btnSalir = new JButton("Salir");
-        btnSalir.setFont(UIUtils.BOLD_FONT);
-        btnSalir.setBackground(Color.GRAY);
+        btnSalir = new JButton("Salir del Sistema");
+        btnSalir.setFont(UIUtils.DEFAULT_FONT);
+        btnSalir.setBackground(new Color(108, 117, 125));
         btnSalir.setForeground(Color.WHITE);
-        btnSalir.setPreferredSize(new Dimension(100, 40));
+        btnSalir.setPreferredSize(new Dimension(140, 35));
         btnSalir.setBorder(null);
         btnSalir.setFocusPainted(false);
         btnSalir.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        panel.add(btnLogin);
+        // Efecto hover para el botón salir
+        btnSalir.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btnSalir.setBackground(new Color(108, 117, 125).darker());
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                btnSalir.setBackground(new Color(108, 117, 125));
+            }
+        });
+        
         panel.add(btnSalir);
         
         return panel;

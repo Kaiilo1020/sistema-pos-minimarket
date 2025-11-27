@@ -60,7 +60,7 @@ public class AlertasVencimientoPanel extends JPanel {
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         
         // Título
-        JLabel titulo = new JLabel("⚠️ ALERTAS DE VENCIMIENTO");
+        JLabel titulo = new JLabel("ALERTAS DE VENCIMIENTO");
         titulo.setFont(new Font("Arial", Font.BOLD, 18));
         titulo.setForeground(new Color(44, 62, 80));
         
