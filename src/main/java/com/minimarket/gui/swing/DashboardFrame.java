@@ -105,7 +105,7 @@ public class DashboardFrame extends JFrame {
         if (usuarioActual != null && usuarioActual.getRol() == Rol.ADMINISTRADOR) {
             mainContentArea.add(createUsuariosPanel(), "usuarios");
         }
-        mainContentArea.add(createConfiguracionPanel(), "configuracion");
+        mainContentArea.add(createAlertasPanel(), "alertas");
         
         add(mainContentArea, BorderLayout.CENTER);
     }
@@ -119,18 +119,9 @@ public class DashboardFrame extends JFrame {
         ));
         
         // Logo
-        JLabel logo = new JLabel("🏪 MINIMARKET PRO");
+        JLabel logo = new JLabel("MINIMARKET PRO");
         logo.setFont(new Font("Segoe UI", Font.BOLD, 18));
         logo.setForeground(TEXT_PRIMARY);
-        
-        // Search bar (simulado)
-        JTextField searchField = new JTextField("🔍 Buscar patrones, funciones...");
-        searchField.setPreferredSize(new Dimension(300, 35));
-        searchField.setBackground(SECONDARY_COLOR);
-        searchField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(222, 226, 230)),
-            new EmptyBorder(8, 15, 8, 15)
-        ));
         
         // User info panel
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
@@ -165,7 +156,6 @@ public class DashboardFrame extends JFrame {
         userPanel.add(btnSalir);
         
         header.add(logo, BorderLayout.WEST);
-        header.add(searchField, BorderLayout.CENTER);
         header.add(userPanel, BorderLayout.EAST);
         
         return header;
@@ -222,9 +212,9 @@ public class DashboardFrame extends JFrame {
             sidebarButtons.add(btnUsuarios);
         }
         
-        JButton btnConfiguracion = createSidebarButton("⚙️ Configuración del Sistema", "configuracion", false);
-        sidebar.add(btnConfiguracion);
-        sidebarButtons.add(btnConfiguracion);
+        JButton btnAlertas = createSidebarButton("⚠️ Alertas de Vencimiento", "alertas", false);
+        sidebar.add(btnAlertas);
+        sidebarButtons.add(btnAlertas);
         
         // Establecer el botón inicial como activo
         currentActiveButton = btnInicio;
@@ -744,43 +734,9 @@ public class DashboardFrame extends JFrame {
         return new com.minimarket.gui.panels.UsuariosPanel();
     }
     
-    // Panel Configuración
-    private JPanel createConfiguracionPanel() {
-        JPanel configPanel = new JPanel(new BorderLayout());
-        configPanel.setBackground(SECONDARY_COLOR);
-        configPanel.setBorder(new EmptyBorder(30, 30, 30, 30));
-        
-        JLabel title = new JLabel("⚙️ CONFIGURACIÓN DEL SISTEMA");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        title.setForeground(TEXT_PRIMARY);
-        
-        JPanel content = new JPanel();
-        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.setBackground(SECONDARY_COLOR);
-        
-        JLabel description = new JLabel("<html><p style='width: 600px;'>Configuración técnica usando el <b>patrón Singleton</b> para la BD. Configurar impresoras, datos de empresa y conexión a base de datos.</p></html>");
-        description.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        description.setForeground(TEXT_SECONDARY);
-        
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        buttonsPanel.setBackground(SECONDARY_COLOR);
-        
-        JButton btnConfigBD = createActionButton("🗄️ Configurar BD", PRIMARY_COLOR);
-        JButton btnConfigImpresora = createActionButton("🖨️ Configurar Impresora", SUCCESS_COLOR);
-        JButton btnConfigEmpresa = createActionButton("🏢 Datos de Empresa", ACCENT_COLOR);
-        
-        buttonsPanel.add(btnConfigBD);
-        buttonsPanel.add(btnConfigImpresora);
-        buttonsPanel.add(btnConfigEmpresa);
-        
-        content.add(description);
-        content.add(Box.createVerticalStrut(20));
-        content.add(buttonsPanel);
-        
-        configPanel.add(title, BorderLayout.NORTH);
-        configPanel.add(content, BorderLayout.CENTER);
-        
-        return configPanel;
+    // Panel Alertas de Vencimiento
+    private JPanel createAlertasPanel() {
+        return new com.minimarket.gui.panels.AlertasVencimientoPanel();
     }
     
     // Método auxiliar para crear botones de subcategoría
