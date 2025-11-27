@@ -14,7 +14,7 @@ public class UsuarioSesion {
         // Constructor privado para Singleton
     }
 
-    public static UsuarioSesion getInstance() {
+    public static synchronized UsuarioSesion getInstance() {
         if (instance == null) {
             instance = new UsuarioSesion();
         }

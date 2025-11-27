@@ -24,13 +24,6 @@ public enum Rol {
     public int getNivel() { return nivel; }
     
     /**
-     * Verifica si puede acceder a un rol requerido
-     */
-    public boolean puedeAcceder(Rol rolRequerido) {
-        return this.nivel >= rolRequerido.nivel;
-    }
-    
-    /**
      * Verifica si tiene permisos para un rol específico
      */
     public boolean tienePermiso(Rol rolRequerido) {
@@ -65,17 +58,4 @@ public enum Rol {
         return this == ADMINISTRADOR || this == SUPERVISOR;
     }
     
-    /**
-     * Verifica si puede registrar ventas
-     */
-    public boolean puedeRegistrarVentas() {
-        return true; // Todos los roles pueden registrar ventas
-    }
-    
-    /**
-     * Verifica si puede consultar precios
-     */
-    public boolean puedeConsultarPrecios() {
-        return true; // Todos los roles pueden consultar precios
-    }
 }

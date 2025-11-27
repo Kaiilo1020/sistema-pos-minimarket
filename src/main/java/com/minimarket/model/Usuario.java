@@ -79,9 +79,9 @@ public class Usuario {
             case "GESTIONAR_INVENTARIO":
                 return rol.puedeGestionarInventario();
             case "REGISTRAR_VENTAS":
-                return rol.puedeRegistrarVentas();
+                return true; // Todos los roles pueden registrar ventas
             case "CONSULTAR_PRECIOS":
-                return rol.puedeConsultarPrecios();
+                return true; // Todos los roles pueden consultar precios
             default:
                 return false;
         }
