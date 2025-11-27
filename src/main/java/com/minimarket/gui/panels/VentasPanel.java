@@ -170,8 +170,22 @@ public class VentasPanel extends JPanel {
         // Listener para cambios en cantidad
         tablaCarrito.getModel().addTableModelListener(e -> {
             if (e.getColumn() == 2) { // Columna de cantidad
-                actualizarSubtotalFila(e.getFirstRow());
-                actualizarTotal();
+                // Validar que la cantidad sea válida
+                try {
+                    int fila = e.getFirstRow();
+                    Object valorCantidad = modeloCarrito.getValueAt(fila, 2);
+                    int cantidad = Integer.parseInt(valorCantidad.toString());
+                    
+                    if (cantidad <= 0) {
+                        modeloCarrito.setValueAt(1, fila, 2);
+                    }
+                    
+                    actualizarSubtotalFila(fila);
+                    actualizarTotal();
+                } catch (NumberFormatException ex) {
+                    // Si no es un número válido, restaurar a 1
+                    modeloCarrito.setValueAt(1, e.getFirstRow(), 2);
+                }
             }
         });
         
@@ -330,41 +344,65 @@ public class VentasPanel extends JPanel {
         double precio = Double.parseDouble(precioStr.replace("S/", ""));
         
         // Verificar si el producto ya está en el carrito
+        int filaExistente = -1;
+        int cantidadEnCarrito = 0;
         for (int i = 0; i < modeloCarrito.getRowCount(); i++) {
             if (productoId.equals(modeloCarrito.getValueAt(i, 0))) {
-                int cantidadActual = (Integer) modeloCarrito.getValueAt(i, 2);
-                if (cantidadActual < stockDisponible) {
-                    modeloCarrito.setValueAt(cantidadActual + 1, i, 2);
-                    actualizarSubtotalFila(i);
-                    actualizarTotal();
-                } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "No hay suficiente stock disponible.", 
-                        "Stock Insuficiente", 
-                        JOptionPane.WARNING_MESSAGE);
-                }
-                return;
+                filaExistente = i;
+                cantidadEnCarrito = (Integer) modeloCarrito.getValueAt(i, 2);
+                break;
             }
         }
         
-        // Agregar nuevo producto al carrito
-        Object[] filaCarrito = {
-            productoId,
-            nombreProducto,
-            1, // cantidad inicial
-            precio,
-            precio // subtotal inicial
-        };
+        // Calcular stock disponible considerando lo que ya está en el carrito
+        int stockRestante = stockDisponible - cantidadEnCarrito;
         
-        modeloCarrito.addRow(filaCarrito);
-        actualizarTotal();
+        if (stockRestante <= 0) {
+            JOptionPane.showMessageDialog(this, 
+                "No hay más stock disponible para este producto.", 
+                "Stock Agotado", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // Mostrar diálogo para seleccionar cantidad
+        CantidadDialog dialog = new CantidadDialog(
+            (JFrame) SwingUtilities.getWindowAncestor(this), 
+            nombreProducto, 
+            stockRestante
+        );
+        dialog.setVisible(true);
+        
+        if (dialog.isConfirmado()) {
+            int cantidadSeleccionada = dialog.getCantidadSeleccionada();
+            
+            if (filaExistente != -1) {
+                // Actualizar cantidad existente
+                int nuevaCantidad = cantidadEnCarrito + cantidadSeleccionada;
+                modeloCarrito.setValueAt(nuevaCantidad, filaExistente, 2);
+                actualizarSubtotalFila(filaExistente);
+            } else {
+                // Agregar nuevo producto al carrito
+                double subtotal = Math.round((cantidadSeleccionada * precio) * 100.0) / 100.0;
+                Object[] filaCarrito = {
+                    productoId,
+                    nombreProducto,
+                    cantidadSeleccionada,
+                    precio,
+                    subtotal
+                };
+                modeloCarrito.addRow(filaCarrito);
+            }
+            
+            actualizarTotal();
+        }
     }
     
     private void actualizarSubtotalFila(int fila) {
         try {
             int cantidad = (Integer) modeloCarrito.getValueAt(fila, 2);
             double precioUnitario = (Double) modeloCarrito.getValueAt(fila, 3);
-            double subtotal = cantidad * precioUnitario;
+            double subtotal = Math.round((cantidad * precioUnitario) * 100.0) / 100.0;
             modeloCarrito.setValueAt(subtotal, fila, 4);
         } catch (Exception e) {
             // Manejar errores de conversión
@@ -381,6 +419,8 @@ public class VentasPanel extends JPanel {
                 // Manejar errores
             }
         }
+        // Redondear el total a 2 decimales
+        totalVenta = Math.round(totalVenta * 100.0) / 100.0;
         labelTotal.setText("TOTAL: S/" + String.format("%.2f", totalVenta));
     }
     
