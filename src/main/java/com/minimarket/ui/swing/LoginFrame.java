@@ -366,52 +366,12 @@ public class LoginFrame extends JFrame {
     }
     
     private Usuario verificarCredenciales(String username, String password) throws SQLException {
-        System.out.println("=== VERIFICANDO CREDENCIALES ===");
+        System.out.println("=== VERIFICANDO CREDENCIALES EN BASE DE DATOS ===");
         System.out.println("Buscando usuario: " + username);
         System.out.println("Password ingresado: " + password);
         
-        // MODO DE PRUEBA: Usuarios hardcodeados mientras verificamos la BD
-        if ("admin".equals(username) && "admin123".equals(password)) {
-            System.out.println("LOGIN EXITOSO - ADMIN (modo prueba)");
-            Usuario usuario = new Usuario();
-            usuario.setId(1L);
-            usuario.setUsername("admin");
-            usuario.setNombre("Administrador");
-            usuario.setApellido("Sistema");
-            usuario.setEmail("admin@minimarket.com");
-            usuario.setRol(Rol.ADMINISTRADOR);
-            usuario.setActivo(true);
-            return usuario;
-        }
-        
-        if ("supervisor".equals(username) && "super123".equals(password)) {
-            System.out.println("LOGIN EXITOSO - SUPERVISOR (modo prueba)");
-            Usuario usuario = new Usuario();
-            usuario.setId(2L);
-            usuario.setUsername("supervisor");
-            usuario.setNombre("Supervisor");
-            usuario.setApellido("Tienda");
-            usuario.setEmail("supervisor@minimarket.com");
-            usuario.setRol(Rol.SUPERVISOR);
-            usuario.setActivo(true);
-            return usuario;
-        }
-        
-        if ("cajero".equals(username) && "cajero123".equals(password)) {
-            System.out.println("LOGIN EXITOSO - CAJERO (modo prueba)");
-            Usuario usuario = new Usuario();
-            usuario.setId(3L);
-            usuario.setUsername("cajero");
-            usuario.setNombre("Cajero");
-            usuario.setApellido("Principal");
-            usuario.setEmail("cajero@minimarket.com");
-            usuario.setRol(Rol.CAJERO);
-            usuario.setActivo(true);
-            return usuario;
-        }
-        
-        // Intentar con la base de datos
-        String sql = "SELECT id, username, nombre_completo, email, rol, activo, password_hash " +
+        // Consultar SOLO la base de datos PostgreSQL
+        String sql = "SELECT id, username, email, rol, activo, password " +
                     "FROM usuarios " +
                     "WHERE username = ? AND activo = true";
         
@@ -422,34 +382,62 @@ public class LoginFrame extends JFrame {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String passwordHash = rs.getString("password_hash");
+                    String passwordBD = rs.getString("password");
                     String rol = rs.getString("rol");
                     
                     System.out.println("Usuario encontrado en BD: " + username);
                     System.out.println("Rol: " + rol);
-                    System.out.println("Password hash: " + passwordHash);
+                    System.out.println("Password en BD: " + passwordBD);
                     
-                    // Verificar contraseña
-                    if (verificarPassword(password, passwordHash)) {
+                    // Verificar contraseña (comparación directa ya que están en texto plano)
+                    if (password.equals(passwordBD)) {
                         System.out.println("Contraseña correcta!");
                         // Crear objeto usuario
                         Usuario usuario = new Usuario();
                         usuario.setId(rs.getLong("id"));
                         usuario.setUsername(rs.getString("username"));
                         
-                        // Separar nombre completo en nombre y apellido
-                        String nombreCompleto = rs.getString("nombre_completo");
-                        if (nombreCompleto != null && nombreCompleto.contains(" ")) {
-                            String[] partes = nombreCompleto.split(" ", 2);
-                            usuario.setNombre(partes[0]);
-                            usuario.setApellido(partes[1]);
-                        } else {
-                            usuario.setNombre(nombreCompleto != null ? nombreCompleto : "Usuario");
-                            usuario.setApellido("");
+                        // Asignar nombre basado en el username y rol
+                        String nombreDisplay = "";
+                        switch (rol.toUpperCase()) {
+                            case "ADMINISTRADOR":
+                                nombreDisplay = "Administrador";
+                                break;
+                            case "SUPERVISOR":
+                                nombreDisplay = "Supervisor";
+                                break;
+                            case "CAJERO":
+                                nombreDisplay = "Cajero";
+                                break;
+                            default:
+                                nombreDisplay = username;
                         }
+                        usuario.setNombre(nombreDisplay);
+                        usuario.setApellido("Sistema");
                         
                         usuario.setEmail(rs.getString("email"));
-                        usuario.setRol(Rol.valueOf(rs.getString("rol")));
+                        
+                        // Mapear rol de la base de datos
+                        String rolBD = rs.getString("rol").toUpperCase();
+                        Rol rolUsuario;
+                        switch (rolBD) {
+                            case "ADMINISTRADOR":
+                            case "ADMIN":
+                                rolUsuario = Rol.ADMINISTRADOR;
+                                break;
+                            case "SUPERVISOR":
+                                rolUsuario = Rol.SUPERVISOR;
+                                break;
+                            case "CAJERO":
+                            case "CAJERA":
+                                rolUsuario = Rol.CAJERO;
+                                break;
+                            default:
+                                System.out.println("Rol desconocido: " + rolBD + ", asignando CAJERO por defecto");
+                                rolUsuario = Rol.CAJERO;
+                        }
+                        
+                        usuario.setRol(rolUsuario);
                         usuario.setActivo(rs.getBoolean("activo"));
                         
                         return usuario;
