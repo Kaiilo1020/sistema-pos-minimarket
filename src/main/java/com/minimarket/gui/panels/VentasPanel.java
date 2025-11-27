@@ -136,9 +136,8 @@ public class VentasPanel extends JPanel {
         
         // Botón agregar al carrito
         btnAgregarCarrito = new JButton("Agregar al Carrito");
-        btnAgregarCarrito.setBackground(new Color(46, 125, 50));
-        btnAgregarCarrito.setForeground(Color.WHITE);
-        btnAgregarCarrito.setFocusPainted(false);
+        btnAgregarCarrito.setFont(new Font("Arial", Font.BOLD, 12));
+        btnAgregarCarrito.setPreferredSize(new Dimension(150, 35));
         btnAgregarCarrito.addActionListener(e -> agregarAlCarrito());
         
         JPanel panelBotonAgregar = new JPanel(new FlowLayout());
@@ -205,14 +204,12 @@ public class VentasPanel extends JPanel {
         btnQuitar = new JButton("Quitar");
         btnLimpiar = new JButton("Limpiar");
         
-        btnQuitar.setBackground(new Color(211, 47, 47));
-        btnQuitar.setForeground(Color.WHITE);
-        btnQuitar.setFocusPainted(false);
+        btnQuitar.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnQuitar.setPreferredSize(new Dimension(80, 30));
         btnQuitar.addActionListener(e -> quitarDelCarrito());
         
-        btnLimpiar.setBackground(new Color(158, 158, 158));
-        btnLimpiar.setForeground(Color.WHITE);
-        btnLimpiar.setFocusPainted(false);
+        btnLimpiar.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnLimpiar.setPreferredSize(new Dimension(80, 30));
         btnLimpiar.addActionListener(e -> limpiarCarrito());
         
         panelBotonesCarrito.add(btnQuitar);
@@ -236,11 +233,8 @@ public class VentasPanel extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         
         btnRegistrarVenta = new JButton("Registrar Venta / Emitir Comprobante");
-        btnRegistrarVenta.setBackground(new Color(25, 118, 210));
-        btnRegistrarVenta.setForeground(Color.WHITE);
-        btnRegistrarVenta.setFocusPainted(false);
-        btnRegistrarVenta.setFont(new Font("Arial", Font.BOLD, 12));
-        btnRegistrarVenta.setPreferredSize(new Dimension(250, 40));
+        btnRegistrarVenta.setFont(new Font("Arial", Font.BOLD, 13));
+        btnRegistrarVenta.setPreferredSize(new Dimension(280, 40));
         btnRegistrarVenta.addActionListener(e -> registrarVenta());
         
         panel.add(btnRegistrarVenta);
