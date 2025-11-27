@@ -20,6 +20,7 @@ public class AlertasVencimientoPanel extends JPanel {
     private JTable tablaAlertas;
     private DefaultTableModel modeloTabla;
     private JLabel lblTotalProductos;
+    private boolean soloLectura;
     
     // Colores para los estados
     private static final Color COLOR_VENCIDO = new Color(244, 67, 54, 100);      // Rojo claro
@@ -43,6 +44,11 @@ public class AlertasVencimientoPanel extends JPanel {
     }
     
     public AlertasVencimientoPanel() {
+        this(false); // Por defecto, no es solo lectura
+    }
+    
+    public AlertasVencimientoPanel(boolean soloLectura) {
+        this.soloLectura = soloLectura;
         initializeComponents();
         setupLayout();
         cargarAlertas();
@@ -68,16 +74,33 @@ public class AlertasVencimientoPanel extends JPanel {
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelBotones.setBackground(Color.WHITE);
         
-        JButton btnRetirarVencidos = new JButton("Retirar Vencidos");
-        UIUtils.configurarBotonPeligro(btnRetirarVencidos);
-        btnRetirarVencidos.addActionListener(e -> retirarProductosVencidos());
-        
-        JButton btnActualizar = new JButton("Actualizar");
-        UIUtils.configurarBotonSecundario(btnActualizar);
-        btnActualizar.addActionListener(e -> cargarAlertas());
-        
-        panelBotones.add(btnRetirarVencidos);
-        panelBotones.add(btnActualizar);
+        if (soloLectura) {
+            // MODO SOLO LECTURA (Cajeros): Solo botón actualizar y mensaje informativo
+            JLabel lblModoLectura = new JLabel("📖 Modo Consulta - Solo lectura");
+            lblModoLectura.setFont(UIUtils.BOLD_FONT);
+            lblModoLectura.setForeground(new Color(108, 117, 125));
+            lblModoLectura.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+            
+            JButton btnActualizar = new JButton("🔄 Actualizar");
+            UIUtils.configurarBotonSecundario(btnActualizar);
+            btnActualizar.addActionListener(e -> cargarAlertas());
+            
+            panelBotones.add(lblModoLectura);
+            panelBotones.add(btnActualizar);
+            
+        } else {
+            // MODO COMPLETO (Supervisor/Admin): Todos los botones
+            JButton btnRetirarVencidos = new JButton("Retirar Vencidos");
+            UIUtils.configurarBotonPeligro(btnRetirarVencidos);
+            btnRetirarVencidos.addActionListener(e -> retirarProductosVencidos());
+            
+            JButton btnActualizar = new JButton("Actualizar");
+            UIUtils.configurarBotonSecundario(btnActualizar);
+            btnActualizar.addActionListener(e -> cargarAlertas());
+            
+            panelBotones.add(btnRetirarVencidos);
+            panelBotones.add(btnActualizar);
+        }
         
         panelSuperior.add(titulo, BorderLayout.WEST);
         panelSuperior.add(panelBotones, BorderLayout.EAST);

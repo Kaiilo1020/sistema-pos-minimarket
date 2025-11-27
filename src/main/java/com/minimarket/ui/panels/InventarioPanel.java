@@ -18,8 +18,14 @@ public class InventarioPanel extends JPanel {
     private DefaultTableModel modeloTabla;
     private JTextField campoBusqueda;
     private TableRowSorter<DefaultTableModel> sorter;
+    private boolean soloLectura;
     
     public InventarioPanel() {
+        this(false); // Por defecto, no es solo lectura
+    }
+    
+    public InventarioPanel(boolean soloLectura) {
+        this.soloLectura = soloLectura;
         initializeComponents();
         cargarProductos();
     }
@@ -48,27 +54,44 @@ public class InventarioPanel extends JPanel {
         // Panel de botones
         JPanel panelBotones = UIUtils.crearPanelBotones(FlowLayout.RIGHT);
         
-        JButton btnAgregar = new JButton("Agregar Producto");
-        JButton btnEditar = new JButton("Editar Producto");
-        JButton btnEliminar = new JButton("Eliminar Producto");
-        JButton btnActualizar = new JButton("Actualizar");
-        
-        // Estilo de botones usando UIUtils
-        UIUtils.configurarBotonExito(btnAgregar);
-        UIUtils.configurarBotonPrimario(btnEditar);
-        UIUtils.configurarBotonPeligro(btnEliminar);
-        UIUtils.configurarBotonSecundario(btnActualizar);
-        
-        // Eventos de botones
-        btnAgregar.addActionListener(e -> abrirDialogoAgregarProducto());
-        btnEditar.addActionListener(e -> editarProductoSeleccionado());
-        btnEliminar.addActionListener(e -> eliminarProductoSeleccionado());
-        btnActualizar.addActionListener(e -> cargarProductos());
-        
-        panelBotones.add(btnAgregar);
-        panelBotones.add(btnEditar);
-        panelBotones.add(btnEliminar);
-        panelBotones.add(btnActualizar);
+        if (soloLectura) {
+            // MODO SOLO LECTURA (Cajeros): Solo botón actualizar y mensaje informativo
+            JLabel lblModoLectura = new JLabel("📖 Modo Consulta - Solo lectura");
+            lblModoLectura.setFont(UIUtils.BOLD_FONT);
+            lblModoLectura.setForeground(new Color(108, 117, 125));
+            lblModoLectura.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+            
+            JButton btnActualizar = new JButton("🔄 Actualizar");
+            UIUtils.configurarBotonSecundario(btnActualizar);
+            btnActualizar.addActionListener(e -> cargarProductos());
+            
+            panelBotones.add(lblModoLectura);
+            panelBotones.add(btnActualizar);
+            
+        } else {
+            // MODO COMPLETO (Supervisor/Admin): Todos los botones
+            JButton btnAgregar = new JButton("Agregar Producto");
+            JButton btnEditar = new JButton("Editar Producto");
+            JButton btnEliminar = new JButton("Eliminar Producto");
+            JButton btnActualizar = new JButton("Actualizar");
+            
+            // Estilo de botones usando UIUtils
+            UIUtils.configurarBotonExito(btnAgregar);
+            UIUtils.configurarBotonPrimario(btnEditar);
+            UIUtils.configurarBotonPeligro(btnEliminar);
+            UIUtils.configurarBotonSecundario(btnActualizar);
+            
+            // Eventos de botones
+            btnAgregar.addActionListener(e -> abrirDialogoAgregarProducto());
+            btnEditar.addActionListener(e -> editarProductoSeleccionado());
+            btnEliminar.addActionListener(e -> eliminarProductoSeleccionado());
+            btnActualizar.addActionListener(e -> cargarProductos());
+            
+            panelBotones.add(btnAgregar);
+            panelBotones.add(btnEditar);
+            panelBotones.add(btnEliminar);
+            panelBotones.add(btnActualizar);
+        }
         
         panelSuperior.add(panelBusqueda, BorderLayout.WEST);
         panelSuperior.add(panelBotones, BorderLayout.EAST);

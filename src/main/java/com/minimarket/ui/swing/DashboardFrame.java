@@ -122,10 +122,8 @@ public class DashboardFrame extends JFrame {
         // CAJA/POS - Todos pueden usar
         mainContentArea.add(createPOSPanel(), "pos");
         
-        // INVENTARIO - Solo SUPERVISOR y ADMINISTRADOR
-        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
-            mainContentArea.add(createInventarioPanel(), "inventario");
-        }
+        // INVENTARIO - Todos pueden ver (modo diferente según rol)
+        mainContentArea.add(createInventarioPanel(), "inventario");
         
         // HISTORIAL - Solo SUPERVISOR y ADMINISTRADOR
         if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
@@ -142,10 +140,8 @@ public class DashboardFrame extends JFrame {
             mainContentArea.add(createUsuariosPanel(), "usuarios");
         }
         
-        // ALERTAS - Solo SUPERVISOR y ADMINISTRADOR
-        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
-            mainContentArea.add(createAlertasPanel(), "alertas");
-        }
+        // ALERTAS - Todos pueden ver (modo diferente según rol)
+        mainContentArea.add(createAlertasPanel(), "alertas");
         
         add(mainContentArea, BorderLayout.CENTER);
     }
@@ -238,12 +234,11 @@ public class DashboardFrame extends JFrame {
         sidebar.add(btnPOS);
         sidebarButtons.add(btnPOS);
         
-        // INVENTARIO - Solo SUPERVISOR y ADMINISTRADOR
-        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
-            JButton btnInventario = createSidebarButton("📦 Inventario y Kardex", "inventario", false);
-            sidebar.add(btnInventario);
-            sidebarButtons.add(btnInventario);
-        }
+        // INVENTARIO - Todos pueden ver (CAJERO solo lectura, otros con permisos completos)
+        String inventarioText = rolUsuario == Rol.CAJERO ? "📦 Consultar Inventario" : "📦 Inventario y Kardex";
+        JButton btnInventario = createSidebarButton(inventarioText, "inventario", false);
+        sidebar.add(btnInventario);
+        sidebarButtons.add(btnInventario);
         
         // HISTORIAL DE VENTAS - Solo SUPERVISOR y ADMINISTRADOR
         if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
@@ -266,12 +261,11 @@ public class DashboardFrame extends JFrame {
             sidebarButtons.add(btnUsuarios);
         }
         
-        // ALERTAS DE VENCIMIENTO - Solo SUPERVISOR y ADMINISTRADOR
-        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
-            JButton btnAlertas = createSidebarButton("⚠️ Alertas de Vencimiento", "alertas", false);
-            sidebar.add(btnAlertas);
-            sidebarButtons.add(btnAlertas);
-        }
+        // ALERTAS DE VENCIMIENTO - Todos pueden ver (CAJERO solo lectura, otros con permisos completos)
+        String alertasText = rolUsuario == Rol.CAJERO ? "⚠️ Consultar Alertas" : "⚠️ Alertas de Vencimiento";
+        JButton btnAlertas = createSidebarButton(alertasText, "alertas", false);
+        sidebar.add(btnAlertas);
+        sidebarButtons.add(btnAlertas);
         
         // Establecer el botón inicial como activo
         currentActiveButton = btnInicio;
@@ -635,14 +629,23 @@ public class DashboardFrame extends JFrame {
         quickActions.add(btnNuevaVenta);
         
         if (rolUsuario == Rol.CAJERO) {
-            // TRABAJADOR: Solo accesos básicos
-            JButton btnConsultarPrecio = createQuickActionButton(
-                "Consultar Precio 🔍", 
-                "Verificar precio de productos",
-                new Color(54, 162, 235),
-                e -> UIUtils.mostrarExito(this, "Función de consulta de precios disponible en el módulo de ventas")
+            // CAJERO: Accesos básicos + consulta de inventario y alertas
+            JButton btnConsultarInventario = createQuickActionButton(
+                "Consultar Inventario 📦", 
+                "Ver productos disponibles y fechas",
+                new Color(255, 159, 64),
+                e -> cardLayout.show(mainContentArea, "inventario")
             );
-            quickActions.add(btnConsultarPrecio);
+            
+            JButton btnVerAlertas = createQuickActionButton(
+                "Ver Alertas ⚠️", 
+                "Productos próximos a vencer",
+                new Color(255, 87, 34),
+                e -> cardLayout.show(mainContentArea, "alertas")
+            );
+            
+            quickActions.add(btnConsultarInventario);
+            quickActions.add(btnVerAlertas);
             
         } else if (rolUsuario == Rol.SUPERVISOR) {
             // SUPERVISOR: Accesos operativos
@@ -830,8 +833,10 @@ public class DashboardFrame extends JFrame {
     
     // Panel Inventario
     private JPanel createInventarioPanel() {
-        // Usar el panel real de inventario
-        return new com.minimarket.ui.panels.InventarioPanel();
+        // Crear panel de inventario con permisos según rol
+        Rol rolUsuario = usuarioActual != null ? usuarioActual.getRol() : Rol.CAJERO;
+        boolean soloLectura = (rolUsuario == Rol.CAJERO);
+        return new com.minimarket.ui.panels.InventarioPanel(soloLectura);
     }
     
     // Panel Historial de Ventas
@@ -854,6 +859,9 @@ public class DashboardFrame extends JFrame {
     
     // Panel Alertas de Vencimiento
     private JPanel createAlertasPanel() {
-        return new com.minimarket.ui.panels.AlertasVencimientoPanel();
+        // Crear panel de alertas con permisos según rol
+        Rol rolUsuario = usuarioActual != null ? usuarioActual.getRol() : Rol.CAJERO;
+        boolean soloLectura = (rolUsuario == Rol.CAJERO);
+        return new com.minimarket.ui.panels.AlertasVencimientoPanel(soloLectura);
     }
 }
