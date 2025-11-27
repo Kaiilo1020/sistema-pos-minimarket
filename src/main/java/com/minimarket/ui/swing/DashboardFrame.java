@@ -37,6 +37,7 @@ public class DashboardFrame extends JFrame {
     private JButton currentActiveButton;
     
     private Timer reloj;
+    private Timer actualizadorDashboard;
     
     // Usuario actual (simulado para demo)
     private Usuario usuarioActual;
@@ -51,6 +52,7 @@ public class DashboardFrame extends JFrame {
         setupLayout();
         setupEventHandlers();
         startClock();
+        startDashboardAutoRefresh();
     }
 
     private void initializeComponents() {
@@ -338,22 +340,24 @@ public class DashboardFrame extends JFrame {
         // Tarjeta 1: Ventas del Día (datos reales)
         String ventasTexto = String.format("S/. %.2f", data.ventasDelDia);
         JPanel ventasCard = createKPICard("Ventas del Día", ventasTexto, "💰", SUCCESS_COLOR);
+        ventasCard.setToolTipText("Total de ingresos generados hoy por todas las ventas realizadas");
         
         // Tarjeta 2: Transacciones (datos reales)
         JPanel transaccionesCard = createKPICard("Transacciones", String.valueOf(data.transacciones), "📊", new Color(54, 162, 235));
+        transaccionesCard.setToolTipText("Número total de boletas/facturas emitidas en el día");
         
-        // Tarjeta 3: Método de Pago (datos reales)
-        JPanel metodoPagoCard = createKPICard("Método de Pago", data.metodoPago, "💳", new Color(255, 159, 64));
+        // Tarjeta 3: Productos Vendidos (datos reales)
+        JPanel productosCard = createKPICard("Productos Vendidos", String.valueOf(data.productosVendidos), "📦", new Color(255, 159, 64));
+        productosCard.setToolTipText("Cantidad total de productos vendidos (suma de todas las cantidades)");
         
-        // Tarjeta 4: Integridad de Datos
-        String integridadTexto = data.transacciones > 0 ? "✅ Boletas Correctas" : "⚠️ Sin ventas hoy";
-        Color integridadColor = data.transacciones > 0 ? new Color(75, 192, 192) : new Color(255, 193, 7);
-        JPanel integridadCard = createKPICard("Integridad Datos", integridadTexto, "🔒", integridadColor);
+        // Tarjeta 4: Método de Pago (datos reales)
+        JPanel metodoPagoCard = createKPICard("Método de Pago", data.metodoPago, "💳", new Color(75, 192, 192));
+        metodoPagoCard.setToolTipText("Distribución porcentual de los métodos de pago utilizados hoy");
         
         kpiSection.add(ventasCard);
         kpiSection.add(transaccionesCard);
+        kpiSection.add(productosCard);
         kpiSection.add(metodoPagoCard);
-        kpiSection.add(integridadCard);
         
         return kpiSection;
     }
@@ -623,6 +627,23 @@ public class DashboardFrame extends JFrame {
             lblFechaHora.setText(now.format(formatter));
         });
         reloj.start();
+    }
+    
+    private void startDashboardAutoRefresh() {
+        // Actualizar dashboard cada 30 segundos
+        actualizadorDashboard = new Timer(30000, e -> {
+            // Solo actualizar si estamos en el panel de inicio
+            if (mainContentArea.getComponent(0) instanceof JScrollPane) {
+                SwingUtilities.invokeLater(() -> {
+                    // Recrear silenciosamente el contenido del dashboard
+                    mainContentArea.remove(0);
+                    mainContentArea.add(createDashboardPanel(), "inicio", 0);
+                    mainContentArea.revalidate();
+                    mainContentArea.repaint();
+                });
+            }
+        });
+        actualizadorDashboard.start();
     }
 
     

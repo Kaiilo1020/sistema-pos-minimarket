@@ -15,6 +15,7 @@ public class DashboardService {
     public static class DashboardData {
         public double ventasDelDia;
         public int transacciones;
+        public int productosVendidos;
         public String metodoPago;
         public List<AlertaStock> alertasStock;
         public List<LoteVencer> lotesVencer;
@@ -73,6 +74,7 @@ public class DashboardService {
             if (conn != null) {
                 data.ventasDelDia = obtenerVentasDelDia(conn);
                 data.transacciones = obtenerTransaccionesDelDia(conn);
+                data.productosVendidos = obtenerProductosVendidos(conn);
                 data.metodoPago = obtenerMetodosPago(conn);
                 data.alertasStock = obtenerAlertasStock(conn);
                 data.lotesVencer = obtenerLotesVencer(conn);
@@ -87,13 +89,17 @@ public class DashboardService {
         return data;
     }
     
+    
     /**
-     * Obtiene las ventas del día actual
+     * Obtiene las ventas del día actual (usando la misma consulta que ReporteVentasPanel)
      */
     private static double obtenerVentasDelDia(Connection conn) throws SQLException {
-        String sql = "SELECT COALESCE(SUM(total), 0) as total_ventas " +
-                    "FROM ventas " +
-                    "WHERE DATE(fecha_hora) = CURRENT_DATE AND estado = 'ACTIVA'";
+        String sql = """
+            SELECT COALESCE(SUM(v.total), 0) as total_ventas
+            FROM ventas v
+            WHERE DATE(v.fecha_hora) = CURRENT_DATE 
+              AND v.estado = 'ACTIVA'
+        """;
         
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -106,18 +112,43 @@ public class DashboardService {
     }
     
     /**
-     * Obtiene el número de transacciones del día
+     * Obtiene el número de transacciones del día (usando la misma consulta que ReporteVentasPanel)
      */
     private static int obtenerTransaccionesDelDia(Connection conn) throws SQLException {
-        String sql = "SELECT COUNT(*) as total_transacciones " +
-                    "FROM ventas " +
-                    "WHERE DATE(fecha_hora) = CURRENT_DATE AND estado = 'ACTIVA'";
+        String sql = """
+            SELECT COUNT(DISTINCT v.id) as total_transacciones
+            FROM ventas v
+            WHERE DATE(v.fecha_hora) = CURRENT_DATE 
+              AND v.estado = 'ACTIVA'
+        """;
         
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             
             if (rs.next()) {
                 return rs.getInt("total_transacciones");
+            }
+        }
+        return 0;
+    }
+    
+    /**
+     * Obtiene el total de productos vendidos del día (usando la misma consulta que ReporteVentasPanel)
+     */
+    private static int obtenerProductosVendidos(Connection conn) throws SQLException {
+        String sql = """
+            SELECT COALESCE(SUM(dv.cantidad), 0) as productos_vendidos
+            FROM detalle_ventas dv
+            INNER JOIN ventas v ON dv.venta_id = v.id
+            WHERE DATE(v.fecha_hora) = CURRENT_DATE 
+              AND v.estado = 'ACTIVA'
+        """;
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getInt("productos_vendidos");
             }
         }
         return 0;
