@@ -1,6 +1,7 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.theme.EstilosApp;
 import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -38,33 +39,22 @@ public class VentasPanel extends JPanel {
     private double totalVenta = 0.0;
     
     public VentasPanel() {
-        initializeComponents();
+        setBackground(Color.WHITE);
+        setLayout(new BorderLayout());
+        add(buildMainPanel(), BorderLayout.CENTER);
         cargarProductos();
         actualizarTotal();
     }
     
-    private void initializeComponents() {
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
-        
-        // Panel principal con tres secciones
+    /* ========================== UI BUILDERS ========================== */
+    
+    private JPanel buildMainPanel() {
         JPanel panelPrincipal = new JPanel(new BorderLayout());
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
-        // 1. Panel superior - Datos del cliente
-        JPanel panelCliente = crearPanelCliente();
-        
-        // 2. Panel central - Catálogo y carrito
-        JPanel panelCentral = crearPanelCentral();
-        
-        // 3. Panel inferior - Botones de acción
-        JPanel panelBotones = crearPanelBotones();
-        
-        panelPrincipal.add(panelCliente, BorderLayout.NORTH);
-        panelPrincipal.add(panelCentral, BorderLayout.CENTER);
-        panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
-        
-        add(panelPrincipal, BorderLayout.CENTER);
+        panelPrincipal.add(crearPanelCliente(), BorderLayout.NORTH);
+        panelPrincipal.add(crearPanelCentral(), BorderLayout.CENTER);
+        panelPrincipal.add(crearPanelBotones(), BorderLayout.SOUTH);
+        return panelPrincipal;
     }
     
     private JPanel crearPanelCliente() {
@@ -102,12 +92,15 @@ public class VentasPanel extends JPanel {
     private JPanel crearPanelCentral() {
         JPanel panel = new JPanel(new GridLayout(1, 2, 10, 0));
         panel.setBackground(Color.WHITE);
-        
-        // Panel izquierdo - Catálogo de productos
+        panel.add(crearPanelCatalogo());
+        panel.add(crearPanelCarrito());
+        return panel;
+    }
+    
+    private JPanel crearPanelCatalogo() {
         JPanel panelCatalogo = new JPanel(new BorderLayout());
         panelCatalogo.setBorder(BorderFactory.createTitledBorder("Catálogo de Productos"));
         
-        // Búsqueda de productos
         JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelBusqueda.setBackground(Color.WHITE);
         panelBusqueda.add(new JLabel("Buscar:"));
@@ -119,7 +112,6 @@ public class VentasPanel extends JPanel {
         });
         panelBusqueda.add(campoBusquedaProductos);
         
-        // Tabla de productos
         String[] columnasProductos = {"ID", "Nombre", "Precio", "Stock"};
         modeloProductos = new DefaultTableModel(columnasProductos, 0) {
             @Override
@@ -133,28 +125,28 @@ public class VentasPanel extends JPanel {
         tablaProductos.setRowHeight(25);
         UIUtils.configurarTabla(tablaProductos);
         
-        // Botón agregar al carrito
         btnAgregarCarrito = new JButton("Agregar al Carrito");
-        UIUtils.configurarBotonPrimario(btnAgregarCarrito);
+        EstilosApp.estilizarBotonSecundario(btnAgregarCarrito);
         btnAgregarCarrito.addActionListener(e -> agregarAlCarrito());
         
         JPanel panelBotonAgregar = UIUtils.crearPanelBotones(FlowLayout.CENTER);
         panelBotonAgregar.add(btnAgregarCarrito);
         
         panelCatalogo.add(panelBusqueda, BorderLayout.NORTH);
-        panelCatalogo.add(new JScrollPane(tablaProductos), BorderLayout.CENTER);
+        panelCatalogo.add(UIUtils.configurarScrollPane(tablaProductos), BorderLayout.CENTER);
         panelCatalogo.add(panelBotonAgregar, BorderLayout.SOUTH);
-        
-        // Panel derecho - Carrito de compras
+        return panelCatalogo;
+    }
+    
+    private JPanel crearPanelCarrito() {
         JPanel panelCarrito = new JPanel(new BorderLayout());
         panelCarrito.setBorder(BorderFactory.createTitledBorder("Carrito de Compras"));
         
-        // Tabla del carrito
         String[] columnasCarrito = {"ID", "Producto", "Cant.", "Precio U.", "Subtotal"};
         modeloCarrito = new DefaultTableModel(columnasCarrito, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 2; // Solo la cantidad es editable
+                return column == 2;
             }
         };
         
@@ -162,63 +154,47 @@ public class VentasPanel extends JPanel {
         tablaCarrito.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaCarrito.setRowHeight(25);
         UIUtils.configurarTabla(tablaCarrito);
+        tablaCarrito.getModel().addTableModelListener(e -> manejarCambioCantidad(e.getColumn(), e.getFirstRow()));
         
-        // Listener para cambios en cantidad
-        tablaCarrito.getModel().addTableModelListener(e -> {
-            if (e.getColumn() == 2) { // Columna de cantidad
-                // Validar que la cantidad sea válida
-                try {
-                    int fila = e.getFirstRow();
-                    Object valorCantidad = modeloCarrito.getValueAt(fila, 2);
-                    int cantidad = Integer.parseInt(valorCantidad.toString());
-                    
-                    if (cantidad <= 0) {
-                        modeloCarrito.setValueAt(1, fila, 2);
-                    }
-                    
-                    actualizarSubtotalFila(fila);
-                    actualizarTotal();
-                } catch (NumberFormatException ex) {
-                    // Si no es un número válido, restaurar a 1
-                    modeloCarrito.setValueAt(1, e.getFirstRow(), 2);
-                }
-            }
-        });
-        
-        // Panel de total y botones del carrito
         JPanel panelTotalCarrito = new JPanel(new BorderLayout());
         panelTotalCarrito.setBackground(Color.WHITE);
         
-        // Total
         labelTotal = new JLabel("TOTAL: S/0.00", JLabel.RIGHT);
         labelTotal.setFont(UIUtils.HEADER_FONT);
-        labelTotal.setForeground(new Color(46, 125, 50));
+        labelTotal.setForeground(EstilosApp.COLOR_PRIMARIO);
         
-        // Botones del carrito
         JPanel panelBotonesCarrito = UIUtils.crearPanelBotones(FlowLayout.CENTER);
-        
         btnQuitar = new JButton("Quitar");
         btnLimpiar = new JButton("Limpiar");
-        
-        UIUtils.configurarBotonSecundario(btnQuitar);
+        EstilosApp.estilizarBotonNeutro(btnQuitar);
+        EstilosApp.estilizarBotonNeutro(btnLimpiar);
         btnQuitar.addActionListener(e -> quitarDelCarrito());
-        
-        UIUtils.configurarBotonSecundario(btnLimpiar);
         btnLimpiar.addActionListener(e -> limpiarCarrito());
-        
         panelBotonesCarrito.add(btnQuitar);
         panelBotonesCarrito.add(btnLimpiar);
         
         panelTotalCarrito.add(labelTotal, BorderLayout.NORTH);
         panelTotalCarrito.add(panelBotonesCarrito, BorderLayout.SOUTH);
         
-        panelCarrito.add(new JScrollPane(tablaCarrito), BorderLayout.CENTER);
+        panelCarrito.add(UIUtils.configurarScrollPane(tablaCarrito), BorderLayout.CENTER);
         panelCarrito.add(panelTotalCarrito, BorderLayout.SOUTH);
-        
-        panel.add(panelCatalogo);
-        panel.add(panelCarrito);
-        
-        return panel;
+        return panelCarrito;
+    }
+    
+    private void manejarCambioCantidad(int columna, int fila) {
+        if (columna != 2 || fila < 0) {
+            return;
+        }
+        try {
+            int cantidad = Integer.parseInt(modeloCarrito.getValueAt(fila, 2).toString());
+            if (cantidad <= 0) {
+                modeloCarrito.setValueAt(1, fila, 2);
+            }
+            actualizarSubtotalFila(fila);
+            actualizarTotal();
+        } catch (NumberFormatException ex) {
+            modeloCarrito.setValueAt(1, fila, 2);
+        }
     }
     
     private JPanel crearPanelBotones() {
@@ -226,7 +202,7 @@ public class VentasPanel extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         
         btnRegistrarVenta = new JButton("Registrar Venta / Emitir Comprobante");
-        UIUtils.configurarBotonExito(btnRegistrarVenta);
+        EstilosApp.estilizarBoton(btnRegistrarVenta);
         btnRegistrarVenta.setPreferredSize(new Dimension(280, 40));
         btnRegistrarVenta.addActionListener(e -> registrarVenta());
         
@@ -237,55 +213,41 @@ public class VentasPanel extends JPanel {
     
     
     private void cargarProductos() {
-        modeloProductos.setRowCount(0);
-        
-        String sql = """
-            SELECT id, nombre, precio, stock 
-            FROM productos 
-            WHERE activo = true AND stock > 0
-            ORDER BY nombre
-        """;
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-            
-            while (rs.next()) {
-                Object[] fila = {
-                    rs.getLong("id"),
-                    rs.getString("nombre"),
-                    "S/" + String.format("%.2f", rs.getDouble("precio")),
-                    rs.getInt("stock")
-                };
-                modeloProductos.addRow(fila);
-            }
-            
-        } catch (SQLException e) {
-            UIUtils.mostrarError(this, "Error al cargar productos: " + e.getMessage());
-        }
+        consultarProductos(null);
     }
     
     private void buscarProductos() {
         String textoBusqueda = campoBusquedaProductos.getText().trim();
+        consultarProductos(textoBusqueda.isEmpty() ? null : textoBusqueda);
+    }
+    
+    private void consultarProductos(String filtro) {
         modeloProductos.setRowCount(0);
         
-        String sql = """
-            SELECT id, nombre, precio, stock 
-            FROM productos 
-            WHERE activo = true AND stock > 0 
-            AND (LOWER(nombre) LIKE LOWER(?) OR LOWER(descripcion) LIKE LOWER(?))
-            ORDER BY nombre
-        """;
+        StringBuilder sql = new StringBuilder("""
+            SELECT id, nombre, precio, stock
+            FROM productos
+            WHERE activo = true AND stock > 0
+        """);
+        
+        if (filtro != null) {
+            sql.append("""
+                AND (LOWER(nombre) LIKE LOWER(?) OR LOWER(descripcion) LIKE LOWER(?))
+            """);
+        }
+        
+        sql.append(" ORDER BY nombre");
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
             
-            String patron = "%" + textoBusqueda + "%";
-            pstmt.setString(1, patron);
-            pstmt.setString(2, patron);
+            if (filtro != null) {
+                String patron = "%" + filtro + "%";
+                pstmt.setString(1, patron);
+                pstmt.setString(2, patron);
+            }
             
             ResultSet rs = pstmt.executeQuery();
-            
             while (rs.next()) {
                 Object[] fila = {
                     rs.getLong("id"),
@@ -297,7 +259,8 @@ public class VentasPanel extends JPanel {
             }
             
         } catch (SQLException e) {
-            UIUtils.mostrarError(this, "Error al buscar productos: " + e.getMessage());
+            String mensaje = filtro == null ? "Error al cargar productos: " : "Error al buscar productos: ";
+            UIUtils.mostrarError(this, mensaje + e.getMessage());
         }
     }
     
@@ -503,6 +466,9 @@ public class VentasPanel extends JPanel {
                 "Venta registrada exitosamente.\nNúmero de venta: " + numeroVenta + 
                 "\nTotal: S/" + String.format("%.2f", totalVenta));
             
+            // Actualizar dashboard automáticamente después de registrar venta
+            actualizarDashboardSiExiste();
+            
             // Limpiar formulario
             limpiarFormulario();
             
@@ -539,5 +505,17 @@ public class VentasPanel extends JPanel {
         campoBusquedaProductos.setText("");
         limpiarCarrito();
         cargarProductos(); // Recargar productos para actualizar stock
+    }
+    
+    /**
+     * Actualiza el dashboard si existe, buscando el DashboardFrame padre
+     */
+    private void actualizarDashboardSiExiste() {
+        // Buscar el DashboardFrame en la jerarquía de componentes
+        java.awt.Window window = SwingUtilities.getWindowAncestor(this);
+        if (window instanceof com.minimarket.ui.swing.DashboardFrame) {
+            com.minimarket.ui.swing.DashboardFrame dashboard = (com.minimarket.ui.swing.DashboardFrame) window;
+            dashboard.actualizarDashboard();
+        }
     }
 }
