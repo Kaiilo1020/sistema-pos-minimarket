@@ -1,0 +1,350 @@
+@startuml Sistema POS Minimarket - Diagrama UML de Clases
+
+!define SINGLETON_COLOR #FFE6E6
+!define BUILDER_COLOR #E6F3FF
+!define ADAPTER_COLOR #E6FFE6
+!define DECORATOR_COLOR #FFF4E6
+!define OBSERVER_COLOR #F0E6FF
+!define COMMAND_COLOR #FFE6F0
+!define CHAIN_COLOR #E6FFFF
+
+package "com.minimarket.config" {
+    class DatabaseConnection <<Singleton>> SINGLETON_COLOR {
+        -static instance: DatabaseConnection
+        -connection: Connection
+        -URL: String
+        -USERNAME: String
+        -PASSWORD: String
+        --
+        -DatabaseConnection()
+        +{static} getInstance(): DatabaseConnection
+        +getConnection(): Connection
+        +beginTransaction(): Connection
+        +commit(conn: Connection): void
+        +rollback(conn: Connection): void
+        -reconectar(): void
+    }
+}
+
+package "com.minimarket.model" {
+    class Boleta {
+        -numero: String
+        -fechaHora: LocalDateTime
+        -cajera: Usuario
+        -metodoPago: MetodoPago
+        -detalles: List<DetalleVenta>
+        -observaciones: String
+        --
+        +calcularTotales(): void
+        +esValida(): boolean
+    }
+    
+    class BoletaBuilder <<Builder>> BUILDER_COLOR {
+        -boleta: Boleta
+        --
+        +BoletaBuilder()
+        +numero(numero: String): BoletaBuilder
+        +fecha(fecha: LocalDateTime): BoletaBuilder
+        +cajera(cajera: Usuario): BoletaBuilder
+        +metodoPago(metodo: MetodoPago): BoletaBuilder
+        +agregarDetalle(detalle: DetalleVenta): BoletaBuilder
+        +observaciones(obs: String): BoletaBuilder
+        +build(): Boleta
+        -validarCamposObligatorios(): void
+    }
+    
+    class DetalleVenta {
+        -producto: Producto
+        -cantidad: int
+        -precioUnitario: BigDecimal
+        -subtotal: BigDecimal
+    }
+    
+    class Producto {
+        -id: Long
+        -codigo: String
+        -nombre: String
+        -precio: double
+        -stock: int
+        -fechaVencimiento: LocalDate
+        -activo: boolean
+    }
+    
+    class Usuario {
+        -id: Long
+        -username: String
+        -password: String
+        -nombre: String
+        -apellido: String
+        -email: String
+        -rol: Rol
+        -activo: boolean
+    }
+    
+    enum MetodoPago {
+        EFECTIVO
+        YAPE
+        TARJETA
+        TRANSFERENCIA
+    }
+}
+
+package "com.minimarket.security" {
+    class AuditoriaManager <<Singleton>> SINGLETON_COLOR {
+        -static instance: AuditoriaManager
+        --
+        -AuditoriaManager()
+        +{static} getInstance(): AuditoriaManager
+        +registrarEvento(usuario: String, tipo: String, detalles: String): void
+    }
+    
+    class UsuarioSesion <<Singleton>> SINGLETON_COLOR {
+        -static instance: UsuarioSesion
+        -usuarioActual: Usuario
+        --
+        -UsuarioSesion()
+        +{static} getInstance(): UsuarioSesion
+        +login(usuario: Usuario): void
+        +logout(): void
+        +getUsuarioActual(): Usuario
+    }
+    
+    enum Rol {
+        ADMINISTRADOR
+        SUPERVISOR
+        CAJERO
+    }
+}
+
+package "com.minimarket.dao" {
+    class VentaDAO {
+        +registrarVenta(conn: Connection, boleta: Boleta, resumen: String): long
+        +registrarDetalle(conn: Connection, ventaId: long, detalle: DetalleVenta): void
+        +obtenerHistorial(conn: Connection): List<Venta>
+    }
+    
+    class ProductoDAO {
+        +listarActivos(conn: Connection): List<Producto>
+        +descontarStock(conn: Connection, productoId: Long, cantidad: int): void
+        +buscarPorId(conn: Connection, id: Long): Producto
+        +insertar(conn: Connection, producto: Producto): void
+        +actualizar(conn: Connection, producto: Producto): void
+    }
+    
+    class UsuarioDAO {
+        +autenticar(username: String, password: String): Usuario
+        +listarTodos(conn: Connection): List<Usuario>
+        +insertar(conn: Connection, usuario: Usuario): void
+    }
+}
+
+package "com.minimarket.service.venta" {
+    class VentaService <<Chain+Observer>> CHAIN_COLOR {
+        -databaseConnection: DatabaseConnection
+        -ventaDAO: VentaDAO
+        -productoDAO: ProductoDAO
+        --
+        +registrarVenta(context: VentaContext): void
+        -validarVenta(context: VentaContext): void
+        -construirBoleta(context: VentaContext): Boleta
+        -notificarStockCritico(productoId: Long, stock: int): void
+    }
+    
+    class VentaContext {
+        -numeroBoleta: String
+        -cajero: Usuario
+        -tipoComprobante: TipoComprobante
+        -nombreCliente: String
+        -documentoCliente: String
+        -detalles: List<DetalleVenta>
+        -total: double
+        -metodoPago: MetodoPago
+        -observaciones: String
+        --
+        +agregarDetalle(detalle: DetalleVenta): void
+        +isRequiereAutorizacionSupervisor(): boolean
+    }
+    
+    enum TipoComprobante {
+        BOLETA
+        FACTURA
+    }
+}
+
+package "com.minimarket.ui.handlers" {
+    class VentaHandler <<Command>> COMMAND_COLOR {
+        -ventaService: VentaService
+        -reportePDFService: ReportePDFService
+        -carrito: Map<Producto, DetalleVenta>
+        -totalVenta: BigDecimal
+        --
+        +agregarAlCarrito(producto: Producto, cantidad: int): void
+        +registrarVenta(tipoComprobante: String, nombreCliente: String, ...): void
+        +ejecutarAnular(parent: Component): void
+        +ejecutarImprimir(parent: Component): void
+        +limpiarCarrito(): void
+    }
+    
+    class ProductoHandler {
+        -productoDAO: ProductoDAO
+        +crearProducto(parent: Component, datos: ProductoFormData): void
+        +actualizarProducto(parent: Component, id: Long, datos: ProductoFormData): void
+        +eliminarProducto(parent: Component, id: Long): void
+    }
+    
+    class UsuarioHandler {
+        -usuarioDAO: UsuarioDAO
+        +crearUsuario(parent: Component, datos: UsuarioFormData): void
+        +actualizarUsuario(parent: Component, id: Long, datos: UsuarioFormData): void
+    }
+}
+
+package "com.minimarket.ui.swing" {
+    class DashboardFrame <<Adapter>> ADAPTER_COLOR {
+        -usuarioActual: Usuario
+        -sidebarButtons: List<JButton>
+        --
+        +DashboardFrame()
+        -crearSidebar(): JPanel
+        -obtenerOpcionesSidebar(rol: Rol): List<SidebarOption>
+        -mostrarPanel(panelKey: String): void
+    }
+    
+    class LoginFrame {
+        +LoginFrame()
+        -autenticar(): void
+    }
+}
+
+package "com.minimarket.ui.panels" {
+    class VentasPanel <<Decorator>> DECORATOR_COLOR {
+        -ventaHandler: VentaHandler
+        -tablaCarrito: JTable
+        -campoBusqueda: JTextField
+        --
+        +VentasPanel()
+        -crearTablaCarrito(): JTable
+        -agregarProductoAlCarrito(): void
+        -registrarVenta(): void
+    }
+    
+    class InventarioPanel {
+        -productoHandler: ProductoHandler
+        -tablaProductos: JTable
+    }
+    
+    class AlertasVencimientoPanel {
+        -handler: AlertasVencimientoHandler
+        -tablaAlertas: JTable
+    }
+}
+
+package "com.minimarket.service" {
+    class ReportePDFService {
+        +generarReciboPOS(numero: String, cliente: String, total: double): void
+        +generarInformeDiario(): void
+    }
+    
+    class DashboardService {
+        +obtenerVentasDelDia(): double
+        +obtenerTransaccionesDelDia(): int
+    }
+}
+
+' ==========================================
+' RELACIONES Y PATRONES
+' ==========================================
+
+' Singleton Pattern
+DatabaseConnection ..> DatabaseConnection : <<creates>>\ngetInstance()
+AuditoriaManager ..> AuditoriaManager : <<creates>>\ngetInstance()
+UsuarioSesion ..> UsuarioSesion : <<creates>>\ngetInstance()
+
+' Builder Pattern
+BoletaBuilder --> Boleta : builds
+VentaService --> BoletaBuilder : uses
+
+' Adapter Pattern
+DashboardFrame --> Rol : adapts
+note right of DashboardFrame
+  **Adapter Pattern**
+  obtenerOpcionesSidebar(Rol)
+  adapta opciones según rol:
+  - CAJERO: opciones limitadas
+  - SUPERVISOR: opciones operativas
+  - ADMINISTRADOR: acceso completo
+end note
+
+' Decorator Pattern
+VentasPanel --> JTable : decorates
+note right of VentasPanel
+  **Decorator Pattern**
+  CustomTableCellRenderer
+  decora filas con alertas
+  visuales (stock bajo, vencimiento)
+end note
+
+' Observer Pattern
+VentaService --> AuditoriaManager : notifies
+note right of VentaService
+  **Observer Pattern**
+  notificarStockCritico()
+  notifica cuando stock < 10
+end note
+
+' Command Pattern
+VentaHandler --> VentaService : uses
+note right of VentaHandler
+  **Command Pattern**
+  ejecutarAnular()
+  ejecutarImprimir()
+  encapsula acciones
+end note
+
+' Chain of Responsibility Pattern
+VentaService ..> VentaContext : validates
+note right of VentaService
+  **Chain of Responsibility**
+  validarVenta():
+  1. Validar Cliente (si FACTURA)
+  2. Validar Carrito
+  3. Validar Autorización
+end note
+
+' ACID Transactions
+VentaService --> DatabaseConnection : uses
+VentaService --> VentaDAO : uses
+VentaService --> ProductoDAO : uses
+note right of VentaService
+  **ACID Transactions**
+  beginTransaction()
+  → registrarVenta()
+  → registrarDetalle()
+  → descontarStock()
+  → commit() / rollback()
+end note
+
+' General Dependencies
+VentaHandler --> VentaContext : uses
+VentaHandler --> ReportePDFService : uses
+VentaHandler --> UsuarioSesion : uses
+ProductoHandler --> ProductoDAO : uses
+UsuarioHandler --> UsuarioDAO : uses
+DashboardFrame --> UsuarioSesion : uses
+VentasPanel --> VentaHandler : uses
+InventarioPanel --> ProductoHandler : uses
+
+' Model Relationships
+Boleta --> DetalleVenta : contains
+DetalleVenta --> Producto : references
+Boleta --> Usuario : cajera
+Usuario --> Rol : has
+
+' DAO Dependencies
+VentaDAO --> DatabaseConnection : uses
+ProductoDAO --> DatabaseConnection : uses
+UsuarioDAO --> DatabaseConnection : uses
+AuditoriaManager --> DatabaseConnection : uses
+
+@enduml
+

@@ -1,16 +1,20 @@
 package com.minimarket.ui.panels;
 
-import com.minimarket.config.DatabaseConnection;
+import com.minimarket.model.Producto;
+import com.minimarket.ui.handlers.ProductoHandler;
+import com.minimarket.ui.theme.EstilosApp;
 import com.minimarket.ui.util.UIUtils;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 /**
- * Panel de gestión de inventario con CRUD de productos
+ * Panel de gestión de inventario - SOLO UI
+ * Toda la lógica de negocio está delegada a ProductoHandler
  */
 public class InventarioPanel extends JPanel {
     
@@ -20,12 +24,16 @@ public class InventarioPanel extends JPanel {
     private TableRowSorter<DefaultTableModel> sorter;
     private boolean soloLectura;
     
+    // Handler que contiene toda la lógica
+    private final ProductoHandler productoHandler;
+    
     public InventarioPanel() {
-        this(false); // Por defecto, no es solo lectura
+        this(false);
     }
     
     public InventarioPanel(boolean soloLectura) {
         this.soloLectura = soloLectura;
+        this.productoHandler = new ProductoHandler();
         initializeComponents();
         cargarProductos();
     }
@@ -62,7 +70,7 @@ public class InventarioPanel extends JPanel {
             lblModoLectura.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
             
             JButton btnActualizar = new JButton("🔄 Actualizar");
-            UIUtils.configurarBotonSecundario(btnActualizar);
+            EstilosApp.estilizarBotonNeutro(btnActualizar);
             btnActualizar.addActionListener(e -> cargarProductos());
             
             panelBotones.add(lblModoLectura);
@@ -75,13 +83,12 @@ public class InventarioPanel extends JPanel {
             JButton btnEliminar = new JButton("Eliminar Producto");
             JButton btnActualizar = new JButton("Actualizar");
             
-            // Estilo de botones usando UIUtils
-            UIUtils.configurarBotonExito(btnAgregar);
-            UIUtils.configurarBotonPrimario(btnEditar);
-            UIUtils.configurarBotonPeligro(btnEliminar);
-            UIUtils.configurarBotonSecundario(btnActualizar);
+            EstilosApp.estilizarBoton(btnAgregar);
+            EstilosApp.estilizarBotonSecundario(btnEditar);
+            EstilosApp.estilizarBotonError(btnEliminar);
+            EstilosApp.estilizarBotonNeutro(btnActualizar);
             
-            // Eventos de botones
+            // Eventos de botones - Delegación al handler
             btnAgregar.addActionListener(e -> abrirDialogoAgregarProducto());
             btnEditar.addActionListener(e -> editarProductoSeleccionado());
             btnEliminar.addActionListener(e -> eliminarProductoSeleccionado());
@@ -101,14 +108,14 @@ public class InventarioPanel extends JPanel {
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Hacer la tabla no editable
+                return false;
             }
         };
         
         tablaProductos = new JTable(modeloTabla);
         tablaProductos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaProductos.setRowHeight(25);
-        UIUtils.configurarTablaConVencimiento(tablaProductos, 5); // Columna 5 = Fecha Vencimiento
+        UIUtils.configurarTablaConVencimiento(tablaProductos, 5);
         
         // Configurar filtro
         sorter = new TableRowSorter<>(modeloTabla);
@@ -121,37 +128,28 @@ public class InventarioPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
     
+    /* ========================== DELEGACIÓN A HANDLER ========================== */
     
     private void cargarProductos() {
-        modeloTabla.setRowCount(0); // Limpiar tabla
-        
-        String sql = """
-            SELECT p.id, p.nombre, p.descripcion, p.precio, p.stock, p.fecha_vencimiento
-            FROM productos p
-            WHERE p.activo = true
-            ORDER BY p.nombre
-        """;
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+        try {
+            List<Producto> productos = productoHandler.cargarProductos();
+            modeloTabla.setRowCount(0);
             
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             
-            while (rs.next()) {
+            for (Producto producto : productos) {
                 Object[] fila = {
-                    rs.getLong("id"),
-                    rs.getString("nombre"),
-                    rs.getString("descripcion"),
-                    "S/" + String.format("%.2f", rs.getDouble("precio")),
-                    rs.getInt("stock"),
-                    rs.getDate("fecha_vencimiento") != null ? 
-                        sdf.format(rs.getDate("fecha_vencimiento")) : "N/A"
+                    producto.getId(),
+                    producto.getNombre(),
+                    producto.getDescripcion(),
+                    "S/" + String.format("%.2f", producto.getPrecio() != null ? producto.getPrecio().doubleValue() : 0.0),
+                    producto.getStock(),
+                    producto.getFechaVencimiento() != null ? 
+                        sdf.format(java.sql.Date.valueOf(producto.getFechaVencimiento())) : "N/A"
                 };
                 modeloTabla.addRow(fila);
             }
-            
-        } catch (SQLException e) {
+        } catch (Exception e) {
             UIUtils.mostrarError(this, "Error al cargar productos: " + e.getMessage());
         }
     }
@@ -171,7 +169,7 @@ public class InventarioPanel extends JPanel {
         dialog.setVisible(true);
         
         if (dialog.isConfirmado()) {
-            cargarProductos(); // Recargar la tabla
+            cargarProductos();
         }
     }
     
@@ -182,7 +180,6 @@ public class InventarioPanel extends JPanel {
             return;
         }
         
-        // Obtener ID del producto seleccionado
         Long productoId = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
         
         ProductoDialog dialog = new ProductoDialog((JFrame) SwingUtilities.getWindowAncestor(this), 
@@ -190,7 +187,7 @@ public class InventarioPanel extends JPanel {
         dialog.setVisible(true);
         
         if (dialog.isConfirmado()) {
-            cargarProductos(); // Recargar la tabla
+            cargarProductos();
         }
     }
     
@@ -205,24 +202,11 @@ public class InventarioPanel extends JPanel {
         
         if (UIUtils.confirmar(this, "¿Estás seguro de que deseas eliminar el producto '" + nombreProducto + "'?")) {
             Long productoId = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
-            
-            String sql = "UPDATE productos SET activo = false WHERE id = ?";
-            
-            try (Connection conn = DatabaseConnection.getInstance().getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                
-                pstmt.setLong(1, productoId);
-                int filasAfectadas = pstmt.executeUpdate();
-                
-                if (filasAfectadas > 0) {
-                    UIUtils.mostrarExito(this, "Producto eliminado exitosamente.");
-                    cargarProductos(); // Recargar la tabla
-                } else {
-                    UIUtils.mostrarError(this, "No se pudo eliminar el producto.");
-                }
-                
-            } catch (SQLException e) {
-                UIUtils.mostrarError(this, "Error al eliminar producto: " + e.getMessage());
+            try {
+                productoHandler.eliminarProducto(productoId, this);
+                cargarProductos();
+            } catch (RuntimeException e) {
+                // El error ya fue mostrado por el handler
             }
         }
     }

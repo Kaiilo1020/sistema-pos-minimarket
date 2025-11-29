@@ -1,17 +1,17 @@
 package com.minimarket.ui.panels;
 
-import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.handlers.ReporteVentaHandler;
+import com.minimarket.ui.theme.EstilosApp;
 import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Panel de Reporte de Ventas - Reporte diario por trabajador
- * Replica exactamente la funcionalidad mostrada en la imagen
+ * Panel de Reporte de Ventas - SOLO UI
+ * Toda la lógica está delegada a ReporteVentaHandler
  */
 public class ReporteVentasPanel extends JPanel {
     
@@ -24,90 +24,79 @@ public class ReporteVentasPanel extends JPanel {
     private JLabel labelTotalProductos;
     private JLabel labelIngresosTotales;
     
+    // Handler que contiene toda la lógica
+    private final ReporteVentaHandler handler;
+    
     public ReporteVentasPanel() {
-        initializeComponents();
+        this.handler = new ReporteVentaHandler();
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
+        add(crearPanelEncabezado(), BorderLayout.NORTH);
+        add(crearPanelResumen(), BorderLayout.CENTER);
+        add(crearPanelTotales(), BorderLayout.SOUTH);
         cargarReporteVentas();
     }
     
-    private void initializeComponents() {
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
-        
-        // Panel superior con título y botón
+    private JPanel crearPanelEncabezado() {
         JPanel panelSuperior = new JPanel(new BorderLayout());
         panelSuperior.setBackground(Color.WHITE);
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         
-        // Título del reporte
         JPanel panelTitulo = new JPanel(new BorderLayout());
         panelTitulo.setBackground(Color.WHITE);
-        
         labelTitulo = new JLabel("REPORTE DE VENTAS DEL DÍA", JLabel.CENTER);
         labelTitulo.setFont(UIUtils.HEADER_FONT);
         labelTitulo.setForeground(Color.DARK_GRAY);
-        
         labelUltimaActualizacion = new JLabel("", JLabel.CENTER);
         labelUltimaActualizacion.setFont(UIUtils.DEFAULT_FONT);
         labelUltimaActualizacion.setForeground(Color.GRAY);
-        
         panelTitulo.add(labelTitulo, BorderLayout.NORTH);
         panelTitulo.add(labelUltimaActualizacion, BorderLayout.SOUTH);
         
-        // Botón actualizar
         JPanel panelBoton = UIUtils.crearPanelBotones(FlowLayout.RIGHT);
-        
         btnActualizarReporte = new JButton("Actualizar Reporte");
-        UIUtils.configurarBotonPrimario(btnActualizarReporte);
-        btnActualizarReporte.setPreferredSize(new Dimension(140, 35));
+        EstilosApp.estilizarBotonSecundario(btnActualizarReporte);
+        btnActualizarReporte.setPreferredSize(new Dimension(160, 40));
         btnActualizarReporte.addActionListener(e -> cargarReporteVentas());
-        
         panelBoton.add(btnActualizarReporte);
         
         panelSuperior.add(panelTitulo, BorderLayout.CENTER);
         panelSuperior.add(panelBoton, BorderLayout.EAST);
-        
-        // Panel central con tabla de resumen por trabajador
+        return panelSuperior;
+    }
+    
+    private JPanel crearPanelResumen() {
         JPanel panelCentral = new JPanel(new BorderLayout());
         panelCentral.setBackground(Color.WHITE);
         panelCentral.setBorder(BorderFactory.createEmptyBorder(0, 20, 10, 20));
         
-        // Título de la sección
         JLabel labelSeccion = new JLabel("Resumen por Trabajador");
         labelSeccion.setFont(UIUtils.HEADER_FONT);
         labelSeccion.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         
-        // Tabla de reporte por trabajador
         String[] columnas = {"Trabajador", "Transacciones", "Productos Vendidos", "Total Recaudado"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Hacer la tabla no editable
+                return false;
             }
         };
         
         tablaReporte = new JTable(modeloTabla);
         tablaReporte.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaReporte.setRowHeight(30);
-        UIUtils.configurarTablaConAlineacionNumerica(tablaReporte, 1); // Columnas 1+ son numéricas
-        
-        // Configurar ancho de columnas
-        tablaReporte.getColumnModel().getColumn(0).setPreferredWidth(200); // Trabajador
-        tablaReporte.getColumnModel().getColumn(1).setPreferredWidth(120); // Transacciones
-        tablaReporte.getColumnModel().getColumn(2).setPreferredWidth(150); // Productos Vendidos
-        tablaReporte.getColumnModel().getColumn(3).setPreferredWidth(150); // Total Recaudado
+        UIUtils.configurarTablaConAlineacionNumerica(tablaReporte, 1);
+        tablaReporte.getColumnModel().getColumn(0).setPreferredWidth(200);
+        tablaReporte.getColumnModel().getColumn(1).setPreferredWidth(120);
+        tablaReporte.getColumnModel().getColumn(2).setPreferredWidth(150);
+        tablaReporte.getColumnModel().getColumn(3).setPreferredWidth(150);
         
         JScrollPane scrollPane = new JScrollPane(tablaReporte);
         scrollPane.setPreferredSize(new Dimension(0, 200));
         
         panelCentral.add(labelSeccion, BorderLayout.NORTH);
         panelCentral.add(scrollPane, BorderLayout.CENTER);
-        
-        // Panel inferior con totales del día
-        JPanel panelTotales = crearPanelTotales();
-        
-        add(panelSuperior, BorderLayout.NORTH);
-        add(panelCentral, BorderLayout.CENTER);
-        add(panelTotales, BorderLayout.SOUTH);
+        return panelCentral;
     }
     
     private JPanel crearPanelTotales() {
@@ -179,65 +168,35 @@ public class ReporteVentasPanel extends JPanel {
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd 'de' MMMM 'de' yyyy - HH:mm:ss");
         labelUltimaActualizacion.setText("Última actualización: " + sdf.format(new Date()));
         
-        // Consulta para obtener reporte por trabajador del día actual
-        String sql = """
-            SELECT u.username as trabajador,
-                   COUNT(DISTINCT v.id) as transacciones,
-                   COALESCE(SUM(dv.cantidad), 0) as productos_vendidos,
-                   COALESCE(SUM(v.total), 0) as total_recaudado
-            FROM usuarios u
-            LEFT JOIN ventas v ON u.id = v.cajera_id 
-                              AND DATE(v.fecha_hora) = CURRENT_DATE 
-                              AND v.estado = 'ACTIVA'
-            LEFT JOIN detalle_ventas dv ON v.id = dv.venta_id
-            WHERE u.activo = true AND u.rol IN ('CAJERO', 'SUPERVISOR', 'ADMINISTRADOR')
-            GROUP BY u.id, u.username
-            HAVING COUNT(DISTINCT v.id) > 0
-            ORDER BY total_recaudado DESC
-        """;
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+        try {
+            var reportes = handler.obtenerReportePorTrabajador();
+            var totales = handler.calcularTotalesDia(reportes);
             
-            int totalTransacciones = 0;
-            int totalProductos = 0;
-            double totalIngresos = 0.0;
-            
-            while (rs.next()) {
-                String trabajador = rs.getString("trabajador");
-                int transacciones = rs.getInt("transacciones");
-                int productosVendidos = rs.getInt("productos_vendidos");
-                double totalRecaudado = rs.getDouble("total_recaudado");
-                
-                // Acumular totales
-                totalTransacciones += transacciones;
-                totalProductos += productosVendidos;
-                totalIngresos += totalRecaudado;
-                
+            // Llenar tabla
+            for (ReporteVentaHandler.ReporteTrabajador reporte : reportes) {
                 Object[] fila = {
-                    trabajador,
-                    String.valueOf(transacciones),
-                    String.valueOf(productosVendidos),
-                    "S/" + String.format("%.2f", totalRecaudado)
+                    reporte.trabajador,
+                    String.valueOf(reporte.transacciones),
+                    String.valueOf(reporte.productosVendidos),
+                    "S/" + String.format("%.2f", reporte.totalRecaudado)
                 };
                 modeloTabla.addRow(fila);
             }
             
             // Actualizar totales del día
-            labelTotalTransacciones.setText(String.valueOf(totalTransacciones));
-            labelTotalProductos.setText(String.valueOf(totalProductos));
-            labelIngresosTotales.setText("S/" + String.format("%.2f", totalIngresos));
+            labelTotalTransacciones.setText(String.valueOf(totales.totalTransacciones));
+            labelTotalProductos.setText(String.valueOf(totales.totalProductos));
+            labelIngresosTotales.setText("S/" + String.format("%.2f", totales.totalIngresos));
             
             // Cambiar color de los totales según el valor
-            if (totalIngresos > 0) {
-                labelIngresosTotales.setForeground(UIUtils.SUCCESS_COLOR); // Verde
+            if (totales.totalIngresos > 0) {
+                labelIngresosTotales.setForeground(EstilosApp.COLOR_PRIMARIO); // Verde
             } else {
-                labelIngresosTotales.setForeground(UIUtils.SECONDARY_COLOR); // Gris
+                labelIngresosTotales.setForeground(EstilosApp.COLOR_NEUTRO); // Gris
             }
             
-        } catch (SQLException e) {
-            UIUtils.mostrarError(this, "Error al cargar reporte de ventas: " + e.getMessage());
+        } catch (RuntimeException e) {
+            UIUtils.mostrarError(this, e.getMessage());
         }
     }
 }

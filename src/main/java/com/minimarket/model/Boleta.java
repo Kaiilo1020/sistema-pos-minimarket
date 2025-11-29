@@ -22,24 +22,19 @@ public class Boleta {
     
     // Enum para métodos de pago
     public enum MetodoPago {
-        EFECTIVO("Efectivo"),
-        TARJETA_DEBITO("Tarjeta de Débito"),
-        TARJETA_CREDITO("Tarjeta de Crédito"),
-        YAPE("Yape"),
-        PLIN("Plin"),
-        TRANSFERENCIA("Transferencia Bancaria");
+        EFECTIVO,
+        TARJETA_DEBITO,
+        TARJETA_CREDITO,
+        YAPE,
+        PLIN,
+        TRANSFERENCIA;
         
-        private final String descripcion;
-        
-        MetodoPago(String descripcion) {
-            this.descripcion = descripcion;
+        MetodoPago() {
         }
-        
-        public String getDescripcion() { return descripcion; }
     }
     
-    // Constructor privado para usar con Builder
-    private Boleta() {
+    // Constructor package-private para uso con BoletaBuilder
+    Boleta() {
         this.detalles = new ArrayList<>();
         this.fechaHora = LocalDateTime.now();
     }
@@ -98,65 +93,6 @@ public class Boleta {
                detalles != null && !detalles.isEmpty() &&
                detalles.stream().allMatch(DetalleVenta::esValido) &&
                total != null && total.compareTo(BigDecimal.ZERO) > 0;
-    }
-    
-    /**
-     * Clase Builder para construir boletas paso a paso
-     */
-    public static class Builder {
-        private Boleta boleta;
-        
-        public Builder() {
-            this.boleta = new Boleta();
-        }
-        
-        public Builder setNumero(String numero) {
-            boleta.numero = numero;
-            return this;
-        }
-        
-        public Builder setFechaHora(LocalDateTime fechaHora) {
-            boleta.fechaHora = fechaHora;
-            return this;
-        }
-        
-        public Builder setCajera(Usuario cajera) {
-            boleta.cajera = cajera;
-            return this;
-        }
-        
-        public Builder setMetodoPago(MetodoPago metodoPago) {
-            boleta.metodoPago = metodoPago;
-            return this;
-        }
-        
-        public Builder agregarDetalle(DetalleVenta detalle) {
-            boleta.detalles.add(detalle);
-            return this;
-        }
-        
-        public Builder agregarProducto(Producto producto, Integer cantidad, BigDecimal precioUnitario) {
-            DetalleVenta detalle = new DetalleVenta(producto, cantidad, precioUnitario);
-            boleta.detalles.add(detalle);
-            return this;
-        }
-        
-        public Builder setObservaciones(String observaciones) {
-            boleta.observaciones = observaciones;
-            return this;
-        }
-        
-        public Boleta build() {
-            // Calcular totales antes de construir
-            boleta.calcularTotales();
-            
-            // Validar que la boleta esté completa
-            if (!boleta.esValida()) {
-                throw new IllegalStateException("La boleta no tiene todos los datos requeridos");
-            }
-            
-            return boleta;
-        }
     }
     
     @Override

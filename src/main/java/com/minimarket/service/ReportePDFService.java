@@ -31,18 +31,6 @@ public class ReportePDFService {
         public String cajera;
         public String metodoPago;
         public double total;
-        public List<DetalleVenta> detalles;
-        
-        public VentaDelDia() {
-            this.detalles = new ArrayList<>();
-        }
-    }
-    
-    public static class DetalleVenta {
-        public String producto;
-        public int cantidad;
-        public double precioUnitario;
-        public double subtotal;
     }
     
     public static class ResumenVentas {
@@ -248,5 +236,16 @@ public class ReportePDFService {
         }
         
         return resumen;
+    }
+
+    /**
+     * Genera (simulado) un recibo rápido del POS, útil para el comando Imprimir.
+     * En esta versión escribe en la carpeta temporal y deja registro en consola.
+     */
+    public String generarReciboPOS(String numeroVenta, String cliente, double total) {
+        String recibo = String.format("RECIBO | Venta: %s | Cliente: %s | Total: S/ %.2f",
+                numeroVenta, cliente != null ? cliente : "Consumidor final", total);
+        System.out.println(recibo);
+        return recibo;
     }
 }

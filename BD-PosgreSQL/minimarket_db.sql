@@ -5,7 +5,7 @@
 -- Dumped from database version 17.5
 -- Dumped by pg_dump version 17.5
 
--- Started on 2025-11-27 17:06:32
+-- Started on 2025-11-28 17:06:52
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -20,7 +20,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 5124 (class 1262 OID 16768)
+-- TOC entry 5043 (class 1262 OID 16768)
 -- Name: minimarket_db; Type: DATABASE; Schema: -; Owner: postgres
 --
 
@@ -44,8 +44,8 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 5125 (class 0 OID 0)
--- Dependencies: 5124
+-- TOC entry 5044 (class 0 OID 0)
+-- Dependencies: 5043
 -- Name: DATABASE minimarket_db; Type: COMMENT; Schema: -; Owner: postgres
 --
 
@@ -63,7 +63,7 @@ CREATE SCHEMA public;
 ALTER SCHEMA public OWNER TO pg_database_owner;
 
 --
--- TOC entry 5126 (class 0 OID 0)
+-- TOC entry 5045 (class 0 OID 0)
 -- Dependencies: 4
 -- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
 --
@@ -72,7 +72,7 @@ COMMENT ON SCHEMA public IS 'standard public schema';
 
 
 --
--- TOC entry 245 (class 1255 OID 16966)
+-- TOC entry 235 (class 1255 OID 16966)
 -- Name: actualizar_timestamp(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -89,7 +89,7 @@ $$;
 ALTER FUNCTION public.actualizar_timestamp() OWNER TO postgres;
 
 --
--- TOC entry 248 (class 1255 OID 16991)
+-- TOC entry 238 (class 1255 OID 16991)
 -- Name: calcular_igv(numeric); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -115,7 +115,7 @@ $$;
 ALTER FUNCTION public.calcular_igv(subtotal numeric) OWNER TO postgres;
 
 --
--- TOC entry 247 (class 1255 OID 16990)
+-- TOC entry 237 (class 1255 OID 16990)
 -- Name: generar_numero_boleta(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -145,7 +145,7 @@ $$;
 ALTER FUNCTION public.generar_numero_boleta() OWNER TO postgres;
 
 --
--- TOC entry 246 (class 1255 OID 16969)
+-- TOC entry 236 (class 1255 OID 16969)
 -- Name: verificar_stock_bajo(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -171,53 +171,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 230 (class 1259 OID 16888)
--- Name: alertas_inventario; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.alertas_inventario (
-    id bigint NOT NULL,
-    tipo_alerta character varying(30) NOT NULL,
-    producto character varying(200) NOT NULL,
-    detalle text NOT NULL,
-    fecha_alerta timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    estado character varying(20) DEFAULT 'PENDIENTE'::character varying,
-    usuario_revision character varying(100),
-    fecha_revision timestamp without time zone,
-    observaciones_revision text,
-    CONSTRAINT alertas_inventario_estado_check CHECK (((estado)::text = ANY ((ARRAY['PENDIENTE'::character varying, 'REVISADA'::character varying, 'RESUELTA'::character varying])::text[]))),
-    CONSTRAINT alertas_inventario_tipo_alerta_check CHECK (((tipo_alerta)::text = ANY ((ARRAY['STOCK_BAJO'::character varying, 'PROXIMO_VENCER'::character varying, 'VENCIDO'::character varying, 'SIN_LOTE'::character varying])::text[])))
-);
-
-
-ALTER TABLE public.alertas_inventario OWNER TO postgres;
-
---
--- TOC entry 229 (class 1259 OID 16887)
--- Name: alertas_inventario_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.alertas_inventario_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.alertas_inventario_id_seq OWNER TO postgres;
-
---
--- TOC entry 5127 (class 0 OID 0)
--- Dependencies: 229
--- Name: alertas_inventario_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.alertas_inventario_id_seq OWNED BY public.alertas_inventario.id;
-
-
---
--- TOC entry 242 (class 1259 OID 17047)
+-- TOC entry 234 (class 1259 OID 17047)
 -- Name: auditoria_log; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -234,7 +188,7 @@ CREATE TABLE public.auditoria_log (
 ALTER TABLE public.auditoria_log OWNER TO postgres;
 
 --
--- TOC entry 241 (class 1259 OID 17046)
+-- TOC entry 233 (class 1259 OID 17046)
 -- Name: auditoria_log_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -250,56 +204,12 @@ CREATE SEQUENCE public.auditoria_log_id_seq
 ALTER SEQUENCE public.auditoria_log_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5128 (class 0 OID 0)
--- Dependencies: 241
+-- TOC entry 5046 (class 0 OID 0)
+-- Dependencies: 233
 -- Name: auditoria_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public.auditoria_log_id_seq OWNED BY public.auditoria_log.id;
-
-
---
--- TOC entry 228 (class 1259 OID 16872)
--- Name: auditoria_precios; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.auditoria_precios (
-    id bigint NOT NULL,
-    producto_id bigint NOT NULL,
-    precio_anterior numeric(10,2) NOT NULL,
-    precio_nuevo numeric(10,2) NOT NULL,
-    usuario character varying(100) NOT NULL,
-    fecha_cambio timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    accion character varying(20) NOT NULL,
-    observaciones text,
-    CONSTRAINT auditoria_precios_accion_check CHECK (((accion)::text = ANY ((ARRAY['MODIFICACION'::character varying, 'REVERSION'::character varying])::text[])))
-);
-
-
-ALTER TABLE public.auditoria_precios OWNER TO postgres;
-
---
--- TOC entry 227 (class 1259 OID 16871)
--- Name: auditoria_precios_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.auditoria_precios_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.auditoria_precios_id_seq OWNER TO postgres;
-
---
--- TOC entry 5129 (class 0 OID 0)
--- Dependencies: 227
--- Name: auditoria_precios_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.auditoria_precios_id_seq OWNED BY public.auditoria_precios.id;
 
 
 --
@@ -334,55 +244,12 @@ CREATE SEQUENCE public.categorias_id_seq
 ALTER SEQUENCE public.categorias_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5130 (class 0 OID 0)
+-- TOC entry 5047 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: categorias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public.categorias_id_seq OWNED BY public.categorias.id;
-
-
---
--- TOC entry 234 (class 1259 OID 16922)
--- Name: configuracion_sistema; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.configuracion_sistema (
-    id bigint NOT NULL,
-    parametro character varying(100) NOT NULL,
-    valor text NOT NULL,
-    descripcion text,
-    tipo_dato character varying(20) DEFAULT 'STRING'::character varying,
-    usuario_modificacion character varying(100),
-    fecha_modificacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT configuracion_sistema_tipo_dato_check CHECK (((tipo_dato)::text = ANY ((ARRAY['STRING'::character varying, 'INTEGER'::character varying, 'DECIMAL'::character varying, 'BOOLEAN'::character varying, 'DATE'::character varying])::text[])))
-);
-
-
-ALTER TABLE public.configuracion_sistema OWNER TO postgres;
-
---
--- TOC entry 233 (class 1259 OID 16921)
--- Name: configuracion_sistema_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.configuracion_sistema_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.configuracion_sistema_id_seq OWNER TO postgres;
-
---
--- TOC entry 5131 (class 0 OID 0)
--- Dependencies: 233
--- Name: configuracion_sistema_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.configuracion_sistema_id_seq OWNED BY public.configuracion_sistema.id;
 
 
 --
@@ -423,7 +290,7 @@ CREATE SEQUENCE public.detalle_ventas_id_seq
 ALTER SEQUENCE public.detalle_ventas_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5132 (class 0 OID 0)
+-- TOC entry 5048 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: detalle_ventas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -432,7 +299,7 @@ ALTER SEQUENCE public.detalle_ventas_id_seq OWNED BY public.detalle_ventas.id;
 
 
 --
--- TOC entry 236 (class 1259 OID 16936)
+-- TOC entry 228 (class 1259 OID 16936)
 -- Name: logs_sistema; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -452,7 +319,7 @@ CREATE TABLE public.logs_sistema (
 ALTER TABLE public.logs_sistema OWNER TO postgres;
 
 --
--- TOC entry 235 (class 1259 OID 16935)
+-- TOC entry 227 (class 1259 OID 16935)
 -- Name: logs_sistema_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -467,55 +334,12 @@ CREATE SEQUENCE public.logs_sistema_id_seq
 ALTER SEQUENCE public.logs_sistema_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5133 (class 0 OID 0)
--- Dependencies: 235
+-- TOC entry 5049 (class 0 OID 0)
+-- Dependencies: 227
 -- Name: logs_sistema_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public.logs_sistema_id_seq OWNED BY public.logs_sistema.id;
-
-
---
--- TOC entry 244 (class 1259 OID 17057)
--- Name: lotes_producto; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.lotes_producto (
-    id integer NOT NULL,
-    producto_id bigint NOT NULL,
-    codigo_lote character varying(50) NOT NULL,
-    fecha_entrada date DEFAULT CURRENT_DATE,
-    fecha_vencimiento date,
-    cantidad integer NOT NULL,
-    CONSTRAINT lotes_producto_cantidad_check CHECK ((cantidad >= 0))
-);
-
-
-ALTER TABLE public.lotes_producto OWNER TO postgres;
-
---
--- TOC entry 243 (class 1259 OID 17056)
--- Name: lotes_producto_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.lotes_producto_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.lotes_producto_id_seq OWNER TO postgres;
-
---
--- TOC entry 5134 (class 0 OID 0)
--- Dependencies: 243
--- Name: lotes_producto_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.lotes_producto_id_seq OWNED BY public.lotes_producto.id;
 
 
 --
@@ -565,62 +389,12 @@ CREATE SEQUENCE public.productos_id_seq
 ALTER SEQUENCE public.productos_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5135 (class 0 OID 0)
+-- TOC entry 5050 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: productos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public.productos_id_seq OWNED BY public.productos.id;
-
-
---
--- TOC entry 232 (class 1259 OID 16901)
--- Name: solicitudes_aprobacion; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.solicitudes_aprobacion (
-    id bigint NOT NULL,
-    codigo_solicitud character varying(100) NOT NULL,
-    tipo_solicitud character varying(50) NOT NULL,
-    usuario_solicitante_id bigint NOT NULL,
-    descripcion text NOT NULL,
-    parametros jsonb,
-    prioridad character varying(20) DEFAULT 'NORMAL'::character varying,
-    estado character varying(20) DEFAULT 'PENDIENTE'::character varying,
-    nivel_requerido character varying(20) NOT NULL,
-    usuario_aprobador character varying(100),
-    fecha_aprobacion timestamp without time zone,
-    observaciones text,
-    fecha_solicitud timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT solicitudes_aprobacion_estado_check CHECK (((estado)::text = ANY ((ARRAY['PENDIENTE'::character varying, 'APROBADA'::character varying, 'RECHAZADA'::character varying, 'ESCALADA'::character varying])::text[]))),
-    CONSTRAINT solicitudes_aprobacion_prioridad_check CHECK (((prioridad)::text = ANY ((ARRAY['BAJA'::character varying, 'NORMAL'::character varying, 'ALTA'::character varying, 'URGENTE'::character varying])::text[])))
-);
-
-
-ALTER TABLE public.solicitudes_aprobacion OWNER TO postgres;
-
---
--- TOC entry 231 (class 1259 OID 16900)
--- Name: solicitudes_aprobacion_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.solicitudes_aprobacion_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.solicitudes_aprobacion_id_seq OWNER TO postgres;
-
---
--- TOC entry 5136 (class 0 OID 0)
--- Dependencies: 231
--- Name: solicitudes_aprobacion_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.solicitudes_aprobacion_id_seq OWNED BY public.solicitudes_aprobacion.id;
 
 
 --
@@ -663,7 +437,7 @@ CREATE SEQUENCE public.usuarios_id_seq
 ALTER SEQUENCE public.usuarios_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5137 (class 0 OID 0)
+-- TOC entry 5051 (class 0 OID 0)
 -- Dependencies: 217
 -- Name: usuarios_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -717,7 +491,7 @@ CREATE SEQUENCE public.ventas_id_seq
 ALTER SEQUENCE public.ventas_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5138 (class 0 OID 0)
+-- TOC entry 5052 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: ventas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -726,7 +500,7 @@ ALTER SEQUENCE public.ventas_id_seq OWNED BY public.ventas.id;
 
 
 --
--- TOC entry 238 (class 1259 OID 16976)
+-- TOC entry 230 (class 1259 OID 16976)
 -- Name: vista_productos_proximo_vencer; Type: VIEW; Schema: public; Owner: postgres
 --
 
@@ -744,7 +518,7 @@ CREATE VIEW public.vista_productos_proximo_vencer AS
 ALTER VIEW public.vista_productos_proximo_vencer OWNER TO postgres;
 
 --
--- TOC entry 237 (class 1259 OID 16971)
+-- TOC entry 229 (class 1259 OID 16971)
 -- Name: vista_productos_stock_bajo; Type: VIEW; Schema: public; Owner: postgres
 --
 
@@ -764,7 +538,7 @@ CREATE VIEW public.vista_productos_stock_bajo AS
 ALTER VIEW public.vista_productos_stock_bajo OWNER TO postgres;
 
 --
--- TOC entry 240 (class 1259 OID 16985)
+-- TOC entry 232 (class 1259 OID 16985)
 -- Name: vista_resumen_cajeras; Type: VIEW; Schema: public; Owner: postgres
 --
 
@@ -783,7 +557,7 @@ CREATE VIEW public.vista_resumen_cajeras AS
 ALTER VIEW public.vista_resumen_cajeras OWNER TO postgres;
 
 --
--- TOC entry 239 (class 1259 OID 16980)
+-- TOC entry 231 (class 1259 OID 16980)
 -- Name: vista_ventas_hoy; Type: VIEW; Schema: public; Owner: postgres
 --
 
@@ -803,15 +577,7 @@ CREATE VIEW public.vista_ventas_hoy AS
 ALTER VIEW public.vista_ventas_hoy OWNER TO postgres;
 
 --
--- TOC entry 4842 (class 2604 OID 16891)
--- Name: alertas_inventario id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.alertas_inventario ALTER COLUMN id SET DEFAULT nextval('public.alertas_inventario_id_seq'::regclass);
-
-
---
--- TOC entry 4854 (class 2604 OID 17050)
+-- TOC entry 4817 (class 2604 OID 17050)
 -- Name: auditoria_log id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -819,15 +585,7 @@ ALTER TABLE ONLY public.auditoria_log ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 4840 (class 2604 OID 16875)
--- Name: auditoria_precios id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auditoria_precios ALTER COLUMN id SET DEFAULT nextval('public.auditoria_precios_id_seq'::regclass);
-
-
---
--- TOC entry 4822 (class 2604 OID 16791)
+-- TOC entry 4797 (class 2604 OID 16791)
 -- Name: categorias id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -835,15 +593,7 @@ ALTER TABLE ONLY public.categorias ALTER COLUMN id SET DEFAULT nextval('public.c
 
 
 --
--- TOC entry 4849 (class 2604 OID 16925)
--- Name: configuracion_sistema id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.configuracion_sistema ALTER COLUMN id SET DEFAULT nextval('public.configuracion_sistema_id_seq'::regclass);
-
-
---
--- TOC entry 4838 (class 2604 OID 16854)
+-- TOC entry 4813 (class 2604 OID 16854)
 -- Name: detalle_ventas id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -851,7 +601,7 @@ ALTER TABLE ONLY public.detalle_ventas ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
--- TOC entry 4852 (class 2604 OID 16939)
+-- TOC entry 4815 (class 2604 OID 16939)
 -- Name: logs_sistema id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -859,15 +609,7 @@ ALTER TABLE ONLY public.logs_sistema ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
--- TOC entry 4856 (class 2604 OID 17060)
--- Name: lotes_producto id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.lotes_producto ALTER COLUMN id SET DEFAULT nextval('public.lotes_producto_id_seq'::regclass);
-
-
---
--- TOC entry 4825 (class 2604 OID 16804)
+-- TOC entry 4800 (class 2604 OID 16804)
 -- Name: productos id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -875,15 +617,7 @@ ALTER TABLE ONLY public.productos ALTER COLUMN id SET DEFAULT nextval('public.pr
 
 
 --
--- TOC entry 4845 (class 2604 OID 16904)
--- Name: solicitudes_aprobacion id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.solicitudes_aprobacion ALTER COLUMN id SET DEFAULT nextval('public.solicitudes_aprobacion_id_seq'::regclass);
-
-
---
--- TOC entry 4817 (class 2604 OID 16773)
+-- TOC entry 4792 (class 2604 OID 16773)
 -- Name: usuarios id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -891,7 +625,7 @@ ALTER TABLE ONLY public.usuarios ALTER COLUMN id SET DEFAULT nextval('public.usu
 
 
 --
--- TOC entry 4834 (class 2604 OID 16830)
+-- TOC entry 4809 (class 2604 OID 16830)
 -- Name: ventas id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -899,28 +633,8 @@ ALTER TABLE ONLY public.ventas ALTER COLUMN id SET DEFAULT nextval('public.venta
 
 
 --
--- TOC entry 5108 (class 0 OID 16888)
--- Dependencies: 230
--- Data for Name: alertas_inventario; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.alertas_inventario VALUES (1, 'STOCK_BAJO', 'Arroz Costeño', 'Stock: 8 unidades', '2025-11-26 16:19:45.989841', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (2, 'PROXIMO_VENCER', 'Yogurt Natural', 'Vence: 2025-11-28 (2 días)', '2025-11-26 16:19:45.999383', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (3, 'STOCK_BAJO', 'Arroz Costeño 1kg', 'Stock: 8 unidades', '2025-11-26 16:19:46.007307', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (4, 'STOCK_BAJO', 'Arroz Costeño', 'Stock: 8 unidades', '2025-11-26 16:26:11.865449', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (5, 'PROXIMO_VENCER', 'Yogurt Natural', 'Vence: 2025-11-28 (2 días)', '2025-11-26 16:26:11.876531', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (6, 'STOCK_BAJO', 'Arroz Costeño 1kg', 'Stock: 8 unidades', '2025-11-26 16:26:11.882065', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (7, 'STOCK_BAJO', 'Arroz Costeño', 'Stock: 8 unidades', '2025-11-26 16:31:31.37129', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (8, 'PROXIMO_VENCER', 'Yogurt Natural', 'Vence: 2025-11-28 (2 días)', '2025-11-26 16:31:31.380566', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (9, 'STOCK_BAJO', 'Arroz Costeño 1kg', 'Stock: 8 unidades', '2025-11-26 16:31:31.388326', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (10, 'STOCK_BAJO', 'Arroz Costeño', 'Stock: 8 unidades', '2025-11-26 16:40:44.191745', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (11, 'PROXIMO_VENCER', 'Yogurt Natural', 'Vence: 2025-11-28 (2 días)', '2025-11-26 16:40:44.198712', 'PENDIENTE', NULL, NULL, NULL);
-INSERT INTO public.alertas_inventario VALUES (12, 'STOCK_BAJO', 'Arroz Costeño 1kg', 'Stock: 8 unidades', '2025-11-26 16:40:44.20215', 'PENDIENTE', NULL, NULL, NULL);
-
-
---
--- TOC entry 5116 (class 0 OID 17047)
--- Dependencies: 242
+-- TOC entry 5037 (class 0 OID 17047)
+-- Dependencies: 234
 -- Data for Name: auditoria_log; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -969,19 +683,100 @@ INSERT INTO public.auditoria_log VALUES (42, 'cajera1', 'LOGIN', 'Inicio de sesi
 INSERT INTO public.auditoria_log VALUES (43, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 11:42:47.239947', '127.0.0.1');
 INSERT INTO public.auditoria_log VALUES (44, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 11:53:22.168263', '127.0.0.1');
 INSERT INTO public.auditoria_log VALUES (45, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 16:50:07.077185', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (46, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 17:49:29.942011', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (47, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 17:57:31.644877', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (48, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 18:48:18.626292', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (49, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 18:50:41.961078', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (50, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-27 18:51:43.718315', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (51, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 18:55:15.789433', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (52, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:11:18.731381', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (53, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:18:22.776524', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (54, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:29:06.381231', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (55, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:29:29.473155', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (56, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:32:18.929609', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (57, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-27 19:32:31.414918', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (58, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:32:40.608546', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (59, 'cajera1', 'LOGOUT', 'Cierre de sesión', '2025-11-27 19:32:50.182763', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (60, 'supervisor', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:32:57.09649', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (61, 'supervisor', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:36:45.042774', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (62, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:42:35.314358', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (63, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:56:58.150647', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (64, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-27 19:57:24.687519', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (65, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 19:57:35.082666', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (66, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 20:06:25.391396', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (67, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 20:09:34.175421', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (68, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 20:35:19.138088', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (69, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-27 20:36:43.84995', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (70, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 20:36:55.607319', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (71, 'cajera1', 'LOGOUT', 'Cierre de sesión', '2025-11-27 22:51:14.497749', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (72, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 22:55:33.365188', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (73, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-27 22:59:00.909922', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (74, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 22:59:21.17671', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (75, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-27 23:01:54.632496', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (76, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:01:59.90809', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (77, 'cajera1', 'LOGOUT', 'Cierre de sesión', '2025-11-27 23:02:05.560045', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (78, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:04:02.92539', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (79, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:09:08.358737', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (80, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-27 23:15:07.062119', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (81, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:16:45.96919', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (82, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:36:08.976732', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (83, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:39:19.602955', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (84, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:42:11.992786', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (85, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:45:37.742001', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (86, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:48:46.082026', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (87, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:52:04.663483', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (88, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:55:39.946294', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (89, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-27 23:59:10.843698', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (90, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 00:05:19.632084', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (91, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 01:14:41.36253', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (92, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 01:21:44.543203', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (93, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 01:24:30.903754', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (94, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 01:30:43.61226', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (95, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-28 01:31:08.745797', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (96, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 01:31:12.847946', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (97, 'cajera1', 'LOGOUT', 'Cierre de sesión', '2025-11-28 01:31:28.934637', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (98, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 01:43:15.229217', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (99, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 01:47:34.907331', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (100, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 01:49:24.060162', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (101, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-28 01:49:36.661547', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (102, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 02:13:22.683662', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (103, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 02:35:45.075552', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (104, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-28 02:36:11.320495', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (105, 'supervisor', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 02:36:18.887563', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (106, 'supervisor', 'LOGOUT', 'Cierre de sesión', '2025-11-28 02:36:36.303617', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (107, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 02:36:41.9886', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (108, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 12:05:54.919067', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (109, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 12:37:59.593093', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (110, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-28 12:42:54.429694', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (111, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 12:43:05.180287', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (112, 'cajera1', 'LOGOUT', 'Cierre de sesión', '2025-11-28 12:48:07.890613', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (113, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 12:48:18.320329', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (114, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 12:50:55.078442', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (115, 'cajera1', 'LOGOUT', 'Cierre de sesión', '2025-11-28 12:57:07.203355', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (116, 'supervisor', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 12:57:41.85633', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (117, 'supervisor', 'LOGOUT', 'Cierre de sesión', '2025-11-28 13:03:26.118475', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (118, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 13:03:33.066511', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (119, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 13:05:31.530952', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (120, 'cajera1', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 13:19:13.387661', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (121, 'cajera1', 'LOGOUT', 'Cierre de sesión', '2025-11-28 13:20:10.097974', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (122, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 13:20:17.965881', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (123, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 13:24:01.603738', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (124, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 13:33:57.983707', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (125, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 13:36:02.853129', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (126, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 14:00:47.521267', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (127, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 14:03:54.302124', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (128, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 15:36:22.009833', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (129, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 15:49:08.871587', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (130, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 15:54:57.989335', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (131, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 16:14:42.972811', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (132, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 16:28:43.307891', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (133, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 16:50:37.983854', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (134, 'admin', 'LOGOUT', 'Cierre de sesión', '2025-11-28 17:03:32.112322', '127.0.0.1');
+INSERT INTO public.auditoria_log VALUES (135, 'admin', 'LOGIN', 'Inicio de sesión exitoso', '2025-11-28 17:03:55.884199', '127.0.0.1');
 
 
 --
--- TOC entry 5106 (class 0 OID 16872)
--- Dependencies: 228
--- Data for Name: auditoria_precios; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.auditoria_precios VALUES (1, 1, 4.50, 5.50, 'supervisor.juan', '2025-11-26 16:19:46.017967', 'MODIFICACION', NULL);
-
-
---
--- TOC entry 5098 (class 0 OID 16788)
+-- TOC entry 5027 (class 0 OID 16788)
 -- Dependencies: 220
 -- Data for Name: categorias; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -996,134 +791,131 @@ INSERT INTO public.categorias VALUES (7, 'Frutas y Verduras', 'Productos frescos
 
 
 --
--- TOC entry 5112 (class 0 OID 16922)
--- Dependencies: 234
--- Data for Name: configuracion_sistema; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.configuracion_sistema VALUES (1, 'STOCK_MINIMO_ALERTA', '10', 'Cantidad mínima de stock para generar alerta', 'INTEGER', NULL, '2025-11-26 13:58:09.483174');
-INSERT INTO public.configuracion_sistema VALUES (2, 'DIAS_VENCIMIENTO_ALERTA', '7', 'Días antes del vencimiento para generar alerta', 'INTEGER', NULL, '2025-11-26 13:58:09.483174');
-INSERT INTO public.configuracion_sistema VALUES (3, 'IGV_PORCENTAJE', '18', 'Porcentaje de IGV aplicado a las ventas', 'DECIMAL', NULL, '2025-11-26 13:58:09.483174');
-INSERT INTO public.configuracion_sistema VALUES (4, 'DESCUENTO_MAXIMO_CAJERA', '5', 'Porcentaje máximo de descuento que puede aplicar una cajera', 'DECIMAL', NULL, '2025-11-26 13:58:09.483174');
-INSERT INTO public.configuracion_sistema VALUES (5, 'DESCUENTO_MAXIMO_SUPERVISOR', '25', 'Porcentaje máximo de descuento que puede aplicar un supervisor', 'DECIMAL', NULL, '2025-11-26 13:58:09.483174');
-INSERT INTO public.configuracion_sistema VALUES (6, 'PRECIO_MAXIMO_SUPERVISOR', '1000', 'Precio máximo que puede establecer un supervisor', 'DECIMAL', NULL, '2025-11-26 13:58:09.483174');
-INSERT INTO public.configuracion_sistema VALUES (7, 'BACKUP_AUTOMATICO', 'true', 'Indica si se realizan backups automáticos', 'BOOLEAN', NULL, '2025-11-26 13:58:09.483174');
-INSERT INTO public.configuracion_sistema VALUES (8, 'NOTIFICACIONES_EMAIL', 'true', 'Indica si están habilitadas las notificaciones por email', 'BOOLEAN', NULL, '2025-11-26 13:58:09.483174');
-
-
---
--- TOC entry 5104 (class 0 OID 16851)
+-- TOC entry 5033 (class 0 OID 16851)
 -- Dependencies: 226
 -- Data for Name: detalle_ventas; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.detalle_ventas VALUES (1, 1, 8, 5, 4.20, 21.00, NULL, '2025-11-27 00:00:18.235524');
-INSERT INTO public.detalle_ventas VALUES (2, 2, 6, 5, 2.00, 10.00, NULL, '2025-11-27 10:00:30.073563');
-INSERT INTO public.detalle_ventas VALUES (3, 2, 2, 2, 3.20, 6.40, NULL, '2025-11-27 10:00:30.073563');
-INSERT INTO public.detalle_ventas VALUES (4, 3, 7, 3, 8.90, 26.70, NULL, '2025-11-27 10:20:30.057437');
-INSERT INTO public.detalle_ventas VALUES (5, 4, 6, 4, 2.00, 8.00, NULL, '2025-11-27 10:41:13.512171');
-INSERT INTO public.detalle_ventas VALUES (6, 5, 3, 3, 1.50, 4.50, NULL, '2025-11-27 11:34:22.778019');
-INSERT INTO public.detalle_ventas VALUES (7, 6, 8, 4, 4.20, 16.80, NULL, '2025-11-27 11:34:53.686256');
+INSERT INTO public.detalle_ventas VALUES (18, 14, 9, 2, 3.80, 7.60, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (19, 15, 10, 2, 5.50, 11.00, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (20, 15, 16, 1, 2.00, 2.00, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (21, 16, 11, 1, 8.90, 8.90, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (22, 16, 12, 2, 4.20, 8.40, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (23, 16, 13, 2, 2.50, 5.00, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (24, 17, 14, 2, 4.20, 8.40, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (25, 17, 15, 1, 8.90, 8.90, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (26, 18, 17, 2, 2.50, 5.00, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (27, 18, 20, 1, 3.20, 3.20, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (28, 19, 9, 2, 3.80, 7.60, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (29, 19, 10, 2, 5.50, 11.00, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (30, 19, 18, 1, 6.50, 6.50, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.detalle_ventas VALUES (31, 20, 8, 3, 4.20, 12.60, NULL, '2025-11-28 01:17:27.89342');
+INSERT INTO public.detalle_ventas VALUES (32, 21, 8, 2, 4.20, 8.40, NULL, '2025-11-28 01:25:11.43779');
+INSERT INTO public.detalle_ventas VALUES (33, 22, 62, 4, 5.80, 23.20, NULL, '2025-11-28 13:19:35.094464');
+INSERT INTO public.detalle_ventas VALUES (34, 23, 56, 4, 4.20, 16.80, NULL, '2025-11-28 14:01:03.340696');
 
 
 --
--- TOC entry 5114 (class 0 OID 16936)
--- Dependencies: 236
+-- TOC entry 5035 (class 0 OID 16936)
+-- Dependencies: 228
 -- Data for Name: logs_sistema; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
 
 --
--- TOC entry 5118 (class 0 OID 17057)
--- Dependencies: 244
--- Data for Name: lotes_producto; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.lotes_producto VALUES (1, 5, 'LOTE_202511_005', '2025-11-21', '2025-12-26', 12);
-INSERT INTO public.lotes_producto VALUES (2, 2, 'LOTE_202511_002', '2025-11-21', '2025-12-26', 15);
-INSERT INTO public.lotes_producto VALUES (3, 1, 'LOTE_202511_001', '2025-11-21', '2025-12-26', 30);
-
-
---
--- TOC entry 5100 (class 0 OID 16801)
+-- TOC entry 5029 (class 0 OID 16801)
 -- Dependencies: 222
 -- Data for Name: productos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.productos VALUES (4, 'ARROZ001', 'Arroz Costeño 1kg', 'Arroz extra superior', 3.80, 8, NULL, 'Abarrotes', NULL, NULL, false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174');
-INSERT INTO public.productos VALUES (5, 'YOGURT001', 'Yogurt Gloria Fresa', 'Yogurt con sabor a fresa', 2.50, 12, NULL, 'Lácteos', 'LOTE_2024_001', '2025-12-26', true, true, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174');
-INSERT INTO public.productos VALUES (1, 'LECHE001', 'Leche Entera Gloria 1L', 'Leche entera pasteurizada', 5.50, 30, NULL, 'Lácteos', 'LOTE_2024_001', '2025-12-26', true, true, true, NULL, true, '2025-11-26 16:19:46.00923', '2025-11-26 13:58:09.483174', '2025-11-26 16:19:46.00923');
+INSERT INTO public.productos VALUES (7, 'DETERG001', 'Detergente Ace 1kg', 'Detergente en polvo', 8.90, 17, NULL, 'Limpieza', NULL, '2026-07-27', false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 20:19:05.408086');
+INSERT INTO public.productos VALUES (4, 'ARROZ001', 'Arroz Costeño 1kg', 'Arroz extra superior', 3.80, 5, NULL, 'Abarrotes', NULL, '2026-07-27', false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 20:19:05.408086');
+INSERT INTO public.productos VALUES (16, 'PROD-008', 'Galletas Soda Field 400g', 'Galletas soda de 400 gramos', 2.00, 1, NULL, 'Galletas', NULL, '2026-07-27', true, true, true, NULL, true, '2025-11-27 19:47:39.719319', '2025-11-27 19:47:39.719319', '2025-11-27 20:19:05.408086');
+INSERT INTO public.productos VALUES (11, 'PROD-003', 'Aceite Primor 900ml', 'Aceite vegetal de 900ml', 8.90, 2, NULL, 'Abarrotes', NULL, '2026-07-27', false, false, true, NULL, true, '2025-11-27 19:47:39.719319', '2025-11-27 19:47:39.719319', '2025-11-27 20:19:05.408086');
+INSERT INTO public.productos VALUES (12, 'PROD-004', 'Azúcar Rubia Bella Flor 1kg', 'Azúcar rubia de 1 kilogramo', 4.20, 5, NULL, 'Abarrotes', NULL, '2026-07-27', false, false, true, NULL, true, '2025-11-27 19:47:39.719319', '2025-11-27 19:47:39.719319', '2025-11-27 20:19:05.408086');
+INSERT INTO public.productos VALUES (13, 'PROD-005', 'Fideos Don Vittorio 400g', 'Fideos tallarín de 400 gramos', 2.50, 2, NULL, 'Abarrotes', NULL, '2026-07-27', false, false, true, NULL, true, '2025-11-27 19:47:39.719319', '2025-11-27 19:47:39.719319', '2025-11-27 20:19:05.408086');
+INSERT INTO public.productos VALUES (14, 'PROD-006', 'Atún A1 en aceite 160g', 'Atún en conserva de 160 gramos', 4.20, 7, NULL, 'Conservas', NULL, '2026-07-27', true, true, true, NULL, true, '2025-11-27 19:47:39.719319', '2025-11-27 19:47:39.719319', '2025-11-27 20:19:05.408086');
+INSERT INTO public.productos VALUES (6, 'GALLETA001', 'Galletas Soda Field', 'Galletas saladas', 2.00, 16, NULL, 'Panadería', NULL, '2026-02-27', false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 20:19:05.408086');
+INSERT INTO public.productos VALUES (3, 'AGUA001', 'Agua San Luis 625ml', 'Agua mineral sin gas', 1.50, 47, NULL, 'Bebidas', NULL, '2026-05-27', false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 20:19:05.408086');
+INSERT INTO public.productos VALUES (8, 'ATUN001', 'Atún A1 en aceite', 'Atún en conserva', 4.20, 21, NULL, 'Abarrotes', NULL, '2026-07-27', false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-28 01:25:11.43779');
 INSERT INTO public.productos VALUES (2, 'PAN001', 'Pan Integral Bimbo', 'Pan integral en rebanadas', 3.20, 13, NULL, 'Panadería', 'LOTE_2024_002', '2025-12-11', true, true, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 10:00:30.073563');
-INSERT INTO public.productos VALUES (7, 'DETERG001', 'Detergente Ace 1kg', 'Detergente en polvo', 8.90, 17, NULL, 'Limpieza', NULL, NULL, false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 10:20:30.057437');
-INSERT INTO public.productos VALUES (6, 'GALLETA001', 'Galletas Soda Field', 'Galletas saladas', 2.00, 16, NULL, 'Panadería', NULL, NULL, false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 10:41:13.512171');
-INSERT INTO public.productos VALUES (3, 'AGUA001', 'Agua San Luis 625ml', 'Agua mineral sin gas', 1.50, 47, NULL, 'Bebidas', NULL, NULL, false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 11:34:22.778019');
-INSERT INTO public.productos VALUES (8, 'ATUN001', 'Atún A1 en aceite', 'Atún en conserva', 4.20, 26, NULL, 'Abarrotes', NULL, NULL, false, false, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 11:34:53.686256');
+INSERT INTO public.productos VALUES (53, 'JAM-CRT-006', 'Jamón de Pavo 200g', 'Jamón de pavo en rebanadas', 7.90, 20, NULL, 'Carnes Frías', NULL, '2025-11-30', false, true, true, NULL, true, '2025-11-28 12:47:13.299378', '2025-11-28 12:47:13.299378', '2025-11-28 12:47:13.299378');
+INSERT INTO public.productos VALUES (54, 'QUE-CRT-007', 'Queso Edam 300g', 'Queso edam en lonchas', 8.50, 15, NULL, 'Lácteos', NULL, '2025-12-01', false, true, true, NULL, true, '2025-11-28 12:47:13.299378', '2025-11-28 12:47:13.299378', '2025-11-28 12:47:13.299378');
+INSERT INTO public.productos VALUES (55, 'TOR-CRT-008', 'Tortillas de Harina', 'Tortillas de harina de trigo', 3.50, 25, NULL, 'Panadería', NULL, '2025-12-03', false, true, true, NULL, true, '2025-11-28 12:47:13.299378', '2025-11-28 12:47:13.299378', '2025-11-28 12:47:13.299378');
+INSERT INTO public.productos VALUES (57, 'BAG-CRT-010', 'Pan Baguette', 'Pan baguette artesanal', 2.80, 30, NULL, 'Panadería', NULL, '2025-12-05', false, true, true, NULL, true, '2025-11-28 12:47:13.299378', '2025-11-28 12:47:13.299378', '2025-11-28 12:47:13.299378');
+INSERT INTO public.productos VALUES (58, 'MER-PRO-011', 'Mermelada de Fresa 250g', 'Mermelada de fresa', 5.50, 22, NULL, 'Conservas', NULL, '2025-12-08', false, true, true, NULL, true, '2025-11-28 12:47:20.137642', '2025-11-28 12:47:20.137642', '2025-11-28 12:47:20.137642');
+INSERT INTO public.productos VALUES (59, 'MAN-PRO-012', 'Mantequilla de Maní 350g', 'Mantequilla de maní cremosa', 6.80, 14, NULL, 'Conservas', NULL, '2025-12-13', false, true, true, NULL, true, '2025-11-28 12:47:20.137642', '2025-11-28 12:47:20.137642', '2025-11-28 12:47:20.137642');
+INSERT INTO public.productos VALUES (60, 'ACE-PRO-013', 'Aceitunas Verdes 200g', 'Aceitunas verdes sin hueso', 4.90, 28, NULL, 'Conservas', NULL, '2025-12-18', false, true, true, NULL, true, '2025-11-28 12:47:20.137642', '2025-11-28 12:47:20.137642', '2025-11-28 12:47:20.137642');
+INSERT INTO public.productos VALUES (61, 'SAL-PRO-014', 'Salsa de Tomate 400g', 'Salsa de tomate natural', 3.20, 35, NULL, 'Conservas', NULL, '2025-12-23', false, true, true, NULL, true, '2025-11-28 12:47:20.137642', '2025-11-28 12:47:20.137642', '2025-11-28 12:47:20.137642');
+INSERT INTO public.productos VALUES (62, 'ATU-PRO-015', 'Atún en Lata 160g', 'Atún en agua', 5.80, 36, NULL, 'Conservas', NULL, '2025-12-28', false, true, true, NULL, true, '2025-11-28 12:47:20.137642', '2025-11-28 12:47:20.137642', '2025-11-28 13:19:35.094464');
+INSERT INTO public.productos VALUES (56, 'CRE-CRT-009', 'Crema de Leche 250ml', 'Crema de leche para cocinar', 4.20, 14, NULL, 'Lácteos', NULL, '2025-12-04', false, true, true, NULL, true, '2025-11-28 12:47:13.299378', '2025-11-28 12:47:13.299378', '2025-11-28 14:01:03.340696');
+INSERT INTO public.productos VALUES (48, 'LEC-VEN-001', 'Leche Entera 1L', 'Leche entera pasteurizada', 4.50, 0, NULL, 'Lácteos', NULL, '2024-12-01', false, true, true, NULL, false, '2025-11-28 12:47:06.571221', '2025-11-28 12:47:06.571221', '2025-11-28 16:18:24.622109');
+INSERT INTO public.productos VALUES (5, 'YOGURT001', 'Yogurt Gloria Fresa', 'Yogurt con sabor a fresa', 2.50, 8, NULL, 'Lácteos', 'LOTE-2025-001', '2025-11-30', true, true, true, NULL, true, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174', '2025-11-27 19:55:51.983448');
+INSERT INTO public.productos VALUES (1, 'LECHE001', 'Leche Entera Gloria 1L', 'Leche entera pasteurizada', 5.50, 8, NULL, 'Lácteos', 'LOTE-2025-001', '2025-11-30', true, true, true, NULL, true, '2025-11-26 16:19:46.00923', '2025-11-26 13:58:09.483174', '2025-11-27 19:55:51.983448');
+INSERT INTO public.productos VALUES (49, 'YOG-VEN-002', 'Yogurt Natural 500g', 'Yogurt natural sin azúcar', 3.80, 0, NULL, 'Lácteos', NULL, '2024-11-25', false, true, true, NULL, false, '2025-11-28 12:47:06.571221', '2025-11-28 12:47:06.571221', '2025-11-28 16:18:24.622109');
+INSERT INTO public.productos VALUES (50, 'PAN-VEN-003', 'Pan de Molde Integral', 'Pan integral en rebanadas', 5.20, 0, NULL, 'Panadería', NULL, '2024-12-05', false, true, true, NULL, false, '2025-11-28 12:47:06.571221', '2025-11-28 12:47:06.571221', '2025-11-28 16:18:24.622109');
+INSERT INTO public.productos VALUES (51, 'QUE-VEN-004', 'Queso Fresco 250g', 'Queso fresco tipo requesón', 6.50, 0, NULL, 'Lácteos', NULL, '2024-11-20', false, true, true, NULL, false, '2025-11-28 12:47:06.571221', '2025-11-28 12:47:06.571221', '2025-11-28 16:18:24.622109');
+INSERT INTO public.productos VALUES (21, 'PROD-013', 'Mantequilla Gloria 250g', 'Mantequilla de 250 gramos', 4.50, 8, NULL, 'Lácteos', 'LOTE-2025-001', '2025-11-30', true, true, true, NULL, true, '2025-11-27 19:47:54.227452', '2025-11-27 19:47:54.227452', '2025-11-27 19:55:51.983448');
+INSERT INTO public.productos VALUES (52, 'MAN-VEN-005', 'Mantequilla 200g', 'Mantequilla sin sal', 4.80, 0, NULL, 'Lácteos', NULL, '2024-12-10', false, true, true, NULL, false, '2025-11-28 12:47:06.571221', '2025-11-28 12:47:06.571221', '2025-11-28 16:18:24.622109');
+INSERT INTO public.productos VALUES (15, 'PROD-007', 'Detergente Ace 1kg', 'Detergente en polvo de 1 kilogramo', 8.90, 0, NULL, 'Limpieza', NULL, '2026-07-27', false, false, true, NULL, false, '2025-11-27 19:47:39.719319', '2025-11-27 19:47:39.719319', '2025-11-28 16:46:05.720068');
+INSERT INTO public.productos VALUES (19, 'PROD-011', 'Queso Laive Fresco 250g', 'Queso fresco de 250 gramos', 7.80, 10, NULL, 'Lácteos', 'LOTE-2025-003', '2025-12-03', true, true, true, NULL, true, '2025-11-27 19:47:54.227452', '2025-11-27 19:47:54.227452', '2025-11-27 19:55:51.983448');
+INSERT INTO public.productos VALUES (17, 'PROD-009', 'Yogurt Gloria Fresa 1L', 'Yogurt de fresa de 1 litro', 2.50, 6, NULL, 'Lácteos', 'LOTE-2025-001', '2025-11-30', true, true, true, NULL, true, '2025-11-27 19:47:54.227452', '2025-11-27 19:47:54.227452', '2025-11-27 19:55:51.983448');
+INSERT INTO public.productos VALUES (20, 'PROD-012', 'Pan Integral Bimbo 680g', 'Pan integral en rebanadas', 3.20, 7, NULL, 'Panadería', 'LOTE-2025-004', '2025-12-01', true, true, true, NULL, true, '2025-11-27 19:47:54.227452', '2025-11-27 19:47:54.227452', '2025-11-27 19:55:51.983448');
+INSERT INTO public.productos VALUES (18, 'PROD-010', 'Jamón San Fernando 200g', 'Jamón de pavo en rebanadas', 6.50, 11, NULL, 'Carnes', 'LOTE-2025-002', '2025-12-02', true, true, true, NULL, true, '2025-11-27 19:47:54.227452', '2025-11-27 19:47:54.227452', '2025-11-27 19:55:51.983448');
+INSERT INTO public.productos VALUES (63, 'VENC-001', 'Leche Entera 1L', 'Leche entera pasteurizada', 4.50, 0, NULL, 'Lácteos', NULL, '2024-12-15', false, true, true, NULL, true, '2025-11-28 15:38:58.545812', '2025-11-28 15:38:58.545812', '2025-11-28 16:28:11.822304');
+INSERT INTO public.productos VALUES (64, 'VENC-002', 'Yogurt Natural 500g', 'Yogurt natural sin azúcar', 3.80, 0, NULL, 'Lácteos', NULL, '2024-12-18', false, true, true, NULL, true, '2025-11-28 15:38:58.545812', '2025-11-28 15:38:58.545812', '2025-11-28 16:28:11.822304');
+INSERT INTO public.productos VALUES (65, 'VENC-003', 'Queso Fresco 250g', 'Queso fresco tipo requesón', 5.20, 0, NULL, 'Lácteos', NULL, '2024-12-20', false, true, true, NULL, true, '2025-11-28 15:38:58.545812', '2025-11-28 15:38:58.545812', '2025-11-28 16:28:11.822304');
+INSERT INTO public.productos VALUES (66, 'VENC-004', 'Mantequilla 200g', 'Mantequilla sin sal', 4.90, 0, NULL, 'Lácteos', NULL, '2024-12-22', false, true, true, NULL, true, '2025-11-28 15:38:58.545812', '2025-11-28 15:38:58.545812', '2025-11-28 16:28:11.822304');
+INSERT INTO public.productos VALUES (69, 'VENC-007', 'Huevos AA x12', 'Docena de huevos tamaño AA', 8.90, 0, NULL, 'Huevos', NULL, '2024-12-25', false, true, true, NULL, true, '2025-11-28 15:38:58.545812', '2025-11-28 15:38:58.545812', '2025-11-28 16:28:11.822304');
+INSERT INTO public.productos VALUES (70, 'VENC-008', 'Salsa de Tomate 500g', 'Salsa de tomate natural', 2.80, 15, NULL, 'Conservas', NULL, '2026-12-08', false, true, true, NULL, true, '2025-11-28 15:38:58.545812', '2025-11-28 15:38:58.545812', '2025-11-28 16:30:32.862161');
+INSERT INTO public.productos VALUES (67, 'VENC-005', 'Jamón de Pavo 200g', 'Jamón de pavo en rebanadas', 6.50, 0, NULL, 'Carnes Frías', NULL, '2026-12-10', false, true, true, NULL, false, '2025-11-28 15:38:58.545812', '2025-11-28 15:38:58.545812', '2025-11-28 16:45:38.937694');
+INSERT INTO public.productos VALUES (10, 'PROD-002', 'Leche Entera Gloria 1L', 'Leche entera en envase de 1 litro', 5.50, 0, NULL, 'Lácteos', 'LOTE-2025-001', '2025-11-30', true, true, true, NULL, false, '2025-11-27 19:47:39.719319', '2025-11-27 19:47:39.719319', '2025-11-28 16:46:05.720068');
+INSERT INTO public.productos VALUES (9, 'PROD-001', 'Arroz Costeño 1kg', 'Arroz extra de 1 kilogramo', 3.80, 0, NULL, 'Abarrotes', NULL, '2026-07-27', false, false, true, NULL, false, '2025-11-27 19:47:39.719319', '2025-11-27 19:47:39.719319', '2025-11-28 16:46:05.720068');
+INSERT INTO public.productos VALUES (68, 'VENC-006', 'Pan de Molde Integral', 'Pan integral en rebanadas', 3.20, 0, NULL, 'Panadería', NULL, '2024-12-12', false, true, true, NULL, false, '2025-11-28 15:38:58.545812', '2025-11-28 15:38:58.545812', '2025-11-28 17:01:33.840063');
 
 
 --
--- TOC entry 5110 (class 0 OID 16901)
--- Dependencies: 232
--- Data for Name: solicitudes_aprobacion; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-
-
---
--- TOC entry 5096 (class 0 OID 16770)
+-- TOC entry 5025 (class 0 OID 16770)
 -- Dependencies: 218
 -- Data for Name: usuarios; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 INSERT INTO public.usuarios VALUES (1, 'admin', 'admin123', 'Carlos', 'Administrador', 'admin@minimarket.com', 'ADMINISTRADOR', true, '2025-11-26 13:58:09.483174', NULL, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174');
 INSERT INTO public.usuarios VALUES (2, 'supervisor', 'super123', 'Juan', 'López', 'supervisor@minimarket.com', 'SUPERVISOR', true, '2025-11-26 13:58:09.483174', NULL, '2025-11-26 13:58:09.483174', '2025-11-26 13:58:09.483174');
-INSERT INTO public.usuarios VALUES (3, 'cajera1', 'cajera123', 'María', 'García', 'maria@minimarket.com', 'CAJERO', true, '2025-11-26 13:58:09.483174', NULL, '2025-11-26 13:58:09.483174', '2025-11-26 19:20:33.409506');
 INSERT INTO public.usuarios VALUES (4, 'cajera2', 'cajera456', 'Ana', 'López', 'ana@minimarket.com', 'CAJERO', true, '2025-11-26 13:58:09.483174', NULL, '2025-11-26 13:58:09.483174', '2025-11-26 19:20:33.409506');
+INSERT INTO public.usuarios VALUES (3, 'cajera1', '1234', 'María', 'García', 'maria@minimarket.com', 'CAJERO', true, '2025-11-26 13:58:09.483174', NULL, '2025-11-26 13:58:09.483174', '2025-11-27 18:54:59.458868');
 
 
 --
--- TOC entry 5102 (class 0 OID 16827)
+-- TOC entry 5031 (class 0 OID 16827)
 -- Dependencies: 224
 -- Data for Name: ventas; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.ventas VALUES (1, 'VTA-20251127-8234', '2025-11-27 00:00:18.235524', 1, 'YAPE', 17.80, 3.20, 21.00, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 00:00:18.235524');
-INSERT INTO public.ventas VALUES (2, 'VTA-20251127-0072', '2025-11-27 10:00:30.073563', 1, 'TARJETA_DEBITO', 13.90, 2.50, 16.40, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 10:00:30.073563');
-INSERT INTO public.ventas VALUES (3, 'VTA-20251127-0056', '2025-11-27 10:20:30.057437', 1, 'EFECTIVO', 22.63, 4.07, 26.70, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 10:20:30.057437');
-INSERT INTO public.ventas VALUES (4, 'VTA-20251127-3511', '2025-11-27 10:41:13.512171', 1, 'PLIN', 6.78, 1.22, 8.00, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 10:41:13.512171');
-INSERT INTO public.ventas VALUES (5, 'VTA-20251127-2776', '2025-11-27 11:34:22.778019', 1, 'EFECTIVO', 3.81, 0.69, 4.50, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 11:34:22.778019');
-INSERT INTO public.ventas VALUES (6, 'VTA-20251127-3684', '2025-11-27 11:34:53.686256', 1, 'TARJETA_CREDITO', 14.24, 2.56, 16.80, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 11:34:53.686256');
+INSERT INTO public.ventas VALUES (14, 'V-20251127-001', '2025-11-27 19:55:51.983448', 4, 'EFECTIVO', 6.44, 1.16, 7.60, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.ventas VALUES (15, 'V-20251127-002', '2025-11-27 17:55:51.983448', 4, 'YAPE', 11.02, 1.98, 13.00, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.ventas VALUES (16, 'V-20251127-003', '2025-11-27 15:55:51.983448', 4, 'EFECTIVO', 18.98, 3.42, 22.40, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.ventas VALUES (17, 'V-20251127-004', '2025-11-27 18:55:51.983448', 4, 'TARJETA_DEBITO', 14.66, 2.64, 17.30, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.ventas VALUES (18, 'V-20251127-006', '2025-11-27 16:55:51.983448', 4, 'EFECTIVO', 7.29, 1.31, 8.60, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.ventas VALUES (19, 'V-20251127-007', '2025-11-27 14:55:51.983448', 4, 'YAPE', 21.19, 3.81, 25.10, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-27 19:55:51.983448');
+INSERT INTO public.ventas VALUES (20, 'VTA-20251128-7892', '2025-11-28 01:17:27.89342', 1, 'EFECTIVO', 10.68, 1.92, 12.60, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-28 01:17:27.89342');
+INSERT INTO public.ventas VALUES (21, 'VTA-20251128-1437', '2025-11-28 01:25:11.43779', 1, 'EFECTIVO', 7.12, 1.28, 8.40, NULL, 'ACTIVA', NULL, NULL, NULL, '2025-11-28 01:25:11.43779');
+INSERT INTO public.ventas VALUES (22, 'VTA-20251128-4964', '2025-11-28 13:19:35.094464', 3, 'EFECTIVO', 23.20, 4.18, 27.38, 'BOLETA - Cliente: Consumidor Final - Doc: -', 'ACTIVA', NULL, NULL, NULL, '2025-11-28 13:19:35.094464');
+INSERT INTO public.ventas VALUES (23, 'VTA-20251128-3220', '2025-11-28 14:01:03.340696', 1, 'YAPE', 16.80, 3.02, 19.82, 'BOLETA - Cliente: Consumidor Final - Doc: -', 'ACTIVA', NULL, NULL, NULL, '2025-11-28 14:01:03.340696');
 
 
 --
--- TOC entry 5139 (class 0 OID 0)
--- Dependencies: 229
--- Name: alertas_inventario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.alertas_inventario_id_seq', 12, true);
-
-
---
--- TOC entry 5140 (class 0 OID 0)
--- Dependencies: 241
+-- TOC entry 5053 (class 0 OID 0)
+-- Dependencies: 233
 -- Name: auditoria_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.auditoria_log_id_seq', 45, true);
+SELECT pg_catalog.setval('public.auditoria_log_id_seq', 135, true);
 
 
 --
--- TOC entry 5141 (class 0 OID 0)
--- Dependencies: 227
--- Name: auditoria_precios_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.auditoria_precios_id_seq', 1, true);
-
-
---
--- TOC entry 5142 (class 0 OID 0)
+-- TOC entry 5054 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: categorias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1132,26 +924,17 @@ SELECT pg_catalog.setval('public.categorias_id_seq', 7, true);
 
 
 --
--- TOC entry 5143 (class 0 OID 0)
--- Dependencies: 233
--- Name: configuracion_sistema_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.configuracion_sistema_id_seq', 8, true);
-
-
---
--- TOC entry 5144 (class 0 OID 0)
+-- TOC entry 5055 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: detalle_ventas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.detalle_ventas_id_seq', 7, true);
+SELECT pg_catalog.setval('public.detalle_ventas_id_seq', 34, true);
 
 
 --
--- TOC entry 5145 (class 0 OID 0)
--- Dependencies: 235
+-- TOC entry 5056 (class 0 OID 0)
+-- Dependencies: 227
 -- Name: logs_sistema_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1159,34 +942,16 @@ SELECT pg_catalog.setval('public.logs_sistema_id_seq', 2, true);
 
 
 --
--- TOC entry 5146 (class 0 OID 0)
--- Dependencies: 243
--- Name: lotes_producto_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.lotes_producto_id_seq', 3, true);
-
-
---
--- TOC entry 5147 (class 0 OID 0)
+-- TOC entry 5057 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: productos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.productos_id_seq', 8, true);
+SELECT pg_catalog.setval('public.productos_id_seq', 70, true);
 
 
 --
--- TOC entry 5148 (class 0 OID 0)
--- Dependencies: 231
--- Name: solicitudes_aprobacion_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.solicitudes_aprobacion_id_seq', 1, false);
-
-
---
--- TOC entry 5149 (class 0 OID 0)
+-- TOC entry 5058 (class 0 OID 0)
 -- Dependencies: 217
 -- Name: usuarios_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1195,25 +960,16 @@ SELECT pg_catalog.setval('public.usuarios_id_seq', 4, true);
 
 
 --
--- TOC entry 5150 (class 0 OID 0)
+-- TOC entry 5059 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: ventas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.ventas_id_seq', 6, true);
+SELECT pg_catalog.setval('public.ventas_id_seq', 23, true);
 
 
 --
--- TOC entry 4917 (class 2606 OID 16899)
--- Name: alertas_inventario alertas_inventario_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.alertas_inventario
-    ADD CONSTRAINT alertas_inventario_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4932 (class 2606 OID 17055)
+-- TOC entry 4868 (class 2606 OID 17055)
 -- Name: auditoria_log auditoria_log_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1222,16 +978,7 @@ ALTER TABLE ONLY public.auditoria_log
 
 
 --
--- TOC entry 4912 (class 2606 OID 16881)
--- Name: auditoria_precios auditoria_precios_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auditoria_precios
-    ADD CONSTRAINT auditoria_precios_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4887 (class 2606 OID 16799)
+-- TOC entry 4841 (class 2606 OID 16799)
 -- Name: categorias categorias_nombre_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1240,7 +987,7 @@ ALTER TABLE ONLY public.categorias
 
 
 --
--- TOC entry 4889 (class 2606 OID 16797)
+-- TOC entry 4843 (class 2606 OID 16797)
 -- Name: categorias categorias_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1249,25 +996,7 @@ ALTER TABLE ONLY public.categorias
 
 
 --
--- TOC entry 4926 (class 2606 OID 16934)
--- Name: configuracion_sistema configuracion_sistema_parametro_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.configuracion_sistema
-    ADD CONSTRAINT configuracion_sistema_parametro_key UNIQUE (parametro);
-
-
---
--- TOC entry 4928 (class 2606 OID 16932)
--- Name: configuracion_sistema configuracion_sistema_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.configuracion_sistema
-    ADD CONSTRAINT configuracion_sistema_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4908 (class 2606 OID 16860)
+-- TOC entry 4862 (class 2606 OID 16860)
 -- Name: detalle_ventas detalle_ventas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1276,7 +1005,7 @@ ALTER TABLE ONLY public.detalle_ventas
 
 
 --
--- TOC entry 4930 (class 2606 OID 16945)
+-- TOC entry 4866 (class 2606 OID 16945)
 -- Name: logs_sistema logs_sistema_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1285,16 +1014,7 @@ ALTER TABLE ONLY public.logs_sistema
 
 
 --
--- TOC entry 4935 (class 2606 OID 17064)
--- Name: lotes_producto lotes_producto_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.lotes_producto
-    ADD CONSTRAINT lotes_producto_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4896 (class 2606 OID 16820)
+-- TOC entry 4850 (class 2606 OID 16820)
 -- Name: productos productos_codigo_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1303,7 +1023,7 @@ ALTER TABLE ONLY public.productos
 
 
 --
--- TOC entry 4898 (class 2606 OID 16818)
+-- TOC entry 4852 (class 2606 OID 16818)
 -- Name: productos productos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1312,25 +1032,7 @@ ALTER TABLE ONLY public.productos
 
 
 --
--- TOC entry 4922 (class 2606 OID 16915)
--- Name: solicitudes_aprobacion solicitudes_aprobacion_codigo_solicitud_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.solicitudes_aprobacion
-    ADD CONSTRAINT solicitudes_aprobacion_codigo_solicitud_key UNIQUE (codigo_solicitud);
-
-
---
--- TOC entry 4924 (class 2606 OID 16913)
--- Name: solicitudes_aprobacion solicitudes_aprobacion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.solicitudes_aprobacion
-    ADD CONSTRAINT solicitudes_aprobacion_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 4881 (class 2606 OID 16786)
+-- TOC entry 4835 (class 2606 OID 16786)
 -- Name: usuarios usuarios_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1339,7 +1041,7 @@ ALTER TABLE ONLY public.usuarios
 
 
 --
--- TOC entry 4883 (class 2606 OID 16782)
+-- TOC entry 4837 (class 2606 OID 16782)
 -- Name: usuarios usuarios_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1348,7 +1050,7 @@ ALTER TABLE ONLY public.usuarios
 
 
 --
--- TOC entry 4885 (class 2606 OID 16784)
+-- TOC entry 4839 (class 2606 OID 16784)
 -- Name: usuarios usuarios_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1357,7 +1059,7 @@ ALTER TABLE ONLY public.usuarios
 
 
 --
--- TOC entry 4904 (class 2606 OID 16844)
+-- TOC entry 4858 (class 2606 OID 16844)
 -- Name: ventas ventas_numero_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1366,7 +1068,7 @@ ALTER TABLE ONLY public.ventas
 
 
 --
--- TOC entry 4906 (class 2606 OID 16842)
+-- TOC entry 4860 (class 2606 OID 16842)
 -- Name: ventas ventas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1375,55 +1077,7 @@ ALTER TABLE ONLY public.ventas
 
 
 --
--- TOC entry 4918 (class 1259 OID 16964)
--- Name: idx_alertas_estado; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_alertas_estado ON public.alertas_inventario USING btree (estado);
-
-
---
--- TOC entry 4919 (class 1259 OID 16965)
--- Name: idx_alertas_fecha; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_alertas_fecha ON public.alertas_inventario USING btree (fecha_alerta);
-
-
---
--- TOC entry 4920 (class 1259 OID 16963)
--- Name: idx_alertas_tipo; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_alertas_tipo ON public.alertas_inventario USING btree (tipo_alerta);
-
-
---
--- TOC entry 4913 (class 1259 OID 16961)
--- Name: idx_auditoria_fecha; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_auditoria_fecha ON public.auditoria_precios USING btree (fecha_cambio);
-
-
---
--- TOC entry 4914 (class 1259 OID 16960)
--- Name: idx_auditoria_producto; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_auditoria_producto ON public.auditoria_precios USING btree (producto_id);
-
-
---
--- TOC entry 4915 (class 1259 OID 16962)
--- Name: idx_auditoria_usuario; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_auditoria_usuario ON public.auditoria_precios USING btree (usuario);
-
-
---
--- TOC entry 4909 (class 1259 OID 16959)
+-- TOC entry 4863 (class 1259 OID 16959)
 -- Name: idx_detalle_producto_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1431,7 +1085,7 @@ CREATE INDEX idx_detalle_producto_id ON public.detalle_ventas USING btree (produ
 
 
 --
--- TOC entry 4910 (class 1259 OID 16958)
+-- TOC entry 4864 (class 1259 OID 16958)
 -- Name: idx_detalle_venta_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1439,15 +1093,7 @@ CREATE INDEX idx_detalle_venta_id ON public.detalle_ventas USING btree (venta_id
 
 
 --
--- TOC entry 4933 (class 1259 OID 17070)
--- Name: idx_lotes_producto_fifo; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_lotes_producto_fifo ON public.lotes_producto USING btree (producto_id, fecha_vencimiento, fecha_entrada);
-
-
---
--- TOC entry 4890 (class 1259 OID 16951)
+-- TOC entry 4844 (class 1259 OID 16951)
 -- Name: idx_productos_categoria; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1455,7 +1101,7 @@ CREATE INDEX idx_productos_categoria ON public.productos USING btree (categoria_
 
 
 --
--- TOC entry 4891 (class 1259 OID 16949)
+-- TOC entry 4845 (class 1259 OID 16949)
 -- Name: idx_productos_codigo; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1463,7 +1109,7 @@ CREATE INDEX idx_productos_codigo ON public.productos USING btree (codigo);
 
 
 --
--- TOC entry 4892 (class 1259 OID 16950)
+-- TOC entry 4846 (class 1259 OID 16950)
 -- Name: idx_productos_nombre; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1471,7 +1117,7 @@ CREATE INDEX idx_productos_nombre ON public.productos USING btree (nombre);
 
 
 --
--- TOC entry 4893 (class 1259 OID 16952)
+-- TOC entry 4847 (class 1259 OID 16952)
 -- Name: idx_productos_stock_bajo; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1479,7 +1125,7 @@ CREATE INDEX idx_productos_stock_bajo ON public.productos USING btree (stock) WH
 
 
 --
--- TOC entry 4894 (class 1259 OID 16953)
+-- TOC entry 4848 (class 1259 OID 16953)
 -- Name: idx_productos_vencimiento; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1487,7 +1133,7 @@ CREATE INDEX idx_productos_vencimiento ON public.productos USING btree (fecha_ve
 
 
 --
--- TOC entry 4877 (class 1259 OID 16947)
+-- TOC entry 4831 (class 1259 OID 16947)
 -- Name: idx_usuarios_email; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1495,7 +1141,7 @@ CREATE INDEX idx_usuarios_email ON public.usuarios USING btree (email);
 
 
 --
--- TOC entry 4878 (class 1259 OID 16948)
+-- TOC entry 4832 (class 1259 OID 16948)
 -- Name: idx_usuarios_rol; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1503,7 +1149,7 @@ CREATE INDEX idx_usuarios_rol ON public.usuarios USING btree (rol);
 
 
 --
--- TOC entry 4879 (class 1259 OID 16946)
+-- TOC entry 4833 (class 1259 OID 16946)
 -- Name: idx_usuarios_username; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1511,7 +1157,7 @@ CREATE INDEX idx_usuarios_username ON public.usuarios USING btree (username);
 
 
 --
--- TOC entry 4899 (class 1259 OID 16956)
+-- TOC entry 4853 (class 1259 OID 16956)
 -- Name: idx_ventas_cajera; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1519,7 +1165,7 @@ CREATE INDEX idx_ventas_cajera ON public.ventas USING btree (cajera_id);
 
 
 --
--- TOC entry 4900 (class 1259 OID 16957)
+-- TOC entry 4854 (class 1259 OID 16957)
 -- Name: idx_ventas_estado; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1527,7 +1173,7 @@ CREATE INDEX idx_ventas_estado ON public.ventas USING btree (estado);
 
 
 --
--- TOC entry 4901 (class 1259 OID 16955)
+-- TOC entry 4855 (class 1259 OID 16955)
 -- Name: idx_ventas_fecha; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1535,7 +1181,7 @@ CREATE INDEX idx_ventas_fecha ON public.ventas USING btree (fecha_hora);
 
 
 --
--- TOC entry 4902 (class 1259 OID 16954)
+-- TOC entry 4856 (class 1259 OID 16954)
 -- Name: idx_ventas_numero; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1543,7 +1189,7 @@ CREATE INDEX idx_ventas_numero ON public.ventas USING btree (numero);
 
 
 --
--- TOC entry 4944 (class 2620 OID 16968)
+-- TOC entry 4874 (class 2620 OID 16968)
 -- Name: productos trigger_productos_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1551,15 +1197,7 @@ CREATE TRIGGER trigger_productos_updated_at BEFORE UPDATE ON public.productos FO
 
 
 --
--- TOC entry 4945 (class 2620 OID 16970)
--- Name: productos trigger_stock_bajo; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER trigger_stock_bajo AFTER UPDATE OF stock ON public.productos FOR EACH ROW EXECUTE FUNCTION public.verificar_stock_bajo();
-
-
---
--- TOC entry 4943 (class 2620 OID 16967)
+-- TOC entry 4873 (class 2620 OID 16967)
 -- Name: usuarios trigger_usuarios_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1567,16 +1205,7 @@ CREATE TRIGGER trigger_usuarios_updated_at BEFORE UPDATE ON public.usuarios FOR 
 
 
 --
--- TOC entry 4940 (class 2606 OID 16882)
--- Name: auditoria_precios auditoria_precios_producto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.auditoria_precios
-    ADD CONSTRAINT auditoria_precios_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES public.productos(id);
-
-
---
--- TOC entry 4938 (class 2606 OID 16866)
+-- TOC entry 4871 (class 2606 OID 16866)
 -- Name: detalle_ventas detalle_ventas_producto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1585,7 +1214,7 @@ ALTER TABLE ONLY public.detalle_ventas
 
 
 --
--- TOC entry 4939 (class 2606 OID 16861)
+-- TOC entry 4872 (class 2606 OID 16861)
 -- Name: detalle_ventas detalle_ventas_venta_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1594,16 +1223,7 @@ ALTER TABLE ONLY public.detalle_ventas
 
 
 --
--- TOC entry 4942 (class 2606 OID 17065)
--- Name: lotes_producto fk_producto_lote; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.lotes_producto
-    ADD CONSTRAINT fk_producto_lote FOREIGN KEY (producto_id) REFERENCES public.productos(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 4936 (class 2606 OID 16821)
+-- TOC entry 4869 (class 2606 OID 16821)
 -- Name: productos productos_categoria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1612,16 +1232,7 @@ ALTER TABLE ONLY public.productos
 
 
 --
--- TOC entry 4941 (class 2606 OID 16916)
--- Name: solicitudes_aprobacion solicitudes_aprobacion_usuario_solicitante_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.solicitudes_aprobacion
-    ADD CONSTRAINT solicitudes_aprobacion_usuario_solicitante_id_fkey FOREIGN KEY (usuario_solicitante_id) REFERENCES public.usuarios(id);
-
-
---
--- TOC entry 4937 (class 2606 OID 16845)
+-- TOC entry 4870 (class 2606 OID 16845)
 -- Name: ventas ventas_cajera_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1629,7 +1240,7 @@ ALTER TABLE ONLY public.ventas
     ADD CONSTRAINT ventas_cajera_id_fkey FOREIGN KEY (cajera_id) REFERENCES public.usuarios(id);
 
 
--- Completed on 2025-11-27 17:06:32
+-- Completed on 2025-11-28 17:06:53
 
 --
 -- PostgreSQL database dump complete

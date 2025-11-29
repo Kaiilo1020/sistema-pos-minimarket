@@ -213,54 +213,19 @@ public class DashboardFrame extends JFrame {
         navTitle.setBorder(new EmptyBorder(25, 20, 15, 20));
         sidebar.add(navTitle);
         
-        // Botones según permisos del rol
+        // Adapter Pattern: Adaptar opciones del sidebar según rol del usuario
         Rol rolUsuario = obtenerRolUsuario();
-        
-        // INICIO - Todos los roles pueden ver (pero contenido diferente)
-        JButton btnInicio = createSidebarButton("Inicio", "inicio", true);
-        sidebar.add(btnInicio);
-        sidebarButtons.add(btnInicio);
-        
-        // CAJA/POS - Todos los roles pueden usar
-        JButton btnPOS = createSidebarButton("Caja / Punto de Venta", "pos", false);
-        sidebar.add(btnPOS);
-        sidebarButtons.add(btnPOS);
-        
-        // INVENTARIO - Todos pueden ver (CAJERO solo lectura, otros con permisos completos)
-        String inventarioText = rolUsuario == Rol.CAJERO ? "Consultar Inventario" : "Inventario";
-        JButton btnInventario = createSidebarButton(inventarioText, "inventario", false);
-        sidebar.add(btnInventario);
-        sidebarButtons.add(btnInventario);
-        
-        // HISTORIAL DE VENTAS - Solo SUPERVISOR y ADMINISTRADOR
-        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
-            JButton btnHistorial = createSidebarButton("Historial de Ventas", "historial", false);
-            sidebar.add(btnHistorial);
-        sidebarButtons.add(btnHistorial);
+        java.util.List<SidebarOption> opciones = obtenerOpcionesSidebar(rolUsuario);
+        boolean first = true;
+        for (SidebarOption option : opciones) {
+            JButton button = createSidebarButton(option.texto, option.panelKey, first);
+            sidebar.add(button);
+            sidebarButtons.add(button);
+            if (first) {
+                currentActiveButton = button;
+                first = false;
+            }
         }
-        
-        // REPORTE DIARIO - Solo SUPERVISOR y ADMINISTRADOR
-        if (rolUsuario == Rol.SUPERVISOR || rolUsuario == Rol.ADMINISTRADOR) {
-            JButton btnReporte = createSidebarButton("Reporte Diario", "reporte", false);
-            sidebar.add(btnReporte);
-        sidebarButtons.add(btnReporte);
-        }
-        
-        // USUARIOS Y PERMISOS - Solo ADMINISTRADOR
-        if (rolUsuario == Rol.ADMINISTRADOR) {
-            JButton btnUsuarios = createSidebarButton("Usuarios y Permisos", "usuarios", false);
-            sidebar.add(btnUsuarios);
-            sidebarButtons.add(btnUsuarios);
-        }
-        
-        // ALERTAS DE VENCIMIENTO - Todos pueden ver (CAJERO solo lectura, otros con permisos completos)
-        String alertasText = rolUsuario == Rol.CAJERO ? "Consultar Alertas" : "Alertas de Vencimiento";
-        JButton btnAlertas = createSidebarButton(alertasText, "alertas", false);
-        sidebar.add(btnAlertas);
-        sidebarButtons.add(btnAlertas);
-        
-        // Establecer el botón inicial como activo
-        currentActiveButton = btnInicio;
         
         return sidebar;
     }
@@ -884,5 +849,50 @@ public class DashboardFrame extends JFrame {
         Rol rolUsuario = obtenerRolUsuario();
         boolean soloLectura = (rolUsuario == Rol.CAJERO);
         return new com.minimarket.ui.panels.AlertasVencimientoPanel(soloLectura);
+    }
+    
+    /**
+     * Adapter Pattern: Adapta las opciones del sidebar según el rol del usuario.
+     * Cada rol ve diferentes opciones de menú.
+     */
+    private java.util.List<SidebarOption> obtenerOpcionesSidebar(Rol rol) {
+        return switch (rol) {
+            case ADMINISTRADOR -> java.util.List.of(
+                new SidebarOption("Inicio", "inicio"),
+                new SidebarOption("Caja / Punto de Venta", "pos"),
+                new SidebarOption("Inventario", "inventario"),
+                new SidebarOption("Historial de Ventas", "historial"),
+                new SidebarOption("Reporte Diario", "reporte"),
+                new SidebarOption("Usuarios y Permisos", "usuarios"),
+                new SidebarOption("Alertas de Vencimiento", "alertas")
+            );
+            case SUPERVISOR -> java.util.List.of(
+                new SidebarOption("Inicio", "inicio"),
+                new SidebarOption("Caja / Punto de Venta", "pos"),
+                new SidebarOption("Inventario", "inventario"),
+                new SidebarOption("Historial de Ventas", "historial"),
+                new SidebarOption("Reporte Diario", "reporte"),
+                new SidebarOption("Alertas de Vencimiento", "alertas")
+            );
+            default -> java.util.List.of( // CAJERO
+                new SidebarOption("Inicio", "inicio"),
+                new SidebarOption("Caja / Punto de Venta", "pos"),
+                new SidebarOption("Inventario", "inventario"),
+                new SidebarOption("Alertas de Vencimiento", "alertas")
+            );
+        };
+    }
+    
+    /**
+     * Clase interna para representar una opción del sidebar (Adapter Pattern)
+     */
+    private static class SidebarOption {
+        final String texto;
+        final String panelKey;
+        
+        SidebarOption(String texto, String panelKey) {
+            this.texto = texto;
+            this.panelKey = panelKey;
+        }
     }
 }

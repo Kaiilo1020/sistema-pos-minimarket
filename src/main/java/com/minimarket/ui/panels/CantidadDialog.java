@@ -1,5 +1,6 @@
 package com.minimarket.ui.panels;
 
+import com.minimarket.ui.theme.EstilosApp;
 import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
@@ -60,8 +61,8 @@ public class CantidadDialog extends JDialog {
         JButton btnCancelar = new JButton("Cancelar");
         JButton btnAgregar = new JButton("Agregar al Carrito");
         
-        UIUtils.configurarBotonSecundario(btnCancelar);
-        UIUtils.configurarBotonExito(btnAgregar);
+        EstilosApp.estilizarBotonNeutro(btnCancelar);
+        EstilosApp.estilizarBoton(btnAgregar);
         btnAgregar.setPreferredSize(new Dimension(150, 35));
         
         btnAgregar.addActionListener(e -> {

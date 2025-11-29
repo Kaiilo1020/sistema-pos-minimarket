@@ -1,9 +1,10 @@
 package com.minimarket.ui.swing;
 
 import com.minimarket.config.DatabaseConnection;
-import com.minimarket.security.UsuarioSesion;
-import com.minimarket.security.Rol;
 import com.minimarket.model.Usuario;
+import com.minimarket.security.Rol;
+import com.minimarket.security.UsuarioSesion;
+import com.minimarket.ui.theme.EstilosApp;
 import com.minimarket.ui.util.UIUtils;
 
 import javax.swing.*;
@@ -23,30 +24,22 @@ public class LoginFrame extends JFrame {
     private JButton btnSalir;
     private JLabel lblEstado;
     
-    // Colores del tema
-    private static final Color PRIMARY_COLOR = new Color(52, 152, 219);
-    private static final Color SECONDARY_COLOR = new Color(245, 247, 250);
-    private static final Color SUCCESS_COLOR = new Color(40, 167, 69);
-    private static final Color DANGER_COLOR = new Color(220, 53, 69);
-    private static final Color TEXT_PRIMARY = new Color(44, 62, 80);
-    
     public LoginFrame() {
-        initializeComponents();
-        setupLayout();
-        setupEventHandlers();
-        
-        // Centrar en pantalla
+        configurarVentana();
+        construirUI();
+        configurarEventos();
         setLocationRelativeTo(null);
         setVisible(true);
     }
     
-    private void initializeComponents() {
+    /* ========================== UI ========================== */
+    
+    private void configurarVentana() {
         setTitle("Sistema POS MiniMarket - Iniciar Sesión");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(520, 480);
+        setSize(520, 550);
         setResizable(false);
         
-        // Configurar icono
         try {
             setIconImage(Toolkit.getDefaultToolkit().getImage(
                 getClass().getResource("/images/minimarket-logo.png")));
@@ -55,26 +48,18 @@ public class LoginFrame extends JFrame {
         }
     }
     
-    private void setupLayout() {
+    private void construirUI() {
         setLayout(new BorderLayout());
-        getContentPane().setBackground(SECONDARY_COLOR);
+        getContentPane().setBackground(new Color(245, 247, 250));
         
-        // Panel principal
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBackground(SECONDARY_COLOR);
+        mainPanel.setBackground(new Color(245, 247, 250));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
         
-        // Logo y título
         JPanel headerPanel = createHeaderPanel();
-        
-        // Formulario de login
         JPanel formPanel = createFormPanel();
-        
-        // Botones
         JPanel buttonPanel = createButtonPanel();
-        
-        // Estado
         JPanel statusPanel = createStatusPanel();
         
         mainPanel.add(headerPanel);
@@ -91,7 +76,7 @@ public class LoginFrame extends JFrame {
     private JPanel createHeaderPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(SECONDARY_COLOR);
+        panel.setBackground(new Color(245, 247, 250));
         
         // Logo (emoji como placeholder)
         JLabel lblLogo = new JLabel("🏪", JLabel.CENTER);
@@ -101,7 +86,7 @@ public class LoginFrame extends JFrame {
         // Título
         JLabel lblTitulo = new JLabel("MINIMARKET PRO", JLabel.CENTER);
         lblTitulo.setFont(UIUtils.HEADER_FONT);
-        lblTitulo.setForeground(TEXT_PRIMARY);
+        lblTitulo.setForeground(new Color(44, 62, 80));
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         // Subtítulo
@@ -125,125 +110,139 @@ public class LoginFrame extends JFrame {
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(222, 226, 230)),
-            BorderFactory.createEmptyBorder(35, 35, 35, 35)
+            BorderFactory.createEmptyBorder(35, 35, 40, 35)
         ));
         
-        // Campo usuario
+        // Campo usuario - Panel envoltorio
+        JPanel panelUsuario = new JPanel();
+        panelUsuario.setLayout(new BoxLayout(panelUsuario, BoxLayout.Y_AXIS));
+        panelUsuario.setBackground(Color.WHITE);
+        panelUsuario.setOpaque(false); // Transparente
+        panelUsuario.setPreferredSize(new Dimension(350, 60));
+        panelUsuario.setMaximumSize(new Dimension(350, 60));
+        panelUsuario.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
         JLabel lblUsuario = new JLabel("Usuario:");
         lblUsuario.setFont(UIUtils.BOLD_FONT);
-        lblUsuario.setForeground(TEXT_PRIMARY);
+        lblUsuario.setForeground(new Color(44, 62, 80));
         lblUsuario.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         txtUsuario = new JTextField();
         txtUsuario.setFont(UIUtils.DEFAULT_FONT);
+        txtUsuario.setHorizontalAlignment(JTextField.LEFT);
+        txtUsuario.setAlignmentX(Component.LEFT_ALIGNMENT);
         txtUsuario.setPreferredSize(new Dimension(350, 45));
-        txtUsuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        txtUsuario.setMaximumSize(new Dimension(350, 45));
         txtUsuario.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(206, 212, 218)),
             BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
         
-        // Campo contraseña
+        panelUsuario.add(lblUsuario);
+        panelUsuario.add(Box.createVerticalStrut(10));
+        panelUsuario.add(txtUsuario);
+        
+        // Campo contraseña - Panel envoltorio
+        JPanel panelPassword = new JPanel();
+        panelPassword.setLayout(new BoxLayout(panelPassword, BoxLayout.Y_AXIS));
+        panelPassword.setBackground(Color.WHITE);
+        panelPassword.setOpaque(false); // Transparente
+        panelPassword.setPreferredSize(new Dimension(350, 60));
+        panelPassword.setMaximumSize(new Dimension(350, 60));
+        panelPassword.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
         JLabel lblPassword = new JLabel("Contraseña:");
         lblPassword.setFont(UIUtils.BOLD_FONT);
-        lblPassword.setForeground(TEXT_PRIMARY);
+        lblPassword.setForeground(new Color(44, 62, 80));
         lblPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         txtPassword = new JPasswordField();
         txtPassword.setFont(UIUtils.DEFAULT_FONT);
+        txtPassword.setHorizontalAlignment(JPasswordField.LEFT);
+        txtPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
         txtPassword.setPreferredSize(new Dimension(350, 45));
-        txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        txtPassword.setMaximumSize(new Dimension(350, 45));
         txtPassword.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(206, 212, 218)),
             BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
         
+        panelPassword.add(lblPassword);
+        panelPassword.add(Box.createVerticalStrut(10));
+        panelPassword.add(txtPassword);
+        
         // Botón Iniciar Sesión (dentro del formulario)
         btnLogin = new JButton("Iniciar Sesión");
-        btnLogin.setFont(UIUtils.BOLD_FONT);
-        btnLogin.setBackground(PRIMARY_COLOR);
-        btnLogin.setForeground(Color.WHITE);
-        btnLogin.setPreferredSize(new Dimension(350, 50));
-        btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-        btnLogin.setBorder(null);
-        btnLogin.setFocusPainted(false);
-        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        EstilosApp.estilizarBoton(btnLogin);
+        Dimension preferred = btnLogin.getPreferredSize();
+        preferred.width = Math.max(preferred.width, 350);
+        btnLogin.setPreferredSize(preferred);
+        btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, preferred.height));
+        btnLogin.setFont(new Font(UIUtils.BOLD_FONT.getName(), Font.BOLD, 16));
         btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        // Configurar acción del botón
         btnLogin.addActionListener(e -> realizarLogin());
         
-        // Efecto hover para el botón
-        btnLogin.addMouseListener(new java.awt.event.MouseAdapter() {
+        panel.add(panelUsuario);
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(panelPassword);
+        panel.add(Box.createVerticalStrut(30));
+        panel.add(btnLogin);
+        panel.add(Box.createVerticalStrut(15));
+        
+        // Enlace "¿Olvidaste tu contraseña?" - Dentro del panel blanco, centrado
+        JLabel lblOlvidoPassword = new JLabel("<html><u>¿Olvidaste tu contraseña?</u></html>");
+        lblOlvidoPassword.setFont(new Font(UIUtils.DEFAULT_FONT.getName(), Font.PLAIN, 13));
+        lblOlvidoPassword.setForeground(new Color(100, 100, 100)); // Gris oscuro, no azul
+        lblOlvidoPassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblOlvidoPassword.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblOlvidoPassword.setHorizontalAlignment(JLabel.CENTER); // Centrado horizontal
+        lblOlvidoPassword.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                mostrarDialogoRecuperacion();
+            }
+            
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                btnLogin.setBackground(PRIMARY_COLOR.darker());
+                lblOlvidoPassword.setForeground(new Color(70, 70, 70)); // Más oscuro al hover
             }
             
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
-                btnLogin.setBackground(PRIMARY_COLOR);
+                lblOlvidoPassword.setForeground(new Color(100, 100, 100)); // Vuelve al gris
             }
         });
         
-        panel.add(lblUsuario);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(txtUsuario);
-        panel.add(Box.createVerticalStrut(25));
-        panel.add(lblPassword);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(txtPassword);
-        panel.add(Box.createVerticalStrut(30));
-        panel.add(btnLogin);
-        
+        panel.add(lblOlvidoPassword);
         return panel;
     }
     
     private JPanel createButtonPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
-        panel.setBackground(SECONDARY_COLOR);
+        panel.setBackground(new Color(245, 247, 250));
         
         btnSalir = new JButton("Salir del Sistema");
-        btnSalir.setFont(UIUtils.DEFAULT_FONT);
-        btnSalir.setBackground(new Color(108, 117, 125));
-        btnSalir.setForeground(Color.WHITE);
-        btnSalir.setPreferredSize(new Dimension(150, 40));
-        btnSalir.setBorder(null);
-        btnSalir.setFocusPainted(false);
-        btnSalir.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        // Efecto hover para el botón salir
-        btnSalir.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                btnSalir.setBackground(new Color(108, 117, 125).darker());
-            }
-            
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                btnSalir.setBackground(new Color(108, 117, 125));
-            }
-        });
-        
+        EstilosApp.estilizarBotonNeutro(btnSalir);
+        btnSalir.setPreferredSize(new Dimension(180, 45));
         panel.add(btnSalir);
-        
         return panel;
     }
     
     private JPanel createStatusPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        panel.setBackground(SECONDARY_COLOR);
+        panel.setBackground(new Color(245, 247, 250));
         
         lblEstado = new JLabel("Ingrese sus credenciales para continuar");
         lblEstado.setFont(UIUtils.DEFAULT_FONT);
         lblEstado.setForeground(Color.GRAY);
         
         panel.add(lblEstado);
-        
         return panel;
     }
     
-    private void setupEventHandlers() {
+    /* ========================== EVENTOS ========================== */
+    
+    private void configurarEventos() {
         // Enter en los campos para hacer login
         KeyListener enterListener = new KeyListener() {
             @Override
@@ -272,10 +271,6 @@ public class LoginFrame extends JFrame {
         String usuario = txtUsuario.getText().trim();
         String password = new String(txtPassword.getPassword());
         
-        System.out.println("=== INTENTO DE LOGIN ===");
-        System.out.println("Usuario: " + usuario);
-        System.out.println("Password length: " + password.length());
-        
         if (usuario.isEmpty() || password.isEmpty()) {
             mostrarError("Por favor ingrese usuario y contraseña");
             return;
@@ -300,46 +295,32 @@ public class LoginFrame extends JFrame {
                     
                     if (usuarioAutenticado != null) {
                         // Login exitoso
-                        System.out.println("Login exitoso para: " + usuarioAutenticado.getUsername());
                         UsuarioSesion.getInstance().login(usuarioAutenticado);
                         
-                        // Verificar que se guardó correctamente
-                        Usuario usuarioEnSesion = UsuarioSesion.getInstance().getUsuarioActual();
-                        System.out.println("Usuario guardado en sesión: " + (usuarioEnSesion != null ? usuarioEnSesion.getUsername() : "null"));
-                        
                         lblEstado.setText("¡Bienvenido " + usuarioAutenticado.getNombreCompleto() + "!");
-                        lblEstado.setForeground(SUCCESS_COLOR);
+                        lblEstado.setForeground(EstilosApp.COLOR_PRIMARIO);
                         
                         // Esperar un momento y abrir dashboard
                         Timer timer = new Timer(1000, ev -> {
                             try {
-                                System.out.println("Creando DashboardFrame...");
-                                
                                 // Crear dashboard en el hilo de Swing
                                 SwingUtilities.invokeLater(() -> {
                                     try {
                                         DashboardFrame dashboard = new DashboardFrame(); // Crear dashboard
                                         dashboard.setVisible(true); // Mostrar dashboard
-                                        System.out.println("Dashboard creado exitosamente");
                                         dispose(); // Cerrar login solo si el dashboard se creó correctamente
                                     } catch (Exception ex) {
-                                        System.out.println("ERROR al crear dashboard: " + ex.getMessage());
-                                        ex.printStackTrace();
-                                        
                                         // Mostrar error y mantener login abierto
                                         lblEstado.setText("Error al abrir el sistema: " + ex.getMessage());
-                                        lblEstado.setForeground(DANGER_COLOR);
+                                        lblEstado.setForeground(Color.RED);
                                         btnLogin.setEnabled(true);
                                     }
                                 });
                                 
                             } catch (Exception ex) {
-                                System.out.println("ERROR general: " + ex.getMessage());
-                                ex.printStackTrace();
-                                
                                 // Mostrar error y mantener login abierto
                                 lblEstado.setText("Error al abrir el sistema: " + ex.getMessage());
-                                lblEstado.setForeground(DANGER_COLOR);
+                                lblEstado.setForeground(Color.RED);
                                 btnLogin.setEnabled(true);
                             }
                         });
@@ -364,10 +345,6 @@ public class LoginFrame extends JFrame {
     }
     
     private Usuario verificarCredenciales(String username, String password) throws SQLException {
-        System.out.println("=== VERIFICANDO CREDENCIALES EN BASE DE DATOS ===");
-        System.out.println("Buscando usuario: " + username);
-        System.out.println("Password ingresado: " + password);
-        
         // Consultar SOLO la base de datos PostgreSQL
         String sql = "SELECT id, username, email, rol, activo, password " +
                     "FROM usuarios " +
@@ -383,13 +360,8 @@ public class LoginFrame extends JFrame {
                     String passwordBD = rs.getString("password");
                     String rol = rs.getString("rol");
                     
-                    System.out.println("Usuario encontrado en BD: " + username);
-                    System.out.println("Rol: " + rol);
-                    System.out.println("Password en BD: " + passwordBD);
-                    
                     // Verificar contraseña (comparación directa ya que están en texto plano)
                     if (password.equals(passwordBD)) {
-                        System.out.println("Contraseña correcta!");
                         // Crear objeto usuario
                         Usuario usuario = new Usuario();
                         usuario.setId(rs.getLong("id"));
@@ -431,7 +403,6 @@ public class LoginFrame extends JFrame {
                                 rolUsuario = Rol.CAJERO;
                                 break;
                             default:
-                                System.out.println("Rol desconocido: " + rolBD + ", asignando CAJERO por defecto");
                                 rolUsuario = Rol.CAJERO;
                         }
                         
@@ -439,24 +410,18 @@ public class LoginFrame extends JFrame {
                         usuario.setActivo(rs.getBoolean("activo"));
                         
                         return usuario;
-                    } else {
-                        System.out.println("Contraseña incorrecta");
                     }
-                } else {
-                    System.out.println("Usuario no encontrado en BD: " + username);
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error de BD: " + e.getMessage());
+            // Error silencioso - no revelar información
         }
-        
-        System.out.println("Credenciales inválidas");
         return null; // Credenciales inválidas
     }
     
     private void mostrarError(String mensaje) {
         lblEstado.setText(mensaje);
-        lblEstado.setForeground(DANGER_COLOR);
+        lblEstado.setForeground(Color.RED);
         
         // Limpiar mensaje después de 3 segundos
         Timer timer = new Timer(3000, e -> {
@@ -465,5 +430,276 @@ public class LoginFrame extends JFrame {
         });
         timer.setRepeats(false);
         timer.start();
+    }
+    
+    /**
+     * Muestra el diálogo de recuperación de contraseña
+     */
+    private void mostrarDialogoRecuperacion() {
+        JDialog dialog = new JDialog(this, "Recuperación de Contraseña", true);
+        dialog.setSize(400, 180);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout());
+        
+        // Panel principal
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Label instrucción
+        JLabel lblInstruccion = new JLabel("Ingresa tu nombre de usuario:");
+        lblInstruccion.setFont(UIUtils.DEFAULT_FONT);
+        lblInstruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        // Campo de texto para usuario
+        JTextField txtUsuarioRecuperacion = new JTextField();
+        txtUsuarioRecuperacion.setFont(UIUtils.DEFAULT_FONT);
+        txtUsuarioRecuperacion.setPreferredSize(new Dimension(300, 35));
+        txtUsuarioRecuperacion.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        txtUsuarioRecuperacion.setHorizontalAlignment(JTextField.CENTER);
+        txtUsuarioRecuperacion.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(206, 212, 218)),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
+        
+        // Panel de botones
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        
+        JButton btnAceptar = new JButton("Aceptar");
+        btnAceptar.setFont(UIUtils.DEFAULT_FONT);
+        btnAceptar.setPreferredSize(new Dimension(120, 40));
+        EstilosApp.estilizarBotonSecundario(btnAceptar);
+        
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setFont(UIUtils.DEFAULT_FONT);
+        btnCancelar.setPreferredSize(new Dimension(100, 35));
+        btnCancelar.setBackground(new Color(108, 117, 125));
+        btnCancelar.setForeground(Color.WHITE);
+        btnCancelar.setBorder(null);
+        btnCancelar.setFocusPainted(false);
+        btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        panelBotones.add(btnAceptar);
+        panelBotones.add(btnCancelar);
+        
+        // Agregar componentes
+        panel.add(lblInstruccion);
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(txtUsuarioRecuperacion);
+        panel.add(Box.createVerticalStrut(20));
+        panel.add(panelBotones);
+        
+        dialog.add(panel, BorderLayout.CENTER);
+        
+        // Acción del botón Aceptar
+        btnAceptar.addActionListener(e -> {
+            String username = txtUsuarioRecuperacion.getText().trim();
+            if (username.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, 
+                    "Por favor ingrese un nombre de usuario", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Verificar que el usuario existe
+            if (verificarUsuarioExiste(username)) {
+                dialog.dispose();
+                mostrarDialogoNuevaPassword(username);
+            } else {
+                JOptionPane.showMessageDialog(dialog, 
+                    "El usuario no existe en el sistema", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        // Acción del botón Cancelar
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        
+        // Enter en el campo de texto
+        txtUsuarioRecuperacion.addActionListener(e -> btnAceptar.doClick());
+        
+        dialog.setVisible(true);
+        SwingUtilities.invokeLater(() -> txtUsuarioRecuperacion.requestFocus());
+    }
+    
+    /**
+     * Muestra el diálogo para establecer nueva contraseña
+     */
+    private void mostrarDialogoNuevaPassword(String username) {
+        JDialog dialog = new JDialog(this, "Establecer Nueva Contraseña", true);
+        dialog.setSize(400, 250);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout());
+        
+        // Panel principal
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Campo nueva contraseña
+        JLabel lblNuevaPassword = new JLabel("Nueva contraseña:");
+        lblNuevaPassword.setFont(UIUtils.DEFAULT_FONT);
+        lblNuevaPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        JPasswordField txtNuevaPassword = new JPasswordField();
+        txtNuevaPassword.setFont(UIUtils.DEFAULT_FONT);
+        txtNuevaPassword.setPreferredSize(new Dimension(300, 35));
+        txtNuevaPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        txtNuevaPassword.setHorizontalAlignment(JPasswordField.CENTER);
+        txtNuevaPassword.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(206, 212, 218)),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
+        
+        // Campo confirmar contraseña
+        JLabel lblConfirmarPassword = new JLabel("Confirmar contraseña:");
+        lblConfirmarPassword.setFont(UIUtils.DEFAULT_FONT);
+        lblConfirmarPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        JPasswordField txtConfirmarPassword = new JPasswordField();
+        txtConfirmarPassword.setFont(UIUtils.DEFAULT_FONT);
+        txtConfirmarPassword.setPreferredSize(new Dimension(300, 35));
+        txtConfirmarPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        txtConfirmarPassword.setHorizontalAlignment(JPasswordField.CENTER);
+        txtConfirmarPassword.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(206, 212, 218)),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
+        
+        // Panel de botones
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        
+        JButton btnAceptar = new JButton("Aceptar");
+        btnAceptar.setFont(UIUtils.DEFAULT_FONT);
+        btnAceptar.setPreferredSize(new Dimension(120, 40));
+        EstilosApp.estilizarBoton(btnAceptar);
+        
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setFont(UIUtils.DEFAULT_FONT);
+        btnCancelar.setPreferredSize(new Dimension(100, 35));
+        btnCancelar.setBackground(new Color(108, 117, 125));
+        btnCancelar.setForeground(Color.WHITE);
+        btnCancelar.setBorder(null);
+        btnCancelar.setFocusPainted(false);
+        btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        panelBotones.add(btnAceptar);
+        panelBotones.add(btnCancelar);
+        
+        // Agregar componentes
+        panel.add(lblNuevaPassword);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(txtNuevaPassword);
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(lblConfirmarPassword);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(txtConfirmarPassword);
+        panel.add(Box.createVerticalStrut(20));
+        panel.add(panelBotones);
+        
+        dialog.add(panel, BorderLayout.CENTER);
+        
+        // Acción del botón Aceptar
+        btnAceptar.addActionListener(e -> {
+            String nuevaPassword = new String(txtNuevaPassword.getPassword());
+            String confirmarPassword = new String(txtConfirmarPassword.getPassword());
+            
+            if (nuevaPassword.isEmpty() || confirmarPassword.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, 
+                    "Por favor complete ambos campos", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            if (!nuevaPassword.equals(confirmarPassword)) {
+                JOptionPane.showMessageDialog(dialog, 
+                    "Las contraseñas no coinciden", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                txtNuevaPassword.setText("");
+                txtConfirmarPassword.setText("");
+                txtNuevaPassword.requestFocus();
+                return;
+            }
+            
+            if (nuevaPassword.length() < 4) {
+                JOptionPane.showMessageDialog(dialog, 
+                    "La contraseña debe tener al menos 4 caracteres", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Actualizar contraseña en la base de datos
+            if (actualizarPasswordEnBD(username, nuevaPassword)) {
+                JOptionPane.showMessageDialog(dialog, 
+                    "Contraseña actualizada exitosamente", 
+                    "Éxito", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(dialog, 
+                    "Error al actualizar la contraseña. Intente nuevamente.", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        // Acción del botón Cancelar
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        
+        dialog.setVisible(true);
+        SwingUtilities.invokeLater(() -> txtNuevaPassword.requestFocus());
+    }
+    
+    /**
+     * Verifica si un usuario existe en la base de datos
+     */
+    private boolean verificarUsuarioExiste(String username) {
+        String sql = "SELECT COUNT(*) FROM usuarios WHERE username = ? AND activo = true";
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, username);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            // Error silencioso - no revelar información
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Actualiza la contraseña de un usuario en la base de datos
+     */
+    private boolean actualizarPasswordEnBD(String username, String nuevaPassword) {
+        String sql = "UPDATE usuarios SET password = ? WHERE username = ? AND activo = true";
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, nuevaPassword);
+            stmt.setString(2, username);
+            
+            int filasAfectadas = stmt.executeUpdate();
+            
+            if (filasAfectadas > 0) {
+                return true;
+            } else {
+                return false;
+            }
+            
+        } catch (SQLException e) {
+            return false;
+        }
     }
 }

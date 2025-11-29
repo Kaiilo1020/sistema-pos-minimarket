@@ -1,47 +1,31 @@
 package com.minimarket.ui.panels;
 
-import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.handlers.AlertasVencimientoHandler;
+import com.minimarket.ui.theme.EstilosApp;
 import com.minimarket.ui.util.UIUtils;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.sql.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 
 /**
- * Panel para mostrar alertas de productos próximos a vencer o ya vencidos
+ * Panel para mostrar alertas de productos próximos a vencer o ya vencidos - SOLO UI
+ * Toda la lógica está delegada a AlertasVencimientoHandler
  */
 public class AlertasVencimientoPanel extends JPanel {
+    
+    private static final Color COLOR_VENCIDO = new Color(244, 67, 54, 100);
+    private static final Color COLOR_POR_VENCER = new Color(255, 193, 7, 100);
+    private static final Color COLOR_NORMAL = Color.WHITE;
     
     private JTable tablaAlertas;
     private DefaultTableModel modeloTabla;
     private JLabel lblTotalProductos;
-    private boolean soloLectura;
+    private final boolean soloLectura;
     
-    // Colores para los estados
-    private static final Color COLOR_VENCIDO = new Color(244, 67, 54, 100);      // Rojo claro
-    private static final Color COLOR_POR_VENCER = new Color(255, 193, 7, 100);   // Amarillo claro
-    private static final Color COLOR_NORMAL = Color.WHITE;
-    
-    // Constantes para lógica de vencimiento
-    private static final int DIAS_CRITICOS = 7;
-    
-    /**
-     * Clase interna para representar el estado de un producto
-     */
-    private static class EstadoProducto {
-        final String estado;
-        final String diasTexto;
-        
-        EstadoProducto(String estado, String diasTexto) {
-            this.estado = estado;
-            this.diasTexto = diasTexto;
-        }
-    }
+    // Handler que contiene toda la lógica
+    private final AlertasVencimientoHandler handler;
     
     public AlertasVencimientoPanel() {
         this(false); // Por defecto, no es solo lectura
@@ -49,63 +33,70 @@ public class AlertasVencimientoPanel extends JPanel {
     
     public AlertasVencimientoPanel(boolean soloLectura) {
         this.soloLectura = soloLectura;
-        initializeComponents();
-        setupLayout();
+        this.handler = new AlertasVencimientoHandler();
+        inicializarUI();
         cargarAlertas();
     }
     
-    private void initializeComponents() {
+    private void inicializarUI() {
         setBackground(Color.WHITE);
         setLayout(new BorderLayout());
+        add(crearEncabezado(), BorderLayout.NORTH);
+        add(crearTablaAlertas(), BorderLayout.CENTER);
+        add(crearPiePagina(), BorderLayout.SOUTH);
     }
     
-    private void setupLayout() {
-        // Panel superior con título y botones
+    private JPanel crearEncabezado() {
         JPanel panelSuperior = new JPanel(new BorderLayout());
         panelSuperior.setBackground(Color.WHITE);
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         
-        // Título
         JLabel titulo = new JLabel("ALERTAS DE VENCIMIENTO");
         titulo.setFont(new Font("Arial", Font.BOLD, 18));
         titulo.setForeground(new Color(44, 62, 80));
         
-        // Panel de botones
+        panelSuperior.add(titulo, BorderLayout.WEST);
+        panelSuperior.add(crearPanelBotones(), BorderLayout.EAST);
+        return panelSuperior;
+    }
+    
+    private JPanel crearPanelBotones() {
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelBotones.setBackground(Color.WHITE);
         
         if (soloLectura) {
-            // MODO SOLO LECTURA (Cajeros): Solo botón actualizar y mensaje informativo
             JLabel lblModoLectura = new JLabel("📖 Modo Consulta - Solo lectura");
             lblModoLectura.setFont(UIUtils.BOLD_FONT);
             lblModoLectura.setForeground(new Color(108, 117, 125));
             lblModoLectura.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
             
             JButton btnActualizar = new JButton("🔄 Actualizar");
-            UIUtils.configurarBotonSecundario(btnActualizar);
+            EstilosApp.estilizarBotonNeutro(btnActualizar);
             btnActualizar.addActionListener(e -> cargarAlertas());
             
             panelBotones.add(lblModoLectura);
             panelBotones.add(btnActualizar);
-            
         } else {
-            // MODO COMPLETO (Supervisor/Admin): Todos los botones
-            JButton btnRetirarVencidos = new JButton("Retirar Vencidos");
-            UIUtils.configurarBotonPeligro(btnRetirarVencidos);
+            JButton btnRetirarSeleccionado = new JButton("Retirar Seleccionado");
+            EstilosApp.estilizarBotonError(btnRetirarSeleccionado);
+            btnRetirarSeleccionado.addActionListener(e -> retirarProductoSeleccionado());
+            
+            JButton btnRetirarVencidos = new JButton("Retirar Todos los Vencidos");
+            EstilosApp.estilizarBotonError(btnRetirarVencidos);
             btnRetirarVencidos.addActionListener(e -> retirarProductosVencidos());
             
             JButton btnActualizar = new JButton("Actualizar");
-            UIUtils.configurarBotonSecundario(btnActualizar);
+            EstilosApp.estilizarBotonNeutro(btnActualizar);
             btnActualizar.addActionListener(e -> cargarAlertas());
             
+            panelBotones.add(btnRetirarSeleccionado);
             panelBotones.add(btnRetirarVencidos);
             panelBotones.add(btnActualizar);
         }
-        
-        panelSuperior.add(titulo, BorderLayout.WEST);
-        panelSuperior.add(panelBotones, BorderLayout.EAST);
-        
-        // Tabla de alertas
+        return panelBotones;
+    }
+    
+    private JScrollPane crearTablaAlertas() {
         String[] columnas = {"ID", "Producto", "Stock", "Fecha Venc.", "Días Restantes", "Estado"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
@@ -118,22 +109,20 @@ public class AlertasVencimientoPanel extends JPanel {
         tablaAlertas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaAlertas.setRowHeight(30);
         UIUtils.configurarTabla(tablaAlertas);
-        
-        // Configurar ancho de columnas
-        tablaAlertas.getColumnModel().getColumn(0).setPreferredWidth(50);   // ID
-        tablaAlertas.getColumnModel().getColumn(1).setPreferredWidth(300);  // Producto
-        tablaAlertas.getColumnModel().getColumn(2).setPreferredWidth(80);   // Stock
-        tablaAlertas.getColumnModel().getColumn(3).setPreferredWidth(120);  // Fecha Venc.
-        tablaAlertas.getColumnModel().getColumn(4).setPreferredWidth(120);  // Días Restantes
-        tablaAlertas.getColumnModel().getColumn(5).setPreferredWidth(150);  // Estado
-        
-        // Renderer personalizado para colores
+        tablaAlertas.getColumnModel().getColumn(0).setPreferredWidth(50);
+        tablaAlertas.getColumnModel().getColumn(1).setPreferredWidth(300);
+        tablaAlertas.getColumnModel().getColumn(2).setPreferredWidth(80);
+        tablaAlertas.getColumnModel().getColumn(3).setPreferredWidth(120);
+        tablaAlertas.getColumnModel().getColumn(4).setPreferredWidth(120);
+        tablaAlertas.getColumnModel().getColumn(5).setPreferredWidth(150);
         tablaAlertas.setDefaultRenderer(Object.class, new AlertasTableCellRenderer());
         
         JScrollPane scrollPane = new JScrollPane(tablaAlertas);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Productos con Alertas de Vencimiento"));
-        
-        // Panel inferior con información
+        return scrollPane;
+    }
+    
+    private JPanel crearPiePagina() {
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.setBackground(Color.WHITE);
         panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
@@ -141,86 +130,80 @@ public class AlertasVencimientoPanel extends JPanel {
         lblTotalProductos = new JLabel("Total de alertas: 0");
         lblTotalProductos.setFont(new Font("Arial", Font.BOLD, 12));
         lblTotalProductos.setForeground(new Color(108, 117, 125));
-        
-        // Leyenda de colores
+        panelInferior.add(lblTotalProductos, BorderLayout.WEST);
+        panelInferior.add(crearLeyendaColores(), BorderLayout.EAST);
+        return panelInferior;
+    }
+    
+    private JPanel crearLeyendaColores() {
         JPanel panelLeyenda = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelLeyenda.setBackground(Color.WHITE);
         
-        JLabel leyendaVencido = new JLabel("■ Vencido");
+        JLabel leyendaVencido = new JLabel("Vencido");
         leyendaVencido.setForeground(new Color(244, 67, 54));
         leyendaVencido.setFont(new Font("Arial", Font.BOLD, 11));
         
-        JLabel leyendaPorVencer = new JLabel("■ Por vencer");
+        JLabel leyendaPorVencer = new JLabel("Por vencer");
         leyendaPorVencer.setForeground(new Color(255, 193, 7));
         leyendaPorVencer.setFont(new Font("Arial", Font.BOLD, 11));
         
         panelLeyenda.add(leyendaVencido);
         panelLeyenda.add(Box.createHorizontalStrut(15));
         panelLeyenda.add(leyendaPorVencer);
-        
-        panelInferior.add(lblTotalProductos, BorderLayout.WEST);
-        panelInferior.add(panelLeyenda, BorderLayout.EAST);
-        
-        // Agregar componentes al panel principal
-        add(panelSuperior, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
-        add(panelInferior, BorderLayout.SOUTH);
+        return panelLeyenda;
     }
     
     private void cargarAlertas() {
+        // Limpiar modelo antes de cargar nuevos datos
         modeloTabla.setRowCount(0);
         
-        String sql = """
-            SELECT p.id, p.nombre, p.stock, p.fecha_vencimiento
-            FROM productos p 
-            WHERE p.activo = true 
-            AND p.fecha_vencimiento IS NOT NULL 
-            AND p.fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days'
-            ORDER BY p.fecha_vencimiento ASC
-        """;
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+        try {
+            // Forzar actualización de la conexión para obtener datos frescos
+            var alertas = handler.cargarAlertas();
             
-            int totalAlertas = 0;
-            LocalDate hoy = LocalDate.now();
-            
-            while (rs.next()) {
-                Long id = rs.getLong("id");
-                String nombre = rs.getString("nombre");
-                int stock = rs.getInt("stock");
-                Date fechaVencimiento = rs.getDate("fecha_vencimiento");
-                
-                if (fechaVencimiento != null) {
-                    LocalDate fechaVenc = fechaVencimiento.toLocalDate();
-                    long diasRestantes = ChronoUnit.DAYS.between(hoy, fechaVenc);
-                    
-                    String estado;
-                    String diasTexto;
-                    
-                    EstadoProducto estadoProducto = calcularEstadoProducto(diasRestantes);
-                    estado = estadoProducto.estado;
-                    diasTexto = estadoProducto.diasTexto;
-                    
-                    Object[] fila = {
-                        id,
-                        nombre,
-                        stock,
-                        fechaVenc.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                        diasTexto,
-                        estado
-                    };
-                    
-                    modeloTabla.addRow(fila);
-                    totalAlertas++;
-                }
+            for (AlertasVencimientoHandler.ProductoAlerta alerta : alertas) {
+                Object[] fila = {
+                    alerta.id,
+                    alerta.nombre,
+                    alerta.stock,
+                    alerta.fechaVencimiento,
+                    alerta.diasTexto,
+                    alerta.estado
+                };
+                modeloTabla.addRow(fila);
             }
             
-            lblTotalProductos.setText("Total de alertas: " + totalAlertas);
+            lblTotalProductos.setText("Total de alertas: " + alertas.size());
             
-        } catch (SQLException e) {
-            UIUtils.mostrarError(this, "Error al cargar alertas: " + e.getMessage());
+            // Forzar repintado de la tabla
+            tablaAlertas.revalidate();
+            tablaAlertas.repaint();
+            
+        } catch (RuntimeException e) {
+            UIUtils.mostrarError(this, e.getMessage());
+        }
+    }
+    
+    private void retirarProductoSeleccionado() {
+        int filaSeleccionada = tablaAlertas.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            UIUtils.mostrarError(this, "Por favor, seleccione un producto de la tabla para retirar.");
+            return;
+        }
+        
+        Long productoId = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
+        String nombreProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 1);
+        
+        if (UIUtils.confirmar(this, 
+            "¿Está seguro de que desea retirar el producto:\n" +
+            nombreProducto + "?\n\n" +
+            "Esta acción marcará el producto como inactivo.")) {
+            try {
+                handler.retirarProductoPorId(this, productoId);
+                cargarAlertas();
+            } catch (RuntimeException e) {
+                // El error ya fue mostrado por el handler
+            }
         }
     }
     
@@ -228,51 +211,12 @@ public class AlertasVencimientoPanel extends JPanel {
         if (UIUtils.confirmar(this, 
             "¿Está seguro de que desea marcar como inactivos todos los productos vencidos?\n" +
             "Esta acción no se puede deshacer.")) {
-            String sql = """
-                UPDATE productos 
-                SET activo = false 
-                WHERE fecha_vencimiento < CURRENT_DATE 
-                AND activo = true
-            """;
-            
-            try (Connection conn = DatabaseConnection.getInstance().getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                
-                int productosRetirados = pstmt.executeUpdate();
-                
-                UIUtils.mostrarExito(this,
-                    "Se han retirado " + productosRetirados + " productos vencidos del inventario.");
-                
-                // Recargar la tabla
+            try {
+                handler.retirarProductosVencidos(this);
                 cargarAlertas();
-                
-            } catch (SQLException e) {
-                UIUtils.mostrarError(this, "Error al retirar productos: " + e.getMessage());
+            } catch (RuntimeException e) {
+                // El error ya fue mostrado por el handler
             }
-        }
-    }
-    
-    /**
-     * Calcula el estado de vencimiento de un producto basado en los días restantes
-     * @param diasRestantes días hasta el vencimiento (negativo si ya venció)
-     * @return EstadoProducto con estado y texto de días
-     */
-    private EstadoProducto calcularEstadoProducto(long diasRestantes) {
-        if (diasRestantes < 0) {
-            long diasVencido = Math.abs(diasRestantes);
-            return new EstadoProducto(
-                "VENCIDO (" + diasVencido + " días atrás)",
-                diasVencido + " días atrás"
-            );
-        } else if (diasRestantes == 0) {
-            return new EstadoProducto("VENCE HOY", "0 días");
-        } else if (diasRestantes <= DIAS_CRITICOS) {
-            return new EstadoProducto(
-                "CRÍTICO (vence en " + diasRestantes + " días)",
-                diasRestantes + " días"
-            );
-        } else {
-            return new EstadoProducto("Por vencer", diasRestantes + " días");
         }
     }
     
@@ -290,9 +234,9 @@ public class AlertasVencimientoPanel extends JPanel {
             if (!isSelected) {
                 String estado = (String) table.getValueAt(row, 5); // Columna Estado
                 
-                if (estado.contains("VENCIDO") || estado.contains("VENCE HOY")) {
+                if (estado.contains("VENCIDO")) {
                     component.setBackground(COLOR_VENCIDO);
-                } else if (estado.contains("CRÍTICO") || estado.contains("Por vencer")) {
+                } else if (estado.contains("POR VENCER") || estado.contains("PRÓXIMO")) {
                     component.setBackground(COLOR_POR_VENCER);
                 } else {
                     component.setBackground(COLOR_NORMAL);

@@ -18,14 +18,8 @@ public class DatabaseConnection {
     
     // Constructor privado
     private DatabaseConnection() {
-        try {
-            Class.forName("org.postgresql.Driver");
-            this.connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-            // Conexión establecida silenciosamente
-        } catch (ClassNotFoundException | SQLException e) {
-            // Error de conexión
-            throw new RuntimeException("No se pudo conectar a la base de datos", e);
-        }
+        inicializarDriver();
+        reconectar();
     }
     
     /**
@@ -41,12 +35,11 @@ public class DatabaseConnection {
     /**
      * Obtiene la conexión actual
      */
-    public Connection getConnection() {
+    public synchronized Connection getConnection() {
         try {
             // Verificar si la conexión sigue activa
             if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-                // Conexión reestablecida
+                reconectar();
             }
         } catch (SQLException e) {
             // Error al verificar conexión
@@ -55,6 +48,49 @@ public class DatabaseConnection {
         return connection;
     }
     
+    /**
+     * Inicia una transacción ACID
+     */
+    public Connection beginTransaction() throws SQLException {
+        Connection conn = getConnection();
+        conn.setAutoCommit(false);
+        return conn;
+    }
+    
+    public void commit(Connection conn) {
+        if (conn == null) {
+            return;
+        }
+        try {
+            conn.commit();
+        } catch (SQLException e) {
+            throw new RuntimeException("No se pudo confirmar la transacción", e);
+        } finally {
+            restaurarAutoCommit(conn);
+        }
+    }
+    
+    public void rollback(Connection conn) {
+        if (conn == null) {
+            return;
+        }
+        try {
+            conn.rollback();
+        } catch (SQLException e) {
+            // Evitar propagar un error adicional y registrar en logs centralizados
+        } finally {
+            restaurarAutoCommit(conn);
+        }
+    }
+    
+    private void restaurarAutoCommit(Connection conn) {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException ignored) {
+        }
+    }
     
     /**
      * Prueba la conexión ejecutando una consulta simple
@@ -107,11 +143,15 @@ public class DatabaseConnection {
                 // Reconexión exitosa
             
         } catch (SQLException e) {
-            // Error al reconectar
+            throw new RuntimeException("Error al reconectar a la base de datos", e);
         }
     }
     
-    
-    
-    
+    private void inicializarDriver() {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Driver de PostgreSQL no disponible", e);
+        }
+    }
 }

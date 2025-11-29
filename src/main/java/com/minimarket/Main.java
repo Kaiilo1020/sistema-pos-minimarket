@@ -33,6 +33,10 @@ public class Main {
                 }
             }
             
+            // Deshabilitar bordes de botones en Nimbus para estilo flat
+            javax.swing.UIManager.put("Button.border", javax.swing.BorderFactory.createEmptyBorder());
+            javax.swing.UIManager.put("nimbusBorder", javax.swing.BorderFactory.createEmptyBorder());
+            
             // Configurar propiedades para mejor apariencia
             System.setProperty("awt.useSystemAAFontSettings", "on");
             System.setProperty("swing.aatext", "true");
@@ -43,8 +47,11 @@ public class Main {
 
     private static boolean verificarConexionBD() {
         try {
-            return DatabaseConnection.getInstance().testConnection();
+            // Intentar obtener la conexión - si funciona, la BD está disponible
+            DatabaseConnection.getInstance().getConnection();
+            return true;
         } catch (Exception e) {
+            // Si hay error, la conexión no está disponible
             return false;
         }
     }

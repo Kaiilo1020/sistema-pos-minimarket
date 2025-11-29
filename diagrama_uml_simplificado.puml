@@ -1,0 +1,213 @@
+@startuml Sistema POS Minimarket - Diagrama UML Simplificado
+
+!define SINGLETON_COLOR #FFE6E6
+!define BUILDER_COLOR #E6F3FF
+!define ADAPTER_COLOR #E6FFE6
+!define DECORATOR_COLOR #FFF4E6
+!define OBSERVER_COLOR #F0E6FF
+!define COMMAND_COLOR #FFE6F0
+!define CHAIN_COLOR #E6FFFF
+
+skinparam classAttributeIconSize 0
+skinparam defaultFontSize 10
+
+' ==========================================
+' SINGLETON PATTERN
+' ==========================================
+package "Singleton Pattern" SINGLETON_COLOR {
+    class DatabaseConnection <<Singleton>> {
+        +getInstance()$
+        +beginTransaction()
+        +commit()
+        +rollback()
+    }
+    
+    class AuditoriaManager <<Singleton>> {
+        +getInstance()$
+        +registrarEvento()
+    }
+    
+    class UsuarioSesion <<Singleton>> {
+        +getInstance()$
+        +getUsuarioActual()
+    }
+}
+
+' ==========================================
+' BUILDER PATTERN
+' ==========================================
+package "Builder Pattern" BUILDER_COLOR {
+    class BoletaBuilder <<Builder>> {
+        +numero()
+        +fecha()
+        +cajera()
+        +agregarDetalle()
+        +build()
+    }
+    
+    class Boleta {
+        +calcularTotales()
+    }
+}
+
+' ==========================================
+' ADAPTER PATTERN
+' ==========================================
+package "Adapter Pattern" ADAPTER_COLOR {
+    class DashboardFrame <<Adapter>> {
+        +obtenerOpcionesSidebar(Rol)
+    }
+    
+    enum Rol {
+        CAJERO
+        SUPERVISOR
+        ADMINISTRADOR
+    }
+}
+
+' ==========================================
+' DECORATOR PATTERN
+' ==========================================
+package "Decorator Pattern" DECORATOR_COLOR {
+    class VentasPanel <<Decorator>> {
+        +crearTablaCarrito()
+    }
+}
+
+' ==========================================
+' OBSERVER PATTERN
+' ==========================================
+package "Observer Pattern" OBSERVER_COLOR {
+    class VentaService <<Observer>> {
+        +registrarVenta()
+        -notificarStockCritico()
+    }
+    
+    class AuditoriaManager {
+        +registrarEvento()
+    }
+}
+
+' ==========================================
+' COMMAND PATTERN
+' ==========================================
+package "Command Pattern" COMMAND_COLOR {
+    class VentaHandler <<Command>> {
+        +ejecutarAnular()
+        +ejecutarImprimir()
+    }
+    
+    class VentasPanel {
+        +registrarVenta()
+    }
+}
+
+' ==========================================
+' CHAIN OF RESPONSIBILITY
+' ==========================================
+package "Chain of Responsibility" CHAIN_COLOR {
+    class VentaService <<Chain>> {
+        +registrarVenta()
+        -validarVenta()
+    }
+    
+    class VentaContext {
+        +agregarDetalle()
+    }
+}
+
+' ==========================================
+' ACID TRANSACTIONS
+' ==========================================
+package "ACID Transactions" {
+    class VentaService {
+        +registrarVenta()
+    }
+    
+    class DatabaseConnection {
+        +beginTransaction()
+        +commit()
+        +rollback()
+    }
+    
+    class VentaDAO {
+        +registrarVenta()
+        +registrarDetalle()
+    }
+    
+    class ProductoDAO {
+        +descontarStock()
+    }
+}
+
+' ==========================================
+' RELACIONES - PATRONES
+' ==========================================
+
+' Singleton
+DatabaseConnection ..> DatabaseConnection : getInstance()
+AuditoriaManager ..> AuditoriaManager : getInstance()
+UsuarioSesion ..> UsuarioSesion : getInstance()
+
+' Builder
+BoletaBuilder --> Boleta : builds
+VentaService --> BoletaBuilder : uses
+
+' Adapter
+DashboardFrame --> Rol : adapts
+
+' Observer
+VentaService --> AuditoriaManager : notifies
+
+' Command
+VentasPanel --> VentaHandler : uses
+VentaHandler --> VentaService : uses
+
+' Chain of Responsibility
+VentaService ..> VentaContext : validates
+
+' ACID
+VentaService --> DatabaseConnection : beginTransaction()
+VentaService --> VentaDAO : registrarVenta()
+VentaService --> ProductoDAO : descontarStock()
+DatabaseConnection --> VentaDAO : commit/rollback
+
+' Notas explicativas
+note right of DatabaseConnection
+  **Singleton**
+  Una única instancia
+  de conexión a BD
+end note
+
+note right of BoletaBuilder
+  **Builder**
+  Construye boletas
+  válidas paso a paso
+end note
+
+note right of DashboardFrame
+  **Adapter**
+  Adapta opciones del
+  sidebar según rol
+end note
+
+note right of VentaService
+  **Observer + Chain**
+  Notifica stock crítico
+  Valida en cadena
+end note
+
+note right of VentaHandler
+  **Command**
+  Encapsula acciones
+  (Anular, Imprimir)
+end note
+
+note right of VentaService
+  **ACID**
+  Transacciones completas
+  commit/rollback
+end note
+
+@enduml
+

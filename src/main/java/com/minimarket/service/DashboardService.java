@@ -215,7 +215,7 @@ public class DashboardService {
             }
         } catch (SQLException e) {
             // Si hay error, devolver lista vacía
-            System.out.println("Error en alertas de stock: " + e.getMessage());
+            // Error silencioso
         }
         
         return alertas;
@@ -257,7 +257,7 @@ public class DashboardService {
             }
         } catch (SQLException e) {
             // Si hay error, devolver lista vacía
-            System.out.println("Error en lotes por vencer: " + e.getMessage());
+            // Error silencioso
         }
         
         return lotes;

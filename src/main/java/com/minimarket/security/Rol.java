@@ -5,22 +5,16 @@ package com.minimarket.security;
  * Implementa Role-Based Access Control (RBAC)
  */
 public enum Rol {
-    ADMINISTRADOR("ADMIN", "Acceso total al sistema", 3),
-    SUPERVISOR("SUPERVISOR", "Acceso a reportes y supervisión", 2),
-    CAJERO("CAJERO", "Solo ventas y consultas de precios", 1);
+    ADMINISTRADOR(3),
+    SUPERVISOR(2),
+    CAJERO(1);
     
-    private final String codigo;
-    private final String descripcion;
     private final int nivel;
     
-    Rol(String codigo, String descripcion, int nivel) {
-        this.codigo = codigo;
-        this.descripcion = descripcion;
+    Rol(int nivel) {
         this.nivel = nivel;
     }
     
-    public String getCodigo() { return codigo; }
-    public String getDescripcion() { return descripcion; }
     public int getNivel() { return nivel; }
     
     /**
@@ -28,13 +22,6 @@ public enum Rol {
      */
     public boolean tienePermiso(Rol rolRequerido) {
         return this.nivel >= rolRequerido.nivel;
-    }
-    
-    /**
-     * Verifica si el rol tiene permisos administrativos
-     */
-    public boolean esAdministrativo() {
-        return this == ADMINISTRADOR || this == SUPERVISOR;
     }
     
     /**

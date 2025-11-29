@@ -94,15 +94,6 @@ public class Producto {
     }
     
     /**
-     * Verifica si el producto está próximo a vencer (dentro de 7 días)
-     */
-    public boolean proximoAVencer() {
-        if (fechaVencimiento == null) return false;
-        return fechaVencimiento.isBefore(LocalDate.now().plusDays(7)) && 
-               fechaVencimiento.isAfter(LocalDate.now());
-    }
-    
-    /**
      * Verifica si el stock está bajo (menos de 10 unidades)
      */
     public boolean stockBajo() {

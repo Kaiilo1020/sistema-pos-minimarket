@@ -1,7 +1,6 @@
 package com.minimarket.model;
 
 import com.minimarket.security.Rol;
-import java.time.LocalDateTime;
 
 /**
  * Modelo de Usuario con roles y permisos RBAC
@@ -16,8 +15,6 @@ public class Usuario {
     private String email;
     private Rol rol;
     private boolean activo;
-    private LocalDateTime fechaCreacion;
-    private LocalDateTime ultimoAcceso;
     
     // Constructores
     public Usuario() {}
@@ -31,7 +28,6 @@ public class Usuario {
         this.email = email;
         this.rol = rol;
         this.activo = true;
-        this.fechaCreacion = LocalDateTime.now();
     }
     
     // Getters y Setters
@@ -59,47 +55,11 @@ public class Usuario {
     public boolean isActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo = activo; }
     
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
-    
-    public LocalDateTime getUltimoAcceso() { return ultimoAcceso; }
-    public void setUltimoAcceso(LocalDateTime ultimoAcceso) { this.ultimoAcceso = ultimoAcceso; }
-    
-    /**
-     * Verifica si el usuario tiene permisos para una acción específica
-     */
-    public boolean tienePermiso(String accion) {
-        if (!activo || rol == null) return false;
-        
-        switch (accion.toUpperCase()) {
-            case "MODIFICAR_PRECIOS":
-                return rol.puedeModificarPrecios();
-            case "ACCEDER_REPORTES":
-                return rol.puedeAccederReportes();
-            case "GESTIONAR_INVENTARIO":
-                return rol.puedeGestionarInventario();
-            case "REGISTRAR_VENTAS":
-                return true; // Todos los roles pueden registrar ventas
-            case "CONSULTAR_PRECIOS":
-                return true; // Todos los roles pueden consultar precios
-            default:
-                return false;
-        }
-    }
-    
-    
     /**
      * Obtiene el nombre completo del usuario
      */
     public String getNombreCompleto() {
         return nombre + " " + apellido;
-    }
-    
-    /**
-     * Actualiza el último acceso
-     */
-    public void actualizarUltimoAcceso() {
-        this.ultimoAcceso = LocalDateTime.now();
     }
     
     @Override

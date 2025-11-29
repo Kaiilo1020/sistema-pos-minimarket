@@ -1,5 +1,6 @@
 package com.minimarket.ui.panels;
 
+import com.minimarket.ui.theme.EstilosApp;
 import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
@@ -53,8 +54,8 @@ public class MetodoPagoDialog extends JDialog {
         JButton btnConfirmar = new JButton("Confirmar Venta");
         JButton btnCancelar = new JButton("Cancelar");
         
-        UIUtils.configurarBotonExito(btnConfirmar);
-        UIUtils.configurarBotonSecundario(btnCancelar);
+        EstilosApp.estilizarBoton(btnConfirmar);
+        EstilosApp.estilizarBotonNeutro(btnCancelar);
         
         btnConfirmar.addActionListener(e -> {
             metodoPagoSeleccionado = (String) comboMetodoPago.getSelectedItem();

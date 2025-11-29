@@ -1,17 +1,20 @@
 package com.minimarket.ui.panels;
 
-import com.minimarket.config.DatabaseConnection;
+import com.minimarket.model.DetalleVenta;
+import com.minimarket.model.Producto;
+import com.minimarket.ui.handlers.VentaHandler;
 import com.minimarket.ui.theme.EstilosApp;
 import com.minimarket.ui.util.UIUtils;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
- * Panel de ventas y facturación
+ * Panel de ventas y facturación - SOLO UI
+ * Toda la lógica de negocio está delegada a VentaHandler
  */
 public class VentasPanel extends JPanel {
     
@@ -36,14 +39,17 @@ public class VentasPanel extends JPanel {
     private JButton btnLimpiar;
     private JButton btnRegistrarVenta;
     
-    private double totalVenta = 0.0;
+    // Handler que contiene toda la lógica
+    private final VentaHandler ventaHandler;
     
     public VentasPanel() {
+        this.ventaHandler = new VentaHandler();
+        
         setBackground(Color.WHITE);
         setLayout(new BorderLayout());
         add(buildMainPanel(), BorderLayout.CENTER);
         cargarProductos();
-        actualizarTotal();
+        actualizarVistaCarrito();
     }
     
     /* ========================== UI BUILDERS ========================== */
@@ -65,28 +71,44 @@ public class VentasPanel extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         
-        // Tipo de comprobante
-        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST;
+        // Tipo de Comprobante
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Tipo:"), gbc);
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 0.3;
+        gbc.gridx = 1; gbc.weightx = 0.15; gbc.fill = GridBagConstraints.HORIZONTAL;
         comboTipoComprobante = new JComboBox<>(new String[]{"BOLETA", "FACTURA"});
+        comboTipoComprobante.setSelectedIndex(0); // Por defecto BOLETA (venta rápida)
+        comboTipoComprobante.addActionListener(e -> actualizarCamposCliente());
         panel.add(comboTipoComprobante, gbc);
         
         // Cliente/Razón Social
         gbc.gridx = 2; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Cliente / Razón Social:"), gbc);
-        gbc.gridx = 3; gbc.weightx = 0.4; gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 3; gbc.weightx = 0.3; gbc.fill = GridBagConstraints.HORIZONTAL;
         campoCliente = new JTextField();
+        campoCliente.setEnabled(false); // Deshabilitado por defecto (BOLETA)
         panel.add(campoCliente, gbc);
         
         // DNI/RUC
         gbc.gridx = 4; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("DNI / RUC:"), gbc);
-        gbc.gridx = 5; gbc.weightx = 0.3; gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 5; gbc.weightx = 0.25; gbc.fill = GridBagConstraints.HORIZONTAL;
         campoDNI = new JTextField();
+        campoDNI.setEnabled(false); // Deshabilitado por defecto (BOLETA)
         panel.add(campoDNI, gbc);
         
         return panel;
+    }
+    
+    private void actualizarCamposCliente() {
+        boolean esFactura = "FACTURA".equals(comboTipoComprobante.getSelectedItem());
+        campoCliente.setEnabled(esFactura);
+        campoDNI.setEnabled(esFactura);
+        
+        if (!esFactura) {
+            // Si cambia a BOLETA, limpiar campos (se usarán valores por defecto)
+            campoCliente.setText("");
+            campoDNI.setText("");
+        }
     }
     
     private JPanel crearPanelCentral() {
@@ -126,7 +148,7 @@ public class VentasPanel extends JPanel {
         UIUtils.configurarTabla(tablaProductos);
         
         btnAgregarCarrito = new JButton("Agregar al Carrito");
-        EstilosApp.estilizarBotonSecundario(btnAgregarCarrito);
+        EstilosApp.estilizarBoton(btnAgregarCarrito);
         btnAgregarCarrito.addActionListener(e -> agregarAlCarrito());
         
         JPanel panelBotonAgregar = UIUtils.crearPanelBotones(FlowLayout.CENTER);
@@ -154,6 +176,20 @@ public class VentasPanel extends JPanel {
         tablaCarrito.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaCarrito.setRowHeight(25);
         UIUtils.configurarTabla(tablaCarrito);
+        
+        // Carrito sin decoración de colores - fondo blanco simple
+        tablaCarrito.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (!isSelected) {
+                    // Fondo blanco para todas las filas sin seleccionar
+                    c.setBackground(Color.WHITE);
+                }
+                return c;
+            }
+        });
         tablaCarrito.getModel().addTableModelListener(e -> manejarCambioCantidad(e.getColumn(), e.getFirstRow()));
         
         JPanel panelTotalCarrito = new JPanel(new BorderLayout());
@@ -165,7 +201,7 @@ public class VentasPanel extends JPanel {
         
         JPanel panelBotonesCarrito = UIUtils.crearPanelBotones(FlowLayout.CENTER);
         btnQuitar = new JButton("Quitar");
-        btnLimpiar = new JButton("Limpiar");
+        btnLimpiar = new JButton("Anular Venta");
         EstilosApp.estilizarBotonNeutro(btnQuitar);
         EstilosApp.estilizarBotonNeutro(btnLimpiar);
         btnQuitar.addActionListener(e -> quitarDelCarrito());
@@ -189,9 +225,16 @@ public class VentasPanel extends JPanel {
             int cantidad = Integer.parseInt(modeloCarrito.getValueAt(fila, 2).toString());
             if (cantidad <= 0) {
                 modeloCarrito.setValueAt(1, fila, 2);
+                cantidad = 1;
             }
-            actualizarSubtotalFila(fila);
-            actualizarTotal();
+            Long productoId = (Long) modeloCarrito.getValueAt(fila, 0);
+            try {
+                ventaHandler.actualizarCantidadCarrito(productoId, cantidad);
+                actualizarVistaCarrito();
+            } catch (IllegalStateException e) {
+                UIUtils.mostrarError(this, e.getMessage());
+                actualizarVistaCarrito(); // Revertir a estado anterior
+            }
         } catch (NumberFormatException ex) {
             modeloCarrito.setValueAt(1, fila, 2);
         }
@@ -211,57 +254,35 @@ public class VentasPanel extends JPanel {
         return panel;
     }
     
+    /* ========================== DELEGACIÓN A HANDLER ========================== */
     
     private void cargarProductos() {
-        consultarProductos(null);
-    }
-    
-    private void buscarProductos() {
-        String textoBusqueda = campoBusquedaProductos.getText().trim();
-        consultarProductos(textoBusqueda.isEmpty() ? null : textoBusqueda);
-    }
-    
-    private void consultarProductos(String filtro) {
-        modeloProductos.setRowCount(0);
-        
-        StringBuilder sql = new StringBuilder("""
-            SELECT id, nombre, precio, stock
-            FROM productos
-            WHERE activo = true AND stock > 0
-        """);
-        
-        if (filtro != null) {
-            sql.append("""
-                AND (LOWER(nombre) LIKE LOWER(?) OR LOWER(descripcion) LIKE LOWER(?))
-            """);
-        }
-        
-        sql.append(" ORDER BY nombre");
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
-            
-            if (filtro != null) {
-                String patron = "%" + filtro + "%";
-                pstmt.setString(1, patron);
-                pstmt.setString(2, patron);
+        try {
+            String filtro = campoBusquedaProductos != null ? campoBusquedaProductos.getText().trim() : null;
+            if (filtro != null && filtro.isEmpty()) {
+                filtro = null;
             }
             
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
+            List<Producto> productos = ventaHandler.cargarProductos(filtro);
+            modeloProductos.setRowCount(0);
+            
+            for (Producto producto : productos) {
+                BigDecimal precio = producto.getPrecio() != null ? producto.getPrecio() : BigDecimal.ZERO;
                 Object[] fila = {
-                    rs.getLong("id"),
-                    rs.getString("nombre"),
-                    "S/" + String.format("%.2f", rs.getDouble("precio")),
-                    rs.getInt("stock")
+                    producto.getId(),
+                    producto.getNombre(),
+                    "S/" + String.format("%.2f", precio),
+                    producto.getStock()
                 };
                 modeloProductos.addRow(fila);
             }
-            
-        } catch (SQLException e) {
-            String mensaje = filtro == null ? "Error al cargar productos: " : "Error al buscar productos: ";
-            UIUtils.mostrarError(this, mensaje + e.getMessage());
+        } catch (Exception e) {
+            UIUtils.mostrarError(this, "Error al cargar productos: " + e.getMessage());
         }
+    }
+    
+    private void buscarProductos() {
+        cargarProductos();
     }
     
     private void agregarAlCarrito() {
@@ -273,24 +294,16 @@ public class VentasPanel extends JPanel {
         
         Long productoId = (Long) modeloProductos.getValueAt(filaSeleccionada, 0);
         String nombreProducto = (String) modeloProductos.getValueAt(filaSeleccionada, 1);
-        String precioStr = (String) modeloProductos.getValueAt(filaSeleccionada, 2);
         int stockDisponible = (Integer) modeloProductos.getValueAt(filaSeleccionada, 3);
         
-        // Extraer el precio numérico
-        double precio = Double.parseDouble(precioStr.replace("S/", ""));
-        
-        // Verificar si el producto ya está en el carrito
-        int filaExistente = -1;
-        int cantidadEnCarrito = 0;
-        for (int i = 0; i < modeloCarrito.getRowCount(); i++) {
-            if (productoId.equals(modeloCarrito.getValueAt(i, 0))) {
-                filaExistente = i;
-                cantidadEnCarrito = (Integer) modeloCarrito.getValueAt(i, 2);
-                break;
-            }
+        Producto producto = ventaHandler.obtenerProducto(productoId);
+        if (producto == null) {
+            UIUtils.mostrarError(this, "No se encontró la información completa del producto seleccionado.");
+            return;
         }
         
         // Calcular stock disponible considerando lo que ya está en el carrito
+        int cantidadEnCarrito = obtenerCantidadEnCarrito(productoId);
         int stockRestante = stockDisponible - cantidadEnCarrito;
         
         if (stockRestante <= 0) {
@@ -309,52 +322,13 @@ public class VentasPanel extends JPanel {
         if (dialog.isConfirmado()) {
             int cantidadSeleccionada = dialog.getCantidadSeleccionada();
             
-            if (filaExistente != -1) {
-                // Actualizar cantidad existente
-                int nuevaCantidad = cantidadEnCarrito + cantidadSeleccionada;
-                modeloCarrito.setValueAt(nuevaCantidad, filaExistente, 2);
-                actualizarSubtotalFila(filaExistente);
-            } else {
-                // Agregar nuevo producto al carrito
-                double subtotal = Math.round((cantidadSeleccionada * precio) * 100.0) / 100.0;
-                Object[] filaCarrito = {
-                    productoId,
-                    nombreProducto,
-                    cantidadSeleccionada,
-                    precio,
-                    subtotal
-                };
-                modeloCarrito.addRow(filaCarrito);
-            }
-            
-            actualizarTotal();
-        }
-    }
-    
-    private void actualizarSubtotalFila(int fila) {
-        try {
-            int cantidad = (Integer) modeloCarrito.getValueAt(fila, 2);
-            double precioUnitario = (Double) modeloCarrito.getValueAt(fila, 3);
-            double subtotal = Math.round((cantidad * precioUnitario) * 100.0) / 100.0;
-            modeloCarrito.setValueAt(subtotal, fila, 4);
-        } catch (Exception e) {
-            // Manejar errores de conversión
-        }
-    }
-    
-    private void actualizarTotal() {
-        totalVenta = 0.0;
-        for (int i = 0; i < modeloCarrito.getRowCount(); i++) {
             try {
-                double subtotal = (Double) modeloCarrito.getValueAt(i, 4);
-                totalVenta += subtotal;
-            } catch (Exception e) {
-                // Manejar errores
+                ventaHandler.agregarAlCarrito(producto, cantidadSeleccionada);
+                actualizarVistaCarrito();
+            } catch (IllegalStateException e) {
+                UIUtils.mostrarError(this, e.getMessage());
             }
         }
-        // Redondear el total a 2 decimales
-        totalVenta = Math.round(totalVenta * 100.0) / 100.0;
-        labelTotal.setText("TOTAL: S/" + String.format("%.2f", totalVenta));
     }
     
     private void quitarDelCarrito() {
@@ -364,154 +338,88 @@ public class VentasPanel extends JPanel {
             return;
         }
         
-        modeloCarrito.removeRow(filaSeleccionada);
-        actualizarTotal();
+        Long productoId = (Long) modeloCarrito.getValueAt(filaSeleccionada, 0);
+        ventaHandler.quitarDelCarrito(productoId);
+        actualizarVistaCarrito();
     }
     
     private void limpiarCarrito() {
-        modeloCarrito.setRowCount(0);
-        actualizarTotal();
+        ventaHandler.ejecutarAnular(this);
+        actualizarVistaCarrito();
     }
     
     private void registrarVenta() {
-        if (modeloCarrito.getRowCount() == 0) {
+        if (ventaHandler.getCarrito().isEmpty()) {
             UIUtils.mostrarError(this, "El carrito está vacío. Agrega productos antes de registrar la venta.");
             return;
         }
         
-        if (totalVenta <= 0) {
-            UIUtils.mostrarError(this, "El total de la venta debe ser mayor a 0.");
-            return;
-        }
-        
-        // Mostrar diálogo de confirmación con método de pago
         MetodoPagoDialog dialog = new MetodoPagoDialog((JFrame) SwingUtilities.getWindowAncestor(this));
         dialog.setVisible(true);
         
         if (dialog.isConfirmado()) {
-            procesarVenta(dialog.getMetodoPagoSeleccionado());
-        }
-    }
-    
-    private void procesarVenta(String metodoPago) {
-        Connection conn = null;
-        try {
-            conn = DatabaseConnection.getInstance().getConnection();
-            conn.setAutoCommit(false); // Iniciar transacción
+            String tipoComprobante = (String) comboTipoComprobante.getSelectedItem();
+            String nombreCliente = campoCliente.getText().trim();
+            String documentoCliente = campoDNI.getText().trim();
+            String metodoPago = dialog.getMetodoPagoSeleccionado();
+            String observaciones = "";
             
-            // 1. Insertar la venta
-            String sqlVenta = """
-                INSERT INTO ventas (numero, fecha_hora, cajera_id, metodo_pago, 
-                                   subtotal, igv, total, estado) 
-                VALUES (?, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, 'ACTIVA')
-            """;
-            
-            PreparedStatement pstmtVenta = conn.prepareStatement(sqlVenta, Statement.RETURN_GENERATED_KEYS);
-            
-            String numeroVenta = generarNumeroVenta();
-            double subtotal = totalVenta / 1.18; // Calcular subtotal sin IGV
-            double igv = totalVenta - subtotal;
-            
-            pstmtVenta.setString(1, numeroVenta);
-            pstmtVenta.setLong(2, 1L); // ID del usuario actual (simplificado)
-            pstmtVenta.setString(3, metodoPago);
-            pstmtVenta.setDouble(4, subtotal);
-            pstmtVenta.setDouble(5, igv);
-            pstmtVenta.setDouble(6, totalVenta);
-            
-            pstmtVenta.executeUpdate();
-            
-            // Obtener ID de la venta generada
-            ResultSet rsVenta = pstmtVenta.getGeneratedKeys();
-            long ventaId = 0;
-            if (rsVenta.next()) {
-                ventaId = rsVenta.getLong(1);
-            }
-            
-            // 2. Insertar detalles de venta y actualizar stock
-            String sqlDetalle = """
-                INSERT INTO detalle_ventas (venta_id, producto_id, cantidad, precio_unitario, subtotal) 
-                VALUES (?, ?, ?, ?, ?)
-            """;
-            
-            String sqlActualizarStock = "UPDATE productos SET stock = stock - ? WHERE id = ?";
-            
-            PreparedStatement pstmtDetalle = conn.prepareStatement(sqlDetalle);
-            PreparedStatement pstmtStock = conn.prepareStatement(sqlActualizarStock);
-            
-            for (int i = 0; i < modeloCarrito.getRowCount(); i++) {
-                Long productoId = (Long) modeloCarrito.getValueAt(i, 0);
-                int cantidad = (Integer) modeloCarrito.getValueAt(i, 2);
-                double precioUnitario = (Double) modeloCarrito.getValueAt(i, 3);
-                double subtotalDetalle = (Double) modeloCarrito.getValueAt(i, 4);
-                
-                // Insertar detalle
-                pstmtDetalle.setLong(1, ventaId);
-                pstmtDetalle.setLong(2, productoId);
-                pstmtDetalle.setInt(3, cantidad);
-                pstmtDetalle.setDouble(4, precioUnitario);
-                pstmtDetalle.setDouble(5, subtotalDetalle);
-                pstmtDetalle.executeUpdate();
-                
-                // Actualizar stock
-                pstmtStock.setInt(1, cantidad);
-                pstmtStock.setLong(2, productoId);
-                pstmtStock.executeUpdate();
-            }
-            
-            conn.commit(); // Confirmar transacción
-            
-            // Mostrar mensaje de éxito
-            UIUtils.mostrarExito(this, 
-                "Venta registrada exitosamente.\nNúmero de venta: " + numeroVenta + 
-                "\nTotal: S/" + String.format("%.2f", totalVenta));
-            
-            // Actualizar dashboard automáticamente después de registrar venta
-            actualizarDashboardSiExiste();
-            
-            // Limpiar formulario
-            limpiarFormulario();
-            
-        } catch (SQLException e) {
             try {
-                if (conn != null) conn.rollback();
-            } catch (SQLException ex) {
-                // Log error
-            }
-            
-            UIUtils.mostrarError(this, "Error al registrar la venta: " + e.getMessage());
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                // Log error
+                ventaHandler.registrarVenta(tipoComprobante, nombreCliente, documentoCliente, metodoPago, observaciones, this);
+                actualizarDashboardSiExiste();
+                limpiarFormulario();
+            } catch (RuntimeException e) {
+                // El error ya fue mostrado por el handler
             }
         }
     }
     
-    private String generarNumeroVenta() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        String fecha = sdf.format(new Date());
-        long timestamp = System.currentTimeMillis() % 10000;
-        return "VTA-" + fecha + "-" + String.format("%04d", timestamp);
+    private void actualizarVistaCarrito() {
+        modeloCarrito.setRowCount(0);
+        List<DetalleVenta> carrito = ventaHandler.getCarrito();
+        
+        for (DetalleVenta detalle : carrito) {
+            Producto producto = detalle.getProducto();
+            if (producto == null) continue;
+            
+            BigDecimal precio = detalle.getPrecioUnitario() != null ? detalle.getPrecioUnitario() : BigDecimal.ZERO;
+            BigDecimal subtotal = detalle.getSubtotal() != null ? detalle.getSubtotal() : BigDecimal.ZERO;
+            
+            Object[] fila = {
+                producto.getId(),
+                producto.getNombre(),
+                detalle.getCantidad(),
+                precio.doubleValue(),
+                subtotal.doubleValue()
+            };
+            modeloCarrito.addRow(fila);
+        }
+        
+        BigDecimal total = ventaHandler.getTotalVenta();
+        labelTotal.setText("TOTAL: S/" + String.format("%.2f", total.doubleValue()));
+    }
+    
+    private int obtenerCantidadEnCarrito(Long productoId) {
+        return ventaHandler.getCarrito().stream()
+            .filter(d -> d.getProducto() != null && d.getProducto().getId().equals(productoId))
+            .mapToInt(DetalleVenta::getCantidad)
+            .sum();
     }
     
     private void limpiarFormulario() {
+        comboTipoComprobante.setSelectedIndex(0); // Resetear a BOLETA
         campoCliente.setText("");
         campoDNI.setText("");
         campoBusquedaProductos.setText("");
+        actualizarCamposCliente(); // Asegurar que los campos estén deshabilitados
         limpiarCarrito();
-        cargarProductos(); // Recargar productos para actualizar stock
+        cargarProductos();
     }
     
     /**
      * Actualiza el dashboard si existe, buscando el DashboardFrame padre
      */
     private void actualizarDashboardSiExiste() {
-        // Buscar el DashboardFrame en la jerarquía de componentes
         java.awt.Window window = SwingUtilities.getWindowAncestor(this);
         if (window instanceof com.minimarket.ui.swing.DashboardFrame) {
             com.minimarket.ui.swing.DashboardFrame dashboard = (com.minimarket.ui.swing.DashboardFrame) window;

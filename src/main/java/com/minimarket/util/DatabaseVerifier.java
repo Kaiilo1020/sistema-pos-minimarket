@@ -136,7 +136,7 @@ public class DatabaseVerifier {
             // Tablas que deben existir
             String[] tablasRequeridas = {
                 "usuarios", "productos", "ventas", "detalle_ventas", 
-                "categorias", "auditoria_precios", "alertas_inventario"
+                "categorias"
             };
             
             var metaData = conn.getMetaData();
@@ -181,16 +181,10 @@ public class DatabaseVerifier {
             int categorias = rs.getInt(1);
             System.out.println("   🏷️ Categorías: " + categorias);
             
-            // Verificar configuración
-            rs = stmt.executeQuery("SELECT COUNT(*) FROM configuracion_sistema");
-            rs.next();
-            int configuraciones = rs.getInt(1);
-            System.out.println("   ⚙️ Configuraciones: " + configuraciones);
-            
             rs.close();
             stmt.close();
             
-            return usuarios >= 4 && productos >= 8 && categorias >= 7 && configuraciones >= 8;
+            return usuarios >= 4 && productos >= 8 && categorias >= 7;
             
         } catch (SQLException e) {
             System.out.println("   ❌ Error: " + e.getMessage());

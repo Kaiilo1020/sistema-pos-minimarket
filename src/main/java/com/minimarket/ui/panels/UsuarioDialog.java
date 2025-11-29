@@ -1,6 +1,7 @@
 package com.minimarket.ui.panels;
 
 import com.minimarket.config.DatabaseConnection;
+import com.minimarket.ui.theme.EstilosApp;
 import com.minimarket.ui.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
@@ -28,79 +29,75 @@ public class UsuarioDialog extends JDialog {
         this.usuarioId = usuarioId;
         
         UIUtils.configurarDialogo(this, titulo, 450, 350);
-        initializeComponents();
+        buildUI();
         
         if (esEdicion && usuarioId != null) {
             cargarDatosUsuario();
         }
     }
     
-    private void initializeComponents() {
+    /* ========================== UI BUILDERS ========================== */
+    
+    private void buildUI() {
+        add(crearFormulario(), BorderLayout.CENTER);
+        add(crearPanelBotones(), BorderLayout.SOUTH);
+    }
+    
+    private JPanel crearFormulario() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        GridBagConstraints gbc = baseGbc();
         
-        // Panel principal
-        JPanel panelPrincipal = new JPanel(new GridBagLayout());
-        panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        
-        // Username
-        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST;
-        panelPrincipal.add(new JLabel("Usuario:"), gbc);
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         campoUsername = new JTextField(20);
-        panelPrincipal.add(campoUsername, gbc);
+        agregarCampo(panel, gbc, 0, "Usuario:", campoUsername);
         
-        // Password
-        gbc.gridx = 0; gbc.gridy = 1; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
-        panelPrincipal.add(new JLabel("Contraseña:"), gbc);
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         campoPassword = new JPasswordField(20);
-        panelPrincipal.add(campoPassword, gbc);
+        agregarCampo(panel, gbc, 1, "Contraseña:", campoPassword);
         
-        // Nombre
-        gbc.gridx = 0; gbc.gridy = 2; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
-        panelPrincipal.add(new JLabel("Nombre:"), gbc);
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         campoNombre = new JTextField(20);
-        panelPrincipal.add(campoNombre, gbc);
+        agregarCampo(panel, gbc, 2, "Nombre:", campoNombre);
         
-        // Apellido
-        gbc.gridx = 0; gbc.gridy = 3; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
-        panelPrincipal.add(new JLabel("Apellido:"), gbc);
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         campoApellido = new JTextField(20);
-        panelPrincipal.add(campoApellido, gbc);
+        agregarCampo(panel, gbc, 3, "Apellido:", campoApellido);
         
-        // Email
-        gbc.gridx = 0; gbc.gridy = 4; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
-        panelPrincipal.add(new JLabel("Email:"), gbc);
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         campoEmail = new JTextField(20);
-        panelPrincipal.add(campoEmail, gbc);
+        agregarCampo(panel, gbc, 4, "Email:", campoEmail);
         
-        // Rol
-        gbc.gridx = 0; gbc.gridy = 5; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
-        panelPrincipal.add(new JLabel("Rol:"), gbc);
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         comboRol = new JComboBox<>(new String[]{"CAJERO", "SUPERVISOR", "ADMINISTRADOR"});
-        panelPrincipal.add(comboRol, gbc);
+        agregarCampo(panel, gbc, 5, "Rol:", comboRol);
         
-        // Panel de botones
+        return panel;
+    }
+    
+    private JPanel crearPanelBotones() {
         JPanel panelBotones = UIUtils.crearPanelBotones(FlowLayout.RIGHT);
         JButton btnGuardar = new JButton(esEdicion ? "Actualizar" : "Crear Usuario");
         JButton btnCancelar = new JButton("Cancelar");
         
-        UIUtils.configurarBotonExito(btnGuardar);
-        UIUtils.configurarBotonSecundario(btnCancelar);
+        EstilosApp.estilizarBoton(btnGuardar);
+        EstilosApp.estilizarBotonNeutro(btnCancelar);
         
         btnGuardar.addActionListener(e -> guardarUsuario());
         btnCancelar.addActionListener(e -> dispose());
         
         panelBotones.add(btnGuardar);
         panelBotones.add(btnCancelar);
+        return panelBotones;
+    }
+    
+    private void agregarCampo(JPanel panel, GridBagConstraints gbc, int fila, String etiqueta, JComponent componente) {
+        gbc.gridx = 0; gbc.gridy = fila; gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+        panel.add(new JLabel(etiqueta), gbc);
         
-        add(panelPrincipal, BorderLayout.CENTER);
-        add(panelBotones, BorderLayout.SOUTH);
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+        panel.add(componente, gbc);
+    }
+    
+    private GridBagConstraints baseGbc() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        return gbc;
     }
     
     private void cargarDatosUsuario() {
