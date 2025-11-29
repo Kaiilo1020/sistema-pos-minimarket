@@ -426,10 +426,10 @@ public class DashboardFrame extends JFrame {
             JPanel metaCard = createKPICard("Mi Meta del Día", "Meta: 20 ventas", "🎯", new Color(54, 162, 235));
             metaCard.setToolTipText("Tu objetivo de ventas para el día de hoy");
             
-            JPanel ventasRealizadasCard = createKPICard("Mis Ventas", String.valueOf(info.transacciones), "📊", SUCCESS_COLOR);
+            JPanel ventasRealizadasCard = createKPICard("Mis Ventas", String.valueOf(info.transacciones), "", SUCCESS_COLOR);
             ventasRealizadasCard.setToolTipText("Número de ventas que has realizado hoy");
             
-            JPanel estadoCard = createKPICard("Estado del Sistema", "✅ Operativo", "🔧", new Color(75, 192, 192));
+            JPanel estadoCard = createKPICard("Estado del Sistema", "Operativo", "", new Color(75, 192, 192));
             estadoCard.setToolTipText("Estado actual del sistema de punto de venta");
             
             JPanel turnoCard = createKPICard("Turno Actual", "Mañana", "⏰", new Color(255, 159, 64));
@@ -444,10 +444,10 @@ public class DashboardFrame extends JFrame {
             JPanel ventasCard = createKPICard("Ventas del Día", ventasTexto, "💰", SUCCESS_COLOR);
             ventasCard.setToolTipText("Total de ingresos generados hoy por todas las ventas realizadas");
             
-            JPanel transaccionesCard = createKPICard("Transacciones", String.valueOf(info.transacciones), "📊", new Color(54, 162, 235));
+            JPanel transaccionesCard = createKPICard("Transacciones", String.valueOf(info.transacciones), "", new Color(54, 162, 235));
             transaccionesCard.setToolTipText("Número total de boletas/facturas emitidas en el día");
             
-            JPanel productosCard = createKPICard("Productos Vendidos", String.valueOf(info.productosVendidos), "📦", new Color(255, 159, 64));
+            JPanel productosCard = createKPICard("Productos Vendidos", String.valueOf(info.productosVendidos), "", new Color(255, 159, 64));
             productosCard.setToolTipText("Cantidad total de productos vendidos (suma de todas las cantidades)");
             
             JPanel metodoPagoCard = createKPICard("Método de Pago", info.metodoPago, "💳", new Color(75, 192, 192));
@@ -545,7 +545,7 @@ public class DashboardFrame extends JFrame {
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         headerPanel.setBackground(CARD_BACKGROUND);
         
-        JLabel titleLabel = new JLabel("⚠️ ALERTAS DE STOCK (Crítico)");
+        JLabel titleLabel = new JLabel("ALERTAS DE STOCK (Crítico)");
         titleLabel.setFont(UIUtils.BOLD_FONT);
         titleLabel.setForeground(new Color(220, 53, 69)); // Color de alerta
         
@@ -559,7 +559,7 @@ public class DashboardFrame extends JFrame {
         DashboardService.DashboardData info = data != null ? data : fetchDashboardData();
         
         if (info.alertasStock.isEmpty()) {
-            JLabel sinAlertasLabel = new JLabel("✅ No hay alertas de stock crítico");
+            JLabel sinAlertasLabel = new JLabel("No hay alertas de stock crítico");
             sinAlertasLabel.setFont(UIUtils.DEFAULT_FONT);
             sinAlertasLabel.setForeground(SUCCESS_COLOR);
             sinAlertasLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
@@ -614,7 +614,7 @@ public class DashboardFrame extends JFrame {
         DashboardService.DashboardData info = data != null ? data : fetchDashboardData();
         
         if (info.lotesVencer.isEmpty()) {
-            JLabel sinLotesLabel = new JLabel("✅ No hay productos próximos a vencer");
+            JLabel sinLotesLabel = new JLabel("No hay productos próximos a vencer");
             sinLotesLabel.setFont(UIUtils.DEFAULT_FONT);
             sinLotesLabel.setForeground(SUCCESS_COLOR);
             sinLotesLabel.setBorder(new EmptyBorder(5, 0, 5, 0));

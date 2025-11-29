@@ -59,8 +59,8 @@ public class Main {
     private static void mostrarErrorConexion() {
         javax.swing.SwingUtilities.invokeLater(() -> {
             javax.swing.JOptionPane.showMessageDialog(null, 
-                "❌ Error: No se pudo conectar a la base de datos.\n\n" +
-                "💡 Asegúrate de que PostgreSQL esté ejecutándose y ejecuta:\n" +
+                "Error: No se pudo conectar a la base de datos.\n\n" +
+                "Asegúrate de que PostgreSQL esté ejecutándose y ejecuta:\n" +
                 "psql -U postgres -d minimarket_db -f database/actualizacion_pos_personalizada.sql",
                 "Error de Conexión - Sistema POS Minimarket", 
                 javax.swing.JOptionPane.ERROR_MESSAGE);
@@ -73,7 +73,7 @@ public class Main {
                 new LoginFrame();
             } catch (Exception e) {
                 javax.swing.JOptionPane.showMessageDialog(null, 
-                    "❌ Error al iniciar la aplicación: " + e.getMessage(),
+                    "Error al iniciar la aplicación: " + e.getMessage(),
                     "Error - Sistema POS Minimarket", 
                     javax.swing.JOptionPane.ERROR_MESSAGE);
             }

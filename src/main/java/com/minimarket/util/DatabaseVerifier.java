@@ -27,54 +27,54 @@ public class DatabaseVerifier {
         // 1. Verificar conexión básica
         System.out.println("\n📡 Paso 1: Verificando conexión básica...");
         if (verificarConexionBasica()) {
-            System.out.println("✅ Conexión básica: OK");
+            System.out.println("Conexion basica: OK");
         } else {
-            System.out.println("❌ Conexión básica: FALLO");
+            System.out.println("Conexion basica: FALLO");
             todoOk = false;
         }
         
         // 2. Verificar estructura de tablas
         System.out.println("\n🗃️ Paso 2: Verificando estructura de tablas...");
         if (verificarEstructuraTablas()) {
-            System.out.println("✅ Estructura de tablas: OK");
+            System.out.println("Estructura de tablas: OK");
         } else {
-            System.out.println("❌ Estructura de tablas: FALLO");
+            System.out.println("Estructura de tablas: FALLO");
             todoOk = false;
         }
         
         // 3. Verificar datos iniciales
-        System.out.println("\n📊 Paso 3: Verificando datos iniciales...");
+        System.out.println("\nPaso 3: Verificando datos iniciales...");
         if (verificarDatosIniciales()) {
-            System.out.println("✅ Datos iniciales: OK");
+            System.out.println("Datos iniciales: OK");
         } else {
-            System.out.println("⚠️ Datos iniciales: INCOMPLETOS");
+            System.out.println("ADVERTENCIA: Datos iniciales incompletos");
             // No marcar como fallo crítico
         }
         
         // 4. Verificar permisos
-        System.out.println("\n🔐 Paso 4: Verificando permisos...");
+        System.out.println("\nPaso 4: Verificando permisos...");
         if (verificarPermisos()) {
-            System.out.println("✅ Permisos: OK");
+            System.out.println("Permisos: OK");
         } else {
-            System.out.println("❌ Permisos: FALLO");
+            System.out.println("Permisos: FALLO");
             todoOk = false;
         }
         
         // 5. Verificar rendimiento básico
-        System.out.println("\n⚡ Paso 5: Verificando rendimiento...");
+        System.out.println("\nPaso 5: Verificando rendimiento...");
         long tiempoRespuesta = verificarRendimiento();
         if (tiempoRespuesta > 0) {
-            System.out.println("✅ Rendimiento: OK (" + tiempoRespuesta + "ms)");
+            System.out.println("Rendimiento: OK (" + tiempoRespuesta + "ms)");
         } else {
-            System.out.println("⚠️ Rendimiento: No se pudo medir");
+            System.out.println("ADVERTENCIA: Rendimiento - No se pudo medir");
         }
         
         // Resultado final
         System.out.println("\n" + "=" .repeat(60));
         if (todoOk) {
-            System.out.println("🎉 VERIFICACIÓN COMPLETADA: SISTEMA LISTO PARA USAR");
+            System.out.println("VERIFICACIÓN COMPLETADA: SISTEMA LISTO PARA USAR");
         } else {
-            System.out.println("❌ VERIFICACIÓN FALLIDA: REVISAR CONFIGURACIÓN");
+            System.out.println("VERIFICACION FALLIDA: REVISAR CONFIGURACION");
         }
         System.out.println("=" .repeat(60));
         
@@ -97,7 +97,7 @@ public class DatabaseVerifier {
      * Muestra información detallada de la conexión
      */
     public static void mostrarInformacionConexion() {
-        System.out.println("📋 INFORMACIÓN DETALLADA DE CONEXIÓN");
+        System.out.println("INFORMACIÓN DETALLADA DE CONEXIÓN");
         System.out.println("=" .repeat(50));
         
         try {
@@ -105,14 +105,14 @@ public class DatabaseVerifier {
             Connection conn = dbConnection.getConnection();
             var metaData = conn.getMetaData();
             
-            System.out.println("✅ INFORMACIÓN DE CONEXIÓN:");
+            System.out.println("INFORMACIÓN DE CONEXIÓN:");
             System.out.println("   URL: " + metaData.getURL());
             System.out.println("   Usuario: " + metaData.getUserName());
             System.out.println("   Base de datos: " + metaData.getDatabaseProductName());
             System.out.println("   Versión: " + metaData.getDatabaseProductVersion());
             
         } catch (Exception e) {
-            System.out.println("❌ Error al obtener información: " + e.getMessage());
+            System.out.println("Error al obtener informacion: " + e.getMessage());
         }
     }
     
@@ -123,7 +123,7 @@ public class DatabaseVerifier {
             DatabaseConnection dbConnection = DatabaseConnection.getInstance();
             return dbConnection.testConnection();
         } catch (Exception e) {
-            System.out.println("   ❌ Error: " + e.getMessage());
+            System.out.println("   Error: " + e.getMessage());
             return false;
         }
     }
@@ -153,7 +153,7 @@ public class DatabaseVerifier {
             return tablasEncontradas >= tablasRequeridas.length - 2; // Permitir algunas tablas faltantes
             
         } catch (Exception e) {
-            System.out.println("   ❌ Error: " + e.getMessage());
+            System.out.println("   Error: " + e.getMessage());
             return false;
         }
     }
@@ -167,19 +167,19 @@ public class DatabaseVerifier {
             var rs = stmt.executeQuery("SELECT COUNT(*) FROM usuarios WHERE activo = true");
             rs.next();
             int usuarios = rs.getInt(1);
-            System.out.println("   👥 Usuarios activos: " + usuarios);
+            System.out.println("   Usuarios activos: " + usuarios);
             
             // Verificar productos
             rs = stmt.executeQuery("SELECT COUNT(*) FROM productos WHERE activo = true");
             rs.next();
             int productos = rs.getInt(1);
-            System.out.println("   📦 Productos activos: " + productos);
+            System.out.println("   Productos activos: " + productos);
             
             // Verificar categorías
             rs = stmt.executeQuery("SELECT COUNT(*) FROM categorias WHERE activo = true");
             rs.next();
             int categorias = rs.getInt(1);
-            System.out.println("   🏷️ Categorías: " + categorias);
+            System.out.println("   Categorías: " + categorias);
             
             rs.close();
             stmt.close();
@@ -187,7 +187,7 @@ public class DatabaseVerifier {
             return usuarios >= 4 && productos >= 8 && categorias >= 7;
             
         } catch (SQLException e) {
-            System.out.println("   ❌ Error: " + e.getMessage());
+            System.out.println("   Error: " + e.getMessage());
             return false;
         }
     }
@@ -199,25 +199,25 @@ public class DatabaseVerifier {
             // Probar SELECT
             var stmt = connection.createStatement();
             stmt.executeQuery("SELECT 1 FROM usuarios LIMIT 1").close();
-            System.out.println("   ✅ Permiso SELECT: OK");
+            System.out.println("   Permiso SELECT: OK");
             
             // Probar INSERT (en tabla de logs)
             stmt.executeUpdate("INSERT INTO logs_sistema (nivel, mensaje, usuario) VALUES ('INFO', 'Prueba de permisos', 'SISTEMA')");
-            System.out.println("   ✅ Permiso INSERT: OK");
+            System.out.println("   Permiso INSERT: OK");
             
             // Probar UPDATE
             stmt.executeUpdate("UPDATE logs_sistema SET mensaje = 'Prueba actualizada' WHERE mensaje = 'Prueba de permisos'");
-            System.out.println("   ✅ Permiso UPDATE: OK");
+            System.out.println("   Permiso UPDATE: OK");
             
             // Probar DELETE
             stmt.executeUpdate("DELETE FROM logs_sistema WHERE mensaje = 'Prueba actualizada'");
-            System.out.println("   ✅ Permiso DELETE: OK");
+            System.out.println("   Permiso DELETE: OK");
             
             stmt.close();
             return true;
             
         } catch (SQLException e) {
-            System.out.println("   ❌ Error de permisos: " + e.getMessage());
+            System.out.println("   Error de permisos: " + e.getMessage());
             return false;
         }
     }
@@ -249,12 +249,12 @@ public class DatabaseVerifier {
             rs.close();
             stmt.close();
             
-            System.out.println("   📊 Consulta ejecutada: " + filas + " filas en " + tiempo + "ms");
+            System.out.println("   Consulta ejecutada: " + filas + " filas en " + tiempo + "ms");
             
             return tiempo;
             
         } catch (SQLException e) {
-            System.out.println("   ❌ Error de rendimiento: " + e.getMessage());
+            System.out.println("   Error de rendimiento: " + e.getMessage());
             return -1;
         }
     }
@@ -263,27 +263,27 @@ public class DatabaseVerifier {
      * Diagnóstico de problemas comunes
      */
     public static void diagnosticarProblemas() {
-        System.out.println("🔧 DIAGNÓSTICO DE PROBLEMAS COMUNES");
+        System.out.println("DIAGNOSTICO DE PROBLEMAS COMUNES");
         System.out.println("=" .repeat(50));
         
         // Verificar driver
         try {
             Class.forName(DB_DRIVER);
-            System.out.println("✅ Driver PostgreSQL: Encontrado");
+            System.out.println("Driver PostgreSQL: Encontrado");
         } catch (ClassNotFoundException e) {
-            System.out.println("❌ Driver PostgreSQL: NO ENCONTRADO");
-            System.out.println("   💡 Solución: Agregar " + DRIVER_VERSION + " al classpath");
-            System.out.println("   💡 O ejecutar: mvn clean install");
+            System.out.println("Driver PostgreSQL: NO ENCONTRADO");
+            System.out.println("   Sugerencia: Agregar " + DRIVER_VERSION + " al classpath");
+            System.out.println("   Sugerencia: Ejecutar: mvn clean install");
         }
         
         // Verificar configuración
-        System.out.println("\n📋 Configuración actual:");
+        System.out.println("\nConfiguracion actual:");
         System.out.println("   URL: " + DB_URL);
         System.out.println("   Usuario: " + DB_USER);
-        System.out.println("   💡 Verifica que estos datos sean correctos");
+        System.out.println("   Verifica que estos datos sean correctos");
         
         // Sugerencias
-        System.out.println("\n💡 SOLUCIONES COMUNES:");
+        System.out.println("\nSOLUCIONES COMUNES:");
         System.out.println("   1. Verificar que PostgreSQL esté ejecutándose");
         System.out.println("   2. Verificar usuario y contraseña");
         System.out.println("   3. Verificar que la base de datos 'minimarket_db' exista");

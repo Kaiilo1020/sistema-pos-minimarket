@@ -92,7 +92,7 @@ public class VentaService {
         }
 
         // Validación 3: Autorización supervisor (si aplica)
-        if (context.isRequiereAutorizacionSupervisor()) {
+        if (context.isRequiereAutorizacionSupervisor()) { 
             if (context.getCajero() == null || context.getCajero().getRol() == null) {
                 throw new RuntimeException("No se pudo validar el rol del usuario.");
             }
@@ -116,10 +116,6 @@ public class VentaService {
         String detalle = String.format("Producto %s con stock crítico (%d unidades)", 
                 producto.getNombre(), producto.getStock());
         AuditoriaManager.getInstance().registrarEvento(usuario, "STOCK_CRITICO", detalle);
-
-        // Observador 2: Dashboard (opcional - podría mostrar notificación)
-        // UIUtils.registrarNotificacionTemporal("Dashboard", 
-        //     "Stock crítico de " + producto.getNombre() + " (" + producto.getStock() + " uds.)");
     }
 
     private Boleta construirBoleta(VentaContext context) {
