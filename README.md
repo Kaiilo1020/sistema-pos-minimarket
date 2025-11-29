@@ -58,14 +58,47 @@ El sistema POS original presentaba **problemas críticos** que afectaban su mant
 
 ### 📊 Objetivos Específicos
 
-#### **2.1 Implementar Patrones de Diseño (Obligatorio)**
-- ✅ **Singleton**: Una única instancia de conexión a base de datos
-- ✅ **Builder**: Construcción validada de boletas
-- ✅ **Adapter**: Adaptación del sidebar según rol de usuario
-- ✅ **Decorator**: Decoración visual de excepciones de negocio
-- ✅ **Observer**: Notificaciones automáticas de stock crítico
-- ✅ **Command**: Encapsulación de acciones del POS
-- ✅ **Chain of Responsibility**: Validaciones en cadena para ventas
+#### **2.1 Implementar Patrones de Diseño (enfocados al curso)**
+- ✅ **Singleton**  
+  - **Qué es:** Patrón creacional que garantiza **una sola instancia** de una clase y un punto de acceso global controlado.  
+  - **En nuestro proyecto:**  
+    - `DatabaseConnection`: única conexión a PostgreSQL y manejo de transacciones ACID.  
+    - `AuditoriaManager`: único punto para registrar eventos de auditoría.  
+    - `UsuarioSesion`: gestiona la sesión del usuario autenticado.  
+  - **Ubicación:** paquetes `config/` y `security/`.
+
+- ✅ **Builder**  
+  - **Qué es:** Patrón creacional para **construir objetos complejos paso a paso**, asegurando que siempre queden en un estado válido.  
+  - **En nuestro proyecto:** `BoletaBuilder` construye boletas válidas (número, fecha, cajero, método de pago, detalles) antes de persistir la venta.  
+  - **Ubicación:** `model/BoletaBuilder.java`, usado por `service/venta/VentaService.java`.
+
+- ✅ **Adapter**  
+  - **Qué es:** Patrón estructural que **adapta una interfaz a otra** esperada por el cliente.  
+  - **En nuestro proyecto:** `DashboardFrame.obtenerOpcionesSidebar(Rol)` adapta las opciones visibles del sidebar según el rol (`CAJERO`, `SUPERVISOR`, `ADMINISTRADOR`).  
+  - **Ubicación:** `ui/swing/DashboardFrame.java` y `security/Rol.java`.
+
+- ✅ **Decorator**  
+  - **Qué es:** Patrón estructural que permite **agregar responsabilidades de forma dinámica** sin modificar la clase base.  
+  - **En nuestro proyecto:** `VentasPanel` utiliza un `TableCellRenderer` decorado para controlar la apariencia de las filas del carrito (antes para alertas visuales, ahora simplificado a fondo blanco, manteniendo la estructura del patrón).  
+  - **Ubicación:** `ui/panels/VentasPanel.java`.
+
+- ✅ **Observer**  
+  - **Qué es:** Patrón de comportamiento donde un **sujeto notifica a sus observadores** cuando cambia su estado.  
+  - **En nuestro proyecto:** `VentaService.notificarStockCritico()` actúa como sujeto y `AuditoriaManager` como observador, registrando eventos cuando un producto queda con stock crítico.  
+  - **Ubicación:** `service/venta/VentaService.java` y `security/AuditoriaManager.java`.
+
+- ✅ **Command**  
+  - **Qué es:** Patrón de comportamiento que **encapsula una petición como un objeto**, separando quién invoca de quién ejecuta.  
+  - **En nuestro proyecto:** `VentaHandler` encapsula comandos del POS (`ejecutarAnular`, `ejecutarImprimir`, `registrarVenta`), y `VentasPanel` solo invoca estos comandos.  
+  - **Ubicación:** `ui/handlers/VentaHandler.java` y `ui/panels/VentasPanel.java`.
+
+- ✅ **Chain of Responsibility**  
+  - **Qué es:** Patrón de comportamiento que **encadena manejadores** para procesar una petición paso a paso.  
+  - **En nuestro proyecto:** `VentaService.validarVenta()` aplica una cadena lógica:  
+    1. Validar datos del cliente (si es FACTURA).  
+    2. Validar carrito y monto total.  
+    3. Validar si se requiere autorización de supervisor.  
+  - **Ubicación:** `service/venta/VentaService.java` y `service/venta/VentaContext.java`.
 
 #### **2.2 Garantizar Seguridad de Datos (ACID)**
 - ✅ **Atomicidad**: Todas las operaciones de una venta se ejecutan o ninguna
@@ -124,9 +157,10 @@ El diagrama UML completo está disponible en dos formatos:
 - ✅ Transacciones ACID documentadas
 - ✅ Estructura completa del sistema
 
-> **📸 Espacio para captura de pantalla:**
-> 
-> *[Insertar diagrama UML generado desde PlantUML o Mermaid]*
+<div align="center">
+  <img src="docs/UML/Diagrama UML.png" alt="Diagrama UML - Sistema POS Minimarket" width="900"/>
+  <p><em>Diagrama UML del sistema POS minimarket con patrones de diseño y transacciones ACID</em></p>
+</div>
 
 ### 🏗️ Arquitectura del Sistema
 
@@ -214,6 +248,10 @@ public class DatabaseConnection {
 - ✅ Thread-safe con `synchronized`
 - ✅ Control centralizado de configuración
 
+**Cómo explicarlo en la exposición:**
+- “Singleton garantiza que **solo haya una conexión a PostgreSQL** en todo el sistema. En nuestro caso lo usamos en `DatabaseConnection`, `AuditoriaManager` y `UsuarioSesion` para centralizar la conexión, la auditoría y la sesión de usuario.”
+- Mostrar rápidamente el método `getInstance()` y luego enseguida un ejemplo de uso en un DAO (`DatabaseConnection.getInstance().getConnection()`).
+
 > **📸 Espacio para captura de pantalla:**
 > 
 > *[Insertar captura del código de DatabaseConnection.java mostrando el patrón Singleton]*
@@ -253,6 +291,10 @@ public class BoletaBuilder {
 - ✅ Validación automática de campos obligatorios
 - ✅ Fluent interface (código legible)
 - ✅ Objetos siempre válidos
+
+**Cómo explicarlo en la exposición:**
+- “Builder evita crear boletas **incompletas o inválidas**. En lugar de un constructor gigante, usamos `BoletaBuilder` para armar paso a paso y al final `build()` valida todo y calcula totales.”
+- Mostrar el flujo: `VentaService` crea un `BoletaBuilder`, le pasa datos y luego llama a `build()` antes de registrar la venta.
 
 > **📸 Espacio para captura de pantalla:**
 > 
@@ -315,6 +357,10 @@ private List<SidebarOption> obtenerOpcionesSidebar(Rol rolUsuario) {
 - ✅ Ocultación automática de opciones según permisos
 - ✅ Fácil extensión para nuevos roles
 
+**Cómo explicarlo en la exposición:**
+- “Adapter lo usamos para que **el mismo sidebar** se adapte al rol. El patrón está en el método `obtenerOpcionesSidebar(Rol)` que decide qué opciones mostrar según si es Cajero, Supervisor o Administrador.”
+- Mostrar en el UML cómo `DashboardFrame` depende de `Rol` y no necesita saber los detalles de cada menú.
+
 > **📸 Espacio para captura de pantalla:**
 > 
 > *[Insertar captura del sidebar mostrando diferentes opciones según rol (Cajero vs Administrador)]*
@@ -366,6 +412,10 @@ private JTable crearTablaCarrito() {
 - ✅ Separación de lógica de presentación
 - ✅ Extensible para nuevas decoraciones
 - ✅ No bloquea la funcionalidad principal
+
+**Cómo explicarlo en la exposición:**
+- “Decorator se ve en la tabla del carrito: usamos un `TableCellRenderer` personalizado para controlar cómo se pintan las filas. Antes decorábamos filas con colores según reglas de negocio; ahora está simplificado a fondo blanco, pero la estructura del patrón se mantiene.”
+- Enfatizar que el objetivo es **agregar comportamiento visual** sin cambiar la clase `JTable`.
 
 > **📸 Espacio para captura de pantalla:**
 > 
@@ -420,6 +470,10 @@ private void notificarStockCritico(Long productoId, int stockRestante) {
 - ✅ Notificaciones automáticas
 - ✅ Fácil agregar nuevos observadores
 
+**Cómo explicarlo en la exposición:**
+- “Observer aparece cuando una venta baja el stock: `VentaService` detecta que el stock es crítico y notifica a `AuditoriaManager`, que actúa como observador y registra el evento. Así la lógica de venta no se mezcla con la de auditoría.”
+- Mencionar que se podrían agregar más observadores (por ejemplo, refrescar el Dashboard) sin tocar `VentaService`.
+
 > **📸 Espacio para captura de pantalla:**
 > 
 > *[Insertar captura del dashboard mostrando alertas de stock crítico]*
@@ -468,6 +522,10 @@ public void ejecutarImprimir(Component parent) {
 - ✅ Encapsulación de lógica
 - ✅ Facilita auditoría
 - ✅ Permite deshacer/rehacer (futuro)
+
+**Cómo explicarlo en la exposición:**
+- “Command lo usamos para encapsular las acciones del POS: `VentaHandler` tiene métodos como `ejecutarAnular` y `ejecutarImprimir`. `VentasPanel` solo llama al comando, pero no conoce los detalles de la lógica interna.”
+- Relacionar con la idea de que en el futuro se podría guardar un historial de comandos para deshacer/rehacer.
 
 > **📸 Espacio para captura de pantalla:**
 > 
@@ -536,6 +594,10 @@ VentaContext → Validar Cliente (si FACTURA) → Validar Carrito → Validar Au
 - ✅ Validaciones desacopladas
 - ✅ Fácil agregar nuevas validaciones
 - ✅ Orden de ejecución controlado
+
+**Cómo explicarlo en la exposición:**
+- “Chain of Responsibility está concentrado en `validarVenta(VentaContext)`. Primero valida cliente (si es FACTURA), luego carrito y monto, y por último si requiere autorización de supervisor. Es una **cadena lógica** de validaciones antes de permitir la transacción.”
+- Enfatizar que todas las validaciones se ejecutan **antes** de abrir/confirmar la transacción ACID.
 
 > **📸 Espacio para captura de pantalla:**
 > 
