@@ -215,6 +215,8 @@ El diagrama UML completo está disponible en dos formatos:
 
 ### 🔍 4.1 Singleton (Patrón Creacional)
 
+**Definición teórica:** Garantiza que **solo exista una instancia** de una clase en toda la aplicación y que haya un **punto de acceso global controlado** a esa instancia.
+
 **Problema que resuelve:** Evitar múltiples conexiones a la base de datos, garantizando una única instancia compartida.
 
 **Implementación:**
@@ -260,6 +262,8 @@ public class DatabaseConnection {
 
 ### 🏗️ 4.2 Builder (Patrón Creacional)
 
+**Definición teórica:** Separa la **construcción** de un objeto complejo de su **representación final**, permitiendo crear objetos paso a paso y validarlos antes de usarlos.
+
 **Problema que resuelve:** Construcción compleja de objetos `Boleta` con validación de datos obligatorios antes de crear el objeto.
 
 **Implementación:**
@@ -303,6 +307,8 @@ public class BoletaBuilder {
 ---
 
 ### 🔌 4.3 Adapter (Patrón Estructural)
+
+**Definición teórica:** Convierte la **interfaz de una clase** en otra interfaz que el cliente espera, permitiendo que clases con interfaces incompatibles trabajen juntas.
 
 **Problema que resuelve:** Adaptar las opciones del sidebar según el rol del usuario (Cajera, Supervisor, Administrador).
 
@@ -369,6 +375,8 @@ private List<SidebarOption> obtenerOpcionesSidebar(Rol rolUsuario) {
 
 ### 🎨 4.4 Decorator (Patrón Estructural)
 
+**Definición teórica:** Permite **agregar responsabilidades** a un objeto de forma dinámica, envolviéndolo en otro objeto decorador, sin modificar la clase original.
+
 **Problema que resuelve:** Decorar visualmente las filas de la tabla del carrito cuando hay excepciones de negocio (producto por vencer, stock bajo) **sin bloquear la venta**.
 
 **Implementación:**
@@ -424,6 +432,8 @@ private JTable crearTablaCarrito() {
 ---
 
 ### 👁️ 4.5 Observer (Patrón de Comportamiento)
+
+**Definición teórica:** Define una relación **1 a muchos** entre objetos, donde cuando el sujeto cambia de estado **notifica automáticamente** a todos sus observadores.
 
 **Problema que resuelve:** Notificar automáticamente cuando un producto queda con stock crítico (<10 unidades) después de una venta.
 
@@ -482,6 +492,8 @@ private void notificarStockCritico(Long productoId, int stockRestante) {
 
 ### ⚡ 4.6 Command (Patrón de Comportamiento)
 
+**Definición teórica:** Encapsula una petición (acción) como un **objeto comando**, separando el código que **invoca** la acción del código que la **ejecuta**.
+
 **Problema que resuelve:** Encapsular acciones del POS (Cobrar, Anular, Imprimir) como objetos, facilitando auditoría y posible implementación de deshacer/rehacer.
 
 **Implementación:**
@@ -534,6 +546,8 @@ public void ejecutarImprimir(Component parent) {
 ---
 
 ### 🔗 4.7 Chain of Responsibility (Patrón de Comportamiento)
+
+**Definición teórica:** Permite pasar una petición a través de una **cadena de manejadores**, donde cada uno decide si procesa la petición o la pasa al siguiente.
 
 **Problema que resuelve:** Validar ventas en cadena: Datos del cliente → Carrito → Autorización supervisor (si aplica).
 
